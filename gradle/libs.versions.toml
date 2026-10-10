@@ -7,6 +7,7 @@ activityCompose = "1.10.1"
 lifecycle = "2.9.0"
 coreKtx = "1.16.0"
 junit = "4.13.2"
+carApp = "1.4.0"
 
 [libraries]
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutines" }
@@ -23,6 +24,7 @@ androidx-compose-ui-tooling-preview = { module = "androidx.compose.ui:ui-tooling
 androidx-compose-material3 = { module = "androidx.compose.material3:material3" }
 androidx-compose-material-icons-extended = { module = "androidx.compose.material:material-icons-extended" }
 junit = { module = "junit:junit", version.ref = "junit" }
+androidx-car-app = { module = "androidx.car.app:app", version.ref = "carApp" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

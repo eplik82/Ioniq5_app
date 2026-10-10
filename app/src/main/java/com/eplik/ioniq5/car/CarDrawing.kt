@@ -1,0 +1,353 @@
+package com.eplik.ioniq5.car
+
+import android.content.Context
+import android.graphics.Canvas
+import android.graphics.Color
+import android.graphics.Paint
+import android.graphics.Rect
+import android.graphics.RectF
+import android.graphics.Typeface
+import com.eplik.ioniq5.R
+import com.eplik.ioniq5.connection.ConnectionStatus
+import com.eplik.ioniq5.core.pid.Ioniq5Pids as P
+import com.eplik.ioniq5.core.poll.Readings
+import com.eplik.ioniq5.core.poll.acInputPowerKw
+import com.eplik.ioniq5.core.poll.batteryPowerKw
+import com.eplik.ioniq5.core.poll.cellVoltages
+import com.eplik.ioniq5.core.poll.minutesToSoc
+import com.eplik.ioniq5.core.poll.speedKmh
+import com.eplik.ioniq5.settings.Settings
+import com.eplik.ioniq5.settings.capacityKwh
+import com.eplik.ioniq5.ui.components.formatValue
+import kotlin.math.abs
+import kotlin.math.min
+
+/**
+ * Android Auto näidikud Ioniq 5 stiilis: tume taust, õhukesed numbrid, türkiissinine aktsent,
+ * pikslinäidikud. Joonistab otse Canvas'ile nähtavasse alasse.
+ */
+class CarDrawing(private val context: Context, dark: Boolean) {
+
+    private val background = if (dark) 0xFF0B0E11.toInt() else 0xFFF4F6F7.toInt()
+    private val surface = if (dark) 0xFF14181C.toInt() else 0xFFFFFFFF.toInt()
+    private val textPrimary = if (dark) 0xFFF2F4F5.toInt() else 0xFF15191D.toInt()
+    private val textSecondary = if (dark) 0xFF9AA4AD.toInt() else 0xFF5A646D.toInt()
+    private val pixelOff = if (dark) 0xFF2A3036.toInt() else 0xFFDDE2E6.toInt()
+    private val accent = 0xFF2FD1C5.toInt()
+    private val warning = 0xFFFFB547.toInt()
+    private val cold = 0xFF3D6FD8.toInt()
+    private val regen = 0xFF7CD957.toInt()
+
+    private val fill = Paint(Paint.ANTI_ALIAS_FLAG)
+    private val stroke = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.STROKE }
+    private val text = Paint(Paint.ANTI_ALIAS_FLAG).apply { typeface = Typeface.create("sans-serif-light", Typeface.NORMAL) }
+
+    private var now = System.currentTimeMillis()
+    private lateinit var r: Readings
+
+    fun draw(
+        canvas: Canvas,
+        area: Rect,
+        page: CarPage,
+        readings: Readings,
+        status: ConnectionStatus,
+        sleeping: Boolean,
+        settings: Settings,
+    ) {
+        r = readings
+        now = System.currentTimeMillis()
+        canvas.drawColor(background)
+        val pad = area.height() * 0.05f
+        val box = RectF(area.left + pad, area.top + pad, area.right - pad, area.bottom - pad)
+        when (page) {
+            CarPage.OVERVIEW -> overview(canvas, box)
+            CarPage.BATTERY -> battery(canvas, box)
+            CarPage.WHEELS -> wheels(canvas, box, settings)
+            CarPage.CHARGING -> charging(canvas, box, settings)
+        }
+        // Olekurida all
+        val statusText = when {
+            status !is ConnectionStatus.Connected -> context.getString(R.string.connection_disconnected)
+            sleeping -> context.getString(R.string.sleep_banner)
+            else -> null
+        }
+        statusText?.let { label(canvas, it, box.left, box.bottom, area.height() * 0.035f, warning) }
+    }
+
+    // ---------- Lehed ----------
+
+    private fun overview(c: Canvas, b: RectF) {
+        val leftW = b.width() * 0.38f
+        val socId = if (r[P.SOC_DISPLAY] != null) P.SOC_DISPLAY else P.SOC_BMS
+        val soc = v(socId)
+        val h = b.height()
+        label(c, str(R.string.state_of_charge).uppercase(), b.left, b.top + h * 0.08f, h * 0.045f)
+        big(c, soc?.let { formatValue(it, 0) } ?: "—", " %", b.left, b.top + h * 0.38f, h * 0.30f, fresh(socId))
+        pixelGauge(c, RectF(b.left, b.top + h * 0.48f, b.left + leftW * 0.92f, b.top + h * 0.48f + leftW * 0.92f / 2), soc?.div(100))
+
+        val power = r.batteryPowerKw()
+        val tiles = listOf(
+            Tile(
+                str(R.string.battery_power),
+                formatValue(power, 1),
+                "kW",
+                fresh(P.BATTERY_CURRENT),
+                if (power != null && power < -0.5) regen else null,
+            ),
+            Tile(str(R.string.speed_calc), formatValue(r.speedKmh(), 0), "km/h", fresh(P.MOTOR_RPM)),
+            Tile(
+                str(R.string.battery_temp),
+                "${formatValue(v(P.BATTERY_TEMP_MIN), 0)}…${formatValue(v(P.BATTERY_TEMP_MAX), 0)}",
+                "°C",
+                fresh(P.BATTERY_TEMP_MAX),
+            ),
+            Tile(str(R.string.aux_battery), formatValue(v(P.AUX_VOLTAGE), 1), "V", fresh(P.AUX_VOLTAGE)),
+            Tile(str(R.string.solar_power), formatValue(v(P.SOLAR_POWER), 0), "W", fresh(P.SOLAR_POWER)),
+            Tile(str(R.string.odometer), formatValue(r[P.ODOMETER]?.value, 0), "km", r[P.ODOMETER] != null),
+        )
+        tileGrid(c, RectF(b.left + leftW, b.top, b.right, b.bottom - h * 0.06f), tiles, columns = 2)
+    }
+
+    private fun battery(c: Canvas, b: RectF) {
+        val cells = r.cellVoltages()
+        val gridW = b.width() * 0.62f
+        val h = b.height()
+        if (cells.isNotEmpty()) {
+            val columns = 18
+            val rows = (cells.size + columns - 1) / columns
+            val cell = min(gridW / columns, (h * 0.9f) / rows)
+            val minV = cells.min()
+            val maxV = cells.max()
+            cells.forEachIndexed { i, volts ->
+                val t = if (maxV > minV) ((volts - minV) / (maxV - minV)).toFloat() else 0.5f
+                fill.color = scale(t)
+                val x = b.left + (i % columns) * cell
+                val y = b.top + (i / columns) * cell
+                c.drawRoundRect(RectF(x + cell * 0.08f, y + cell * 0.08f, x + cell * 0.92f, y + cell * 0.92f), cell * 0.12f, cell * 0.12f, fill)
+            }
+            label(c, "${cells.size} · ${formatValue(minV, 2)}…${formatValue(maxV, 2)} V", b.left, b.top + rows * cell + h * 0.07f, h * 0.045f)
+        } else {
+            label(c, "—", b.left, b.top + h * 0.1f, h * 0.05f)
+        }
+        val maxCell = v(P.CELL_V_MAX)
+        val minCell = v(P.CELL_V_MIN)
+        tileGrid(
+            c,
+            RectF(b.left + gridW + b.width() * 0.03f, b.top, b.right, b.bottom - h * 0.06f),
+            listOf(
+                Tile(str(R.string.soc_bms), formatValue(v(P.SOC_BMS), 1), "%", fresh(P.SOC_BMS)),
+                Tile(str(R.string.soh), formatValue(v(P.SOH), 1), "%", fresh(P.SOH)),
+                Tile(
+                    str(R.string.cell_deviation),
+                    formatValue(if (maxCell != null && minCell != null) (maxCell - minCell) * 1000 else null, 0),
+                    "mV",
+                    fresh(P.CELL_V_MAX),
+                ),
+                Tile(
+                    str(R.string.battery_temp),
+                    "${formatValue(v(P.BATTERY_TEMP_MIN), 0)}…${formatValue(v(P.BATTERY_TEMP_MAX), 0)}",
+                    "°C",
+                    fresh(P.BATTERY_TEMP_MAX),
+                ),
+            ),
+            columns = 1,
+        )
+    }
+
+    private fun wheels(c: Canvas, b: RectF, settings: Settings) {
+        val h = b.height()
+        val carW = h * 0.42f
+        val carH = h * 0.9f
+        val cx = b.left + b.width() * 0.32f
+        val body = RectF(cx - carW / 2, b.top + (h - carH) / 2, cx + carW / 2, b.top + (h + carH) / 2)
+        stroke.color = textSecondary
+        stroke.strokeWidth = h * 0.008f
+        c.drawRoundRect(body, carW * 0.3f, carW * 0.3f, stroke)
+        val frontY = body.top + carH * 0.2f
+        val rearY = body.top + carH * 0.8f
+        val wheelW = h * 0.07f
+        val wheelH = h * 0.15f
+        val steering = v(P.STEERING_ANGLE)
+        val unit = settings.pressureUnit
+        listOf(
+            Triple(P.TIRE_PRESSURE_FL, P.TIRE_TEMP_FL, true to true),
+            Triple(P.TIRE_PRESSURE_FR, P.TIRE_TEMP_FR, true to false),
+            Triple(P.TIRE_PRESSURE_RL, P.TIRE_TEMP_RL, false to true),
+            Triple(P.TIRE_PRESSURE_RR, P.TIRE_TEMP_RR, false to false),
+        ).forEach { (pId, tId, pos) ->
+            val (front, left) = pos
+            val x = if (left) body.left else body.right
+            val y = if (front) frontY else rearY
+            val bar = v(pId)
+            fill.color = when {
+                bar == null -> pixelOff
+                bar < settings.lowPressureBar -> warning
+                else -> accent
+            }
+            c.save()
+            // Positiivne roolinurk = vasakule; Canvas pöörab päripäeva
+            if (front && steering != null) c.rotate(-(steering / 14).toFloat(), x, y)
+            c.drawRoundRect(RectF(x - wheelW / 2, y - wheelH / 2, x + wheelW / 2, y + wheelH / 2), wheelW * 0.3f, wheelW * 0.3f, fill)
+            c.restore()
+            val tx = if (left) x - wheelW * 0.8f else x + wheelW * 0.8f
+            text.textAlign = if (left) Paint.Align.RIGHT else Paint.Align.LEFT
+            text.color = textPrimary
+            text.textSize = h * 0.055f
+            c.drawText("${formatValue(bar?.times(unit.fromBar), unit.decimals)} ${unit.label}", tx, y, text)
+            text.color = textSecondary
+            text.textSize = h * 0.045f
+            c.drawText("${formatValue(v(tId), 0)} °C", tx, y + h * 0.06f, text)
+            text.textAlign = Paint.Align.LEFT
+        }
+        val right = b.left + b.width() * 0.62f
+        tileGrid(
+            c,
+            RectF(right, b.top, b.right, b.bottom - h * 0.06f),
+            listOf(
+                Tile(
+                    str(R.string.steering_angle),
+                    formatValue(steering?.let { abs(it) }, 0) + when {
+                        steering == null || abs(steering) < 0.5 -> ""
+                        steering > 0 -> " ←"
+                        else -> " →"
+                    },
+                    "°",
+                    fresh(P.STEERING_ANGLE),
+                ),
+                Tile(str(R.string.speed_calc), formatValue(r.speedKmh(), 0), "km/h", fresh(P.MOTOR_RPM)),
+                Tile(str(R.string.front_axle) + " rpm", formatValue(v(P.MOTOR2_RPM), 0), "", fresh(P.MOTOR2_RPM)),
+                Tile(str(R.string.rear_axle) + " rpm", formatValue(v(P.MOTOR_RPM), 0), "", fresh(P.MOTOR_RPM)),
+            ),
+            columns = 1,
+        )
+    }
+
+    private fun charging(c: Canvas, b: RectF, settings: Settings) {
+        val h = b.height()
+        val power = r.batteryPowerKw()
+        val charging = fresh(P.BATTERY_CURRENT) && power != null && power < -0.5
+        val soc = v(P.SOC_DISPLAY) ?: v(P.SOC_BMS)
+        val leftW = b.width() * 0.45f
+        label(
+            c,
+            (if (charging) str(R.string.charging_now) else str(R.string.not_charging)).uppercase(),
+            b.left,
+            b.top + h * 0.08f,
+            h * 0.045f,
+            if (charging) accent else textSecondary,
+        )
+        big(c, if (charging) formatValue(-power!!, 1) else formatValue(soc, 0), if (charging) " kW" else " %", b.left, b.top + h * 0.38f, h * 0.28f, true)
+        pixelGauge(c, RectF(b.left, b.top + h * 0.48f, b.left + leftW * 0.9f, b.top + h * 0.48f + leftW * 0.9f / 2), soc?.div(100))
+        val capacity = settings.capacityKwh(r.cellVoltages().size)
+        fun eta(target: Double) = r.minutesToSoc(target, capacity)?.let { "%d:%02d".format(it.toInt() / 60, it.toInt() % 60) } ?: "—"
+        tileGrid(
+            c,
+            RectF(b.left + leftW, b.top, b.right, b.bottom - h * 0.06f),
+            listOf(
+                Tile(str(R.string.state_of_charge), formatValue(soc, 1), "%", fresh(P.SOC_BMS)),
+                Tile(str(R.string.time_to_80), eta(80.0), "h:min", charging),
+                Tile(str(R.string.ac_input_power), formatValue(r.acInputPowerKw(), 1), "kW", fresh(P.OBC_AC_VOLTAGE)),
+                Tile(
+                    str(R.string.battery_temp),
+                    "${formatValue(v(P.BATTERY_TEMP_MIN), 0)}…${formatValue(v(P.BATTERY_TEMP_MAX), 0)}",
+                    "°C",
+                    fresh(P.BATTERY_TEMP_MAX),
+                ),
+            ),
+            columns = 2,
+        )
+    }
+
+    // ---------- Abifunktsioonid ----------
+
+    private data class Tile(val label: String, val value: String, val unit: String, val fresh: Boolean, val valueColor: Int? = null)
+
+    private fun tileGrid(c: Canvas, area: RectF, tiles: List<Tile>, columns: Int) {
+        val rows = (tiles.size + columns - 1) / columns
+        val gap = area.height() * 0.03f
+        val w = (area.width() - gap * (columns - 1)) / columns
+        val h = (area.height() - gap * (rows - 1)) / rows
+        tiles.forEachIndexed { i, t ->
+            val x = area.left + (i % columns) * (w + gap)
+            val y = area.top + (i / columns) * (h + gap)
+            fill.color = surface
+            c.drawRoundRect(RectF(x, y, x + w, y + h), h * 0.12f, h * 0.12f, fill)
+            val alpha = if (t.fresh) 255 else 110
+            text.textAlign = Paint.Align.LEFT
+            text.color = textSecondary
+            text.alpha = alpha
+            text.textSize = min(h * 0.2f, w * 0.09f)
+            c.drawText(t.label.uppercase(), x + w * 0.06f, y + h * 0.3f, text)
+            text.color = t.valueColor ?: textPrimary
+            text.alpha = alpha
+            text.textSize = min(h * 0.42f, w * 0.2f)
+            val valueX = x + w * 0.06f
+            val valueY = y + h * 0.82f
+            c.drawText(t.value, valueX, valueY, text)
+            val vw = text.measureText(t.value)
+            text.color = textSecondary
+            text.alpha = alpha
+            text.textSize = min(h * 0.2f, w * 0.09f)
+            c.drawText(" " + t.unit, valueX + vw, valueY, text)
+        }
+        text.alpha = 255
+    }
+
+    private fun pixelGauge(c: Canvas, area: RectF, fraction: Double?) {
+        val columns = 10
+        val rows = 5
+        val cell = area.width() / columns
+        val lit = ((fraction ?: 0.0).coerceIn(0.0, 1.0) * columns * rows).toInt()
+        for (row in 0 until rows) {
+            for (col in 0 until columns) {
+                val index = row * columns + col
+                fill.color = if (fraction != null && index < lit) accent else pixelOff
+                val x = area.left + col * cell
+                val y = area.top + (rows - 1 - row) * cell
+                c.drawRoundRect(RectF(x + cell * 0.09f, y + cell * 0.09f, x + cell * 0.91f, y + cell * 0.91f), cell * 0.1f, cell * 0.1f, fill)
+            }
+        }
+    }
+
+    private fun big(c: Canvas, value: String, unit: String, x: Float, baseline: Float, size: Float, fresh: Boolean) {
+        text.textAlign = Paint.Align.LEFT
+        text.color = textPrimary
+        text.alpha = if (fresh) 255 else 110
+        text.textSize = size
+        c.drawText(value, x, baseline, text)
+        val w = text.measureText(value)
+        text.color = textSecondary
+        text.alpha = if (fresh) 255 else 110
+        text.textSize = size * 0.35f
+        c.drawText(unit, x + w, baseline, text)
+        text.alpha = 255
+    }
+
+    private fun label(c: Canvas, s: String, x: Float, baseline: Float, size: Float, color: Int = textSecondary) {
+        text.textAlign = Paint.Align.LEFT
+        text.color = color
+        text.textSize = size
+        c.drawText(s, x, baseline, text)
+    }
+
+    private fun scale(t: Float): Int {
+        val k = t.coerceIn(0f, 1f)
+        return if (k < 0.5f) blend(cold, accent, k * 2) else blend(accent, warning, (k - 0.5f) * 2)
+    }
+
+    private fun blend(a: Int, b: Int, t: Float): Int = Color.rgb(
+        (Color.red(a) + (Color.red(b) - Color.red(a)) * t).toInt(),
+        (Color.green(a) + (Color.green(b) - Color.green(a)) * t).toInt(),
+        (Color.blue(a) + (Color.blue(b) - Color.blue(a)) * t).toInt(),
+    )
+
+    private fun v(id: String): Double? = r[id]?.takeIf { now - it.timeMs < STALE_MS }?.value
+
+    private fun fresh(id: String): Boolean = r[id]?.let { now - it.timeMs < STALE_MS } == true
+
+    private fun str(id: Int): String = context.getString(id)
+
+    private companion object {
+        const val STALE_MS = 15_000L
+    }
+}
