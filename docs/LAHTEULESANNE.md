@@ -1,6 +1,6 @@
 # Lähteülesanne: Ioniq 5 CAN-andmete Android-rakendus
 
-Versioon 0.11 (mustand) · 2026-10-10
+Versioon 0.12 (mustand) · 2026-10-10
 
 ## 1. Eesmärk
 
@@ -139,9 +139,15 @@ Järeldused (esialgsed):
 
 **Auto näidud 10.10 13:23–13:27:** päikesekatuse kogutoodang (Energy information → „Total cumulative
 power generation”) **421,79 kWh**; odomeeter 67 533–67 534 km; aku 38%.
+Kell 13:39 näitas sama vaade **421,80 kWh**: 10 Wh 16 minutiga ehk keskmiselt ~40 W (pilves).
+See kinnitab, et `E011` K–L (~149) ja Q×2 (114 W) ei ole hetkevõimsus.
+
 Väärtust 421,79 kWh (nt 42 179, 421 790 või 4 217 900) ICCU `E0xx` vastustes **ei leidu**. Kogutoodang
-võib olla mõnes teises ICCU DID-vahemikus või teises juhtplokis (nt infosüsteem või VCMS); järgmine
-samm on ECU-skaneerimine ja ICCU teiste vahemike (`0100–01FF`, `B000–B0FF`, `C000–C0FF`, `F100–F1FF`) skaneerimine.
+võib olla mõnes teises ICCU DID-vahemikus või teises juhtplokis (nt infosüsteem või VCMS); ECU-skaneerimine on tehtud (vt `PARAMEETRID.md`).
+ICCU vahemikud `0100–01FF`, `1000–10FF`, `B000–B0FF`, `C000–C0FF` ei andnud ühtegi vastust; `F1xx` sisaldab ainult
+identifikaatoreid: tarkvara **NE1A039**, osa 364011XAB0, `F180` = „NEICCU50”, **valmistatud 2023-09-13**
+(ICCU on vahetatud), tarkvara uuendatud 2024-09-06.
+Järgmine samm: otsida 421,80 kWh infosüsteemist (`780`), näidikuplokist (`7C6`), VCU-st (`7E2`) ja BMS-ist (`7E4`).
 
 Pilvise päeva kohta tunduvad 149 W ja 114 W liiga suured (näidik 1/3, katuse tippvõimsus ~200 W);
 need ei pruugi olla hetkevõimsus. Ühe vastuse põhjal ei saa valemeid kinnitada; vaja on võrdlust

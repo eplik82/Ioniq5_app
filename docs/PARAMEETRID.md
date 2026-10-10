@@ -280,3 +280,52 @@ Kokku 417 parameetrit, neist 192 elemendipinget.
 | Solar roof voltage | V | 28 | 278.7 … 303.4 |
 | Solar to High Voltage | W | 28 | 112 |
 | Brake light |  | 11 | 0 |
+
+## ECU-skaneering (rakendus, 10.10 13:31–13:32)
+
+Vastanud juhtplokid (`3E 00`), osanumber (`F187`) ja versioonid. Seerianumbreid (`F18C`) repos ei hoita.
+Nimetused on osanumbri järgi oletatud, kui lõpus on „?”.
+
+| Päring → vastus | Osanumber | F191 | F195 | Juhtplokk |
+|---|---|---|---|---|
+| `701` → `709` | 81680GI500 | 1.00 | LSATSWVer.1.0E.00 | ? |
+| `703` → `70B` | 863C3GI000 | 0001 |  | ? |
+| `705` → `70D` | 92900GI000 | 100 | 100 | ? |
+| `706` → `70E` | 88540-GI200 | 1.00 | 1.00 | ? |
+| `707` → `70F` | 89B95-GI300 | 1.00 | 1.00 | ? |
+| `725` → `72D` | 95560GI000 | 100 | 100 | ? |
+| `730` → `738` | 99810GI200 | 1.00 |  | ? |
+| `731` → `739` | 95456GI500 | 100 | 100 | ? |
+| `732` → `73A` | 95456GI000 | 100 | 100 | ? |
+| `733` → `73B` | 350011XAB0 |  | 304 | ? |
+| `736` → `73E` | 96390GI200 | 100 | 100 | ? |
+| `744` → `74C` | 35001-1XAB0 | 35001-1XAB0 |  | ? |
+| `770` → `778` | 91950GI040 | 101 | 102 | kere juhtplokk (IBU)? |
+| `776` → `77E` | 94310GI010 | 1.00 | 1.01 | ? |
+| `777` → `77F` | 81870GI100 | 100 | 0A46 | ? |
+| `780` → `788` | 96560GI870 | 010.025 | 0001 | infosüsteem (AVN)? |
+| `781` → `789` | 82659GI000 | 100 | 100 | ? |
+| `783` → `78B` | 96370GI300 | 0852474003 |  | ? |
+| `797` → `79F` | 95455GI000 | 100 | 100 | ? |
+| `7A0` → `7A8` | 95400GI030 | 101 | 103 | ? |
+| `7A1` → `7A9` | 93571GI380 | 100 | 102 | ? |
+| `7A3` → `7AB` | 95450GI000 | 100 | 100 | ? |
+| `7A6` → `7AE` | 934B5GI870 | 1.00 | 1.00 | ? |
+| `7A7` → `7AF` | 96720GI190 | 100 | 100 | ? |
+| `7B1` → `7B9` | 99910GI200 | 1.00 | A013 | ? |
+| `7B6` → `7BE` | 467W0GI100 | 1.00 | 1.03 | käiguvalitsa (SBW)? |
+| `7B7` → `7BF` | 99140GI000 | 1.001.001.001.00 |  | ? |
+| `7C4` → `7CC` | 99211GI100 | 1.00 |  | esikaamera |
+| `7C6` → `7CE` | 94003GI000 | 0100 | 0400 | näidikuplokk (cluster) |
+| `7C7` → `7CF` | 96510GI000 |   3 | 109006109006 | ? |
+| `7D0` → `7D8` | 99110GI000 | 1.00 |  | eesmine radar |
+| `7D1` → `7D9` | 58520GI000 | 58520-GI000 | 4E 45 31 30 31 30 34 30 34 30 32 30 32 30 32 21 04 05 | pidurisüsteem (IEB/ESC) |
+| `7D2` → `7DA` | 95910GI200 | 1.00 | 1.01 | turvapadjad (SRS) |
+| `7D4` → `7DC` | 57700GI000 | 1.00 |  | roolivõimendi (MDPS) |
+| `7E2` → `7EA` | 397511XNE1 | 397511XNE1 |  | VCU (sõiduki juhtplokk) |
+| `7E3` → `7EB` | 36601-1XAM0 | 36601-1XAM0 |  | mootori kontroller (MCU) |
+| `7E4` → `7EC` | 375A0GI050 | VER.0.1 |  | BMS (kõrgepinge aku) |
+| `7E5` → `7ED` | 364011XAB0 | 364011XAB0 |  | ICCU (OBC + 12 V muundur + päikesekatus) |
+| `7E6` → `7EE` | 42951-18115 | 42951-18115 |  | ? |
+
+Märkus: `7B3` (kliima, mida kogukonna PID-id kasutavad) `3E 00`-le ei vastanud; kontrollida eraldi päringuga.
