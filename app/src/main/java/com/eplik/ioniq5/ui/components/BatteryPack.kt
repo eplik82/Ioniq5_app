@@ -46,6 +46,7 @@ fun BatteryCellGrid(
     onSelect: (Int?) -> Unit,
     modifier: Modifier = Modifier,
     columns: Int = 10,
+    selectedColor: Color = TextPrimary,
 ) {
     if (cells.isEmpty()) return
     val rows = (cells.size + columns - 1) / columns
@@ -78,7 +79,7 @@ fun BatteryCellGrid(
             val box = Size(cell - gap, cell - gap)
             drawRoundRect(scaleColor(t), topLeft, box, CornerRadius(gap))
             if (index == selected) {
-                drawRoundRect(TextPrimary, topLeft, box, CornerRadius(gap), style = Stroke(width = gap * 1.5f))
+                drawRoundRect(selectedColor, topLeft, box, CornerRadius(gap), style = Stroke(width = gap * 1.5f))
             }
             val text = when (mode) {
                 CellColorMode.VOLTAGE -> String.format(Locale.getDefault(), "%.2f", v)

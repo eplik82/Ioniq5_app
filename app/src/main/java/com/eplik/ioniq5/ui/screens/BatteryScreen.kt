@@ -81,7 +81,14 @@ fun BatteryScreen(readings: Readings, modifier: Modifier = Modifier) {
                         stringResource(R.string.cells_summary, cells.size, formatValue(cells.min(), 2), formatValue(cells.max(), 2)),
                         style = MaterialTheme.typography.titleMedium,
                     )
-                    BatteryCellGrid(cells, mode, selected, onSelect = { selected = it }, modifier = Modifier.fillMaxWidth())
+                    BatteryCellGrid(
+                        cells,
+                        mode,
+                        selected,
+                        onSelect = { selected = it },
+                        modifier = Modifier.fillMaxWidth(),
+                        selectedColor = MaterialTheme.colorScheme.onBackground,
+                    )
                     val sel = selected?.takeIf { it in cells.indices }
                     Text(
                         if (sel == null) {

@@ -1,6 +1,6 @@
 # Lähteülesanne: Ioniq 5 CAN-andmete Android-rakendus
 
-Versioon 0.15 (mustand) · 2026-10-10
+Versioon 0.16 (mustand) · 2026-10-10
 
 ## 1. Eesmärk
 
@@ -182,6 +182,23 @@ Kontrollimine:
 4. Kui ka see ei anna tulemust: Bluetooth HCI snoop log Car Scanneri lugemisest.
 
 Rakendusse ehitatakse diagnostikakonsool ja skanner (jaotis 5.9), nii et kontroll käib sama rakendusega.
+
+### 4.2 Rehvid, rool ja mootorid (avastusskaneering 10.10 14:19–14:28)
+
+Fail: `testdata/raw/discovery-stage3_2026-10-10_1420.txt` (kaks skaneeringut: rool otse ja keeratud).
+
+| Andmed | ECU | PID | Baidid ja valem | Kontroll |
+|---|---|---|---|---|
+| **Rehvirõhud** FL, FR, RL, RR | `7A0` | `22C00B` | 7, 12, 17, 22 × 0,2 psi | 36,2–36,6 psi = 2,50–2,52 bar ✓ |
+| **Rehvide temperatuurid** | `7A0` | `22C00B` | 8, 13, 18, 23 − 50 °C | 19–21 °C ✓ |
+| **Roolinurk** | `7D4` | `220101` | 10–11 märgiga × 0,1° | −10,5° → 428,2° rooli keerates ✓ (märk kontrollida) |
+| Roolinurk (sama väärtus) | `7D1` | `220104` | 34–35 märgiga × 0,1° | klapib `7D4`-ga ✓ |
+
+Ei leitud: tagamootor `7E3` ei vasta `0100–01FF` ega KWP `21xx` päringutele; `7E6` `01Cx–01Dx` on
+seistes kõik nullid (võib olla esimootor). `733` ja `744` ei vasta. Järgmine avastusring (rakenduses
+„Avasta (3. etapp)”) otsib `7E3`/`7E6` vahemikest `E000–E0FF` ja `2000–20FF`, VCU-st, pidurisüsteemist,
+roolivõimendist, esikaamerast ja radarist. Rataste kiirused ja kiirendused tuleb leida sõidu ajal
+(kaasreisija käivitab skaneeringu).
 
 ## 5. Ekraanid (loogiline grupeerimine)
 

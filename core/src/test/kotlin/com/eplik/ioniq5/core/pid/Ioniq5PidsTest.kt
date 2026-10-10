@@ -18,13 +18,17 @@ class Ioniq5PidsTest {
         "220102" to "620102FFFFFFFFAEAFAFAFAFAFAFAFB0AFAFAFAFAFAFAFB0B0B0AFB0AFB0AFAFAFAFAFAFAFAFAF",
         "22010C" to "62010CFFFFF000AFAFAFAFAFAFAFAFAFAFAFAFAFAFAFAFAFAFAFAF020000000001000100080801",
         "22B002" to "62B002E0000000FFB60107E9000000",
+        "22C00B" to "62C00BFFFFFF80B546010000B747010000B645010000B7470100003BA0B7A0B89FB6A0B8",
+        // Rool keeratud (teine avastusskaneering 14:28)
+        "220101@7D4" to "620101FFF8000092900010BA00000000000010100E01",
         "22E011" to "62E011FFFFFFF80101000000753A5507B4195A39847FCD512251006708010101000A000009000700000000000000000000",
     )
 
     private fun decode(id: String): Double? {
         val pid = P.ALL.first { p -> p.signals.any { it.id == id } }
         val signal = pid.signals.first { it.id == id }
-        return SignalDecoder.decode(signal, responses.getValue(pid.request).hexToBytes())
+        val response = responses["${pid.request}@${pid.ecu.requestHex}"] ?: responses.getValue(pid.request)
+        return SignalDecoder.decode(signal, response.hexToBytes())
     }
 
     private fun check(expected: Double, id: String) = assertEquals(id, expected, decode(id)!!, 1e-6)
@@ -73,6 +77,19 @@ class Ioniq5PidsTest {
         // 0101: 14, 21, 14, 20, 18; 0105: 21, 15, 22, 15, 21, 18, 22, 15, 21, 15, 20
         val expected = listOf(14, 21, 14, 20, 18, 21, 15, 22, 15, 21, 18, 22, 15, 21, 15, 20)
         expected.forEachIndexed { i, t -> check(t.toDouble(), P.moduleTempId(i + 1)) }
+    }
+
+    @Test
+    fun tiresAndSteering() {
+        check(36.2 * 0.0689476, P.TIRE_PRESSURE_FL)
+        check(36.6 * 0.0689476, P.TIRE_PRESSURE_FR)
+        check(36.4 * 0.0689476, P.TIRE_PRESSURE_RL)
+        check(36.6 * 0.0689476, P.TIRE_PRESSURE_RR)
+        check(20.0, P.TIRE_TEMP_FL)
+        check(21.0, P.TIRE_TEMP_FR)
+        check(19.0, P.TIRE_TEMP_RL)
+        check(21.0, P.TIRE_TEMP_RR)
+        check(428.2, P.STEERING_ANGLE)
     }
 
     @Test

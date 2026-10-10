@@ -36,9 +36,6 @@ import com.eplik.ioniq5.ui.components.isFresh
 import com.eplik.ioniq5.ui.components.rememberNow
 import com.eplik.ioniq5.ui.components.scaleColor
 import com.eplik.ioniq5.ui.theme.Accent
-import com.eplik.ioniq5.ui.theme.PixelOff
-import com.eplik.ioniq5.ui.theme.TextPrimary
-import com.eplik.ioniq5.ui.theme.TextSecondary
 import com.eplik.ioniq5.ui.theme.Warning
 import kotlin.math.abs
 
@@ -66,6 +63,13 @@ fun AxlesScreen(readings: Readings, modifier: Modifier = Modifier) {
     } else {
         null
     }
+    val scheme = MaterialTheme.colorScheme
+    val colors = CarColors(
+        outline = scheme.onSurfaceVariant,
+        inactive = scheme.surfaceVariant,
+        text = scheme.onBackground,
+        inactiveText = scheme.onSurfaceVariant,
+    )
     val labels = AxleLabels(
         front = stringResource(R.string.front_axle),
         rear = stringResource(R.string.rear_axle),
@@ -79,6 +83,7 @@ fun AxlesScreen(readings: Readings, modifier: Modifier = Modifier) {
         Canvas(Modifier.fillMaxWidth().aspectRatio(0.75f)) {
             drawCar(
                 measurer = measurer,
+                colors = colors,
                 steeringDeg = steering?.toFloat() ?: 0f,
                 wheels = listOf(
                     Wheel(v(P.TIRE_PRESSURE_FL), v(P.TIRE_TEMP_FL), front = true, left = true),
@@ -109,6 +114,8 @@ fun AxlesScreen(readings: Readings, modifier: Modifier = Modifier) {
     }
 }
 
+private data class CarColors(val outline: Color, val inactive: Color, val text: Color, val inactiveText: Color)
+
 private data class AxleLabels(val front: String, val rear: String)
 
 private data class Wheel(val pressureBar: Double?, val tempC: Double?, val front: Boolean, val left: Boolean)
@@ -117,6 +124,7 @@ private data class Motor(val label: String, val torqueNm: Double?, val rpm: Doub
 
 private fun DrawScope.drawCar(
     measurer: TextMeasurer,
+    colors: CarColors,
     steeringDeg: Float,
     wheels: List<Wheel>,
     front: Motor,
@@ -133,10 +141,10 @@ private fun DrawScope.drawCar(
     val stroke = Stroke(width = w * 0.006f)
 
     // Kere
-    drawRoundRect(TextSecondary, Offset(bodyLeft, bodyTop), Size(bodyW, bodyH), CornerRadius(bodyW * 0.28f), style = stroke)
+    drawRoundRect(colors.outline, Offset(bodyLeft, bodyTop), Size(bodyW, bodyH), CornerRadius(bodyW * 0.28f), style = stroke)
     // Klaasikatus (päikesekatus)
     drawRoundRect(
-        PixelOff,
+        colors.inactive,
         Offset(bodyLeft + bodyW * 0.15f, bodyTop + bodyH * 0.32f),
         Size(bodyW * 0.7f, bodyH * 0.36f),
         CornerRadius(bodyW * 0.08f),
@@ -149,18 +157,18 @@ private fun DrawScope.drawCar(
 
     // Sillad
     listOf(frontY to front, rearY to rear).forEach { (y, motor) ->
-        drawLine(TextSecondary, Offset(bodyLeft - wheelW / 2, y), Offset(bodyLeft + bodyW + wheelW / 2, y), strokeWidth = w * 0.008f)
+        drawLine(colors.outline, Offset(bodyLeft - wheelW / 2, y), Offset(bodyLeft + bodyW + wheelW / 2, y), strokeWidth = w * 0.008f)
         val active = (motor.torqueNm ?: 0.0) != 0.0 || (motor.rpm ?: 0.0) != 0.0
         val boxW = bodyW * 0.62f
         val boxH = h * 0.085f
         drawRoundRect(
-            if (active) Accent else PixelOff,
+            if (active) Accent else colors.inactive,
             Offset(w / 2 - boxW / 2, y - boxH / 2),
             Size(boxW, boxH),
             CornerRadius(boxH * 0.25f),
         )
         val text = "${motor.label}\n${formatValue(motor.torqueNm, 0)} Nm · ${formatValue(motor.rpm, 0)} rpm"
-        drawCentered(measurer, text, Offset(w / 2, y), TextStyle(color = Color(0xFF0B0E11), fontSize = (h * 0.024f).toSp(), textAlign = TextAlign.Center))
+        drawCentered(measurer, text, Offset(w / 2, y), TextStyle(color = if (active) Color(0xFF0B0E11) else colors.inactiveText, fontSize = (h * 0.024f).toSp(), textAlign = TextAlign.Center))
     }
 
     // Rattad
@@ -169,7 +177,7 @@ private fun DrawScope.drawCar(
         val cy = if (wheel.front) frontY else rearY
         val low = wheel.pressureBar != null && wheel.pressureBar < LOW_PRESSURE_BAR
         val color = when {
-            wheel.pressureBar == null -> TextSecondary
+            wheel.pressureBar == null -> colors.outline
             low -> Warning
             else -> Accent
         }
@@ -177,17 +185,17 @@ private fun DrawScope.drawCar(
         rotate(angle, pivot = Offset(cx, cy)) {
             drawRoundRect(color, Offset(cx - wheelW / 2, cy - wheelH / 2), Size(wheelW, wheelH), CornerRadius(wheelW * 0.3f))
         }
-        val label = "${formatValue(wheel.pressureBar, 1)} bar\n${formatValue(wheel.tempC, 0)} °C"
+        val label = "${formatValue(wheel.pressureBar, 2)} bar\n${formatValue(wheel.tempC, 0)} °C"
         val labelX = if (wheel.left) (cx - wheelW / 2) / 2 else (cx + wheelW / 2 + w) / 2
-        drawCentered(measurer, label, Offset(labelX, cy), TextStyle(color = TextPrimary, fontSize = (h * 0.028f).toSp(), textAlign = TextAlign.Center))
+        drawCentered(measurer, label, Offset(labelX, cy), TextStyle(color = colors.text, fontSize = (h * 0.028f).toSp(), textAlign = TextAlign.Center))
     }
 
     // Kiirenduse punkt (±0,5 g ring)
     val center = Offset(w / 2, h / 2)
     val radius = bodyW * 0.22f
-    drawCircle(TextSecondary, radius, center, style = stroke)
-    drawLine(TextSecondary, Offset(center.x - radius, center.y), Offset(center.x + radius, center.y), strokeWidth = stroke.width / 2)
-    drawLine(TextSecondary, Offset(center.x, center.y - radius), Offset(center.x, center.y + radius), strokeWidth = stroke.width / 2)
+    drawCircle(colors.outline, radius, center, style = stroke)
+    drawLine(colors.outline, Offset(center.x - radius, center.y), Offset(center.x + radius, center.y), strokeWidth = stroke.width / 2)
+    drawLine(colors.outline, Offset(center.x, center.y - radius), Offset(center.x, center.y + radius), strokeWidth = stroke.width / 2)
     if (gLat != null && gLon != null) {
         val g = kotlin.math.hypot(gLat, gLon)
         val dot = Offset(

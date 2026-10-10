@@ -9,6 +9,11 @@ object Ioniq5Pids {
     val BMS = EcuAddress(0x7E4)
     val ICCU = EcuAddress(0x7E5)
     val CLUSTER = EcuAddress(0x7C6)
+    val TPMS = EcuAddress(0x7A0)
+    val MDPS = EcuAddress(0x7D4)
+
+    /** TPMS rõhk: bait × 0,2 psi, teisendatud baarideks. */
+    private const val PSI_02_TO_BAR = 0.2 * 0.0689476
 
     // Signaalide ID-d, mida UI kasutab
     const val SOC_BMS = "soc_bms"
@@ -146,5 +151,36 @@ object Ioniq5Pids {
         ),
     )
 
-    val ALL: List<PidDefinition> = listOf(bmsMain, bmsHealth) + cellPids + listOf(odometer, iccuSolar)
+    /** Rehvid: 4 × 5 baiti alates baidist 7 (FL, FR, RL, RR): rõhk × 0,2 psi, temperatuur − 50 °C. */
+    private val tires = PidDefinition(
+        id = "tpms_c00b",
+        ecu = TPMS,
+        request = "22C00B",
+        pollIntervalMs = 10_000,
+        signals = listOf(
+            TIRE_PRESSURE_FL to TIRE_TEMP_FL,
+            TIRE_PRESSURE_FR to TIRE_TEMP_FR,
+            TIRE_PRESSURE_RL to TIRE_TEMP_RL,
+            TIRE_PRESSURE_RR to TIRE_TEMP_RR,
+        ).flatMapIndexed { wheel, (pressure, temp) ->
+            val start = 7 + wheel * 5
+            listOf(
+                SignalDefinition(pressure, "Rehvirõhk", "Tire pressure", "bar", ParameterGroup.TIRES, start, scale = PSI_02_TO_BAR),
+                SignalDefinition(temp, "Rehvi temperatuur", "Tire temperature", "°C", ParameterGroup.TIRES, start + 1, offset = -50.0),
+            )
+        },
+    )
+
+    /** Roolinurk × 0,1°; sama väärtus on ka pidurisüsteemi 7D1 220104 baitides 34–35. Märk kontrollida. */
+    private val steering = PidDefinition(
+        id = "mdps_0101",
+        ecu = MDPS,
+        request = "220101",
+        pollIntervalMs = 500,
+        signals = listOf(
+            s(STEERING_ANGLE, "Roolinurk", "Steering angle", "°", ParameterGroup.DRIVE, 10, 2, signed = true, scale = 0.1),
+        ),
+    )
+
+    val ALL: List<PidDefinition> = listOf(bmsMain, bmsHealth) + cellPids + listOf(odometer, iccuSolar, tires, steering)
 }
