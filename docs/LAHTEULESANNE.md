@@ -1,6 +1,6 @@
 # Lähteülesanne: Ioniq 5 CAN-andmete Android-rakendus
 
-Versioon 0.4 (mustand) · 2026-10-10
+Versioon 0.5 (mustand) · 2026-10-10
 
 ## 1. Eesmärk
 
@@ -8,10 +8,11 @@ Teha Android-rakendus, mis ühendub Hyundai Ioniq 5 (E-GMP platvorm) diagnostika
 **LELink Bluetooth OBD-II adapteri** kaudu ning näitab auto parameetreid loogiliselt
 gruppidena, kaasa arvatud **päikesekatuse (solar roof)** andmeid.
 
-**Sõiduk:** Hyundai Ioniq 5 („Projekt 45”), mudeliaasta 2022, päikesekatusega, aku 77,4 kWh
-(192 elementi). Mudeliaastal 2022 pakuti algul 58 ja 72,6 kWh akusid; 77,4 kWh tuli hiljem
-(2022. aasta teisest poolest). Seepärast tuvastab rakendus aku variandi ise elementide pingete
-PID-ide järgi (180 vs 192 elementi) ja kasutaja saab seda seadetes muuta.
+**Sõiduk:** Hyundai Ioniq 5 („Projekt 45”), mudeliaasta 2022 (VIN-i 10. märk `N`), päikesekatusega.
+Aku on Car Scanneri logi järgi **72,6 kWh, 180 elementi**: elemendid 1–180 näitavad ~3,76 V,
+elemendid 181–192 ~0 V ning aku pinge 677–696 V ÷ 180 = 3,76–3,87 V elemendi kohta.
+(Esialgne eeldus oli 77,4 kWh, kuid sellel oleks 192 töötavat elementi.) Rakendus tuvastab aku
+variandi ise elementide arvu järgi ja seadetes saab seda muuta.
 
 **Kasutus:** esialgu ainult isiklikuks kasutuseks (APK paigaldatakse ise, mitte Play poe kaudu).
 Telefonirakenduse kõrval on **Android Auto** tugi (jaotis 5.1). Kasutajaliides on **eesti ja inglise keeles**.
@@ -43,7 +44,9 @@ veakoode ega muuda seadeid (vt jaotis 9).
 
 Allolev loend põhineb kogukonna teadaolevatel andmetel (EVNotify, OVMS, Car Scanneri profiilid).
 Kasutaja Car Scanner PRO logid on peamine lähteandmestik: nende järgi kontrollitakse PID-e ja
-dekodeerimisvalemeid (vt jaotis 7).
+dekodeerimisvalemeid (vt jaotis 7). Esimesest logist leitud ~410 parameetrit on loetletud failis
+[`PARAMEETRID.md`](PARAMEETRID.md). Logis vastasid juhtplokid **BMS, VCMS** (laadimise juhtimine),
+**ICCU** (OBC + 12 V muundur), **MCU** (mootor, õli- ja veepump), **VCS/VCU, HVAC** ja **ADAS**.
 **Iga aadress ja dekodeerimisvalem tuleb 1. etapis päris autoga üle kontrollida.**
 PID-id ja valemid hoitakse rakenduses eraldi konfiguratsioonifailis (JSON), et neid saaks
 parandada ja lisada ilma koodi muutmata.
@@ -62,19 +65,29 @@ parandada ja lisada ilma koodi muutmata.
 | OBC / ICCU (laadija, 12 V muundur) | kinnitada | kinnitada | AC laadimise pinge ja vool, OBC temperatuur, LDC (12 V) vool |
 | **Päikesekatus** | **teadmata** | **teadmata** | Toodetud võimsus (W), päeva ja koguenergia (Wh), katuse olek, kuhu energia suunatakse (12 V / kõrgepinge aku) |
 
-### 4.1 Päikesekatuse andmed: avastusetapp
+### 4.1 Päikesekatuse andmed
 
-Päikesekatuse kontrolleri diagnostikaaadressi ja PID-e ei ole avalikult dokumenteeritud.
-Seetõttu on 1. etapis eraldi ülesanne:
+Car Scanner **loeb päikesekatuse andmeid**. Logis on kolm parameetrit:
 
-1. **ECU-skaneerimine:** saata `3E 00` (TesterPresent) või `22 F190` (VIN) igale aadressile
-   vahemikus `0x700–0x7FF` ja koostada vastanud ECU-de nimekiri (sh `22 F187`/`F18C` osanumber).
-2. **DID-skaneerimine:** vastanud tundmatutel ECU-del käia läbi DID-vahemikud (nt `0100–01FF`, `B000–B0FF`, `C000–C0FF`, `E000–E0FF`).
-3. **Võrdlus:** salvestada vastused päikese käes ja varjus (või kaetud katusega). Baidid, mis muutuvad koos valgusega, on päikesekatuse kandidaadid.
-4. **Valideerimine:** võrrelda leitud väärtusi auto infosüsteemis näidatava päikeselaadimise statistikaga.
+| Parameeter | Väärtus logis (DC-laadimine, 10.10 ~12:10) |
+|---|---|
+| Solar roof power | 150,07–150,08 W (peaaegu muutumatu: kahtlane, kontrollida) |
+| Solar roof voltage | 279–303 V |
+| Solar to High Voltage | 112 W |
 
-Rakendusse ehitatakse selleks diagnostikakonsool ja skanner (jaotis 5.9), nii et avastustöö
-käib sama rakendusega.
+Car Scanner ei näita, millisest juhtplokist ja PID-ist need tulevad. Nende leidmise viisid,
+kiireimast aeglasemani:
+
+1. **Bluetooth HCI snoop log:** Androidi arendajaseadetes lülitatakse sisse „Bluetooth HCI snoop log”,
+   Car Scanneris kuvatakse ainult päikesekatuse parameetrid, siis võetakse telefonist veaaruanne (bug report).
+   Logis on näha täpsed käsud (`ATSH…`, `22…`) ja auto vastused. Sama meetodiga saab kinnitada
+   ka kõik teised PID-id. See on Car Scanneri liikluse lugemine ühest telefonist ega muuda autos midagi.
+2. **ECU-skaneerimine:** saata `3E 00` või `22 F190` igale aadressile vahemikus `0x700–0x7FF`
+   ja koostada vastanud juhtplokkide nimekiri (sh `22 F187`/`F18C` osanumber).
+3. **DID-skaneerimine ja võrdlus:** käia läbi tundmatute juhtplokkide DID-vahemikud ning võrrelda
+   vastuseid päikese käes ja varjus. Leitud väärtused valideeritakse Car Scanneri näitudega.
+
+Rakendusse ehitatakse diagnostikakonsool ja skanner (jaotis 5.9), nii et 2. ja 3. viis käib sama rakendusega.
 
 ## 5. Ekraanid (loogiline grupeerimine)
 
@@ -139,7 +152,8 @@ foreground service'is.
   ühendusprofiil „Hyundai e-GMP: IONIQ 5 (2022-2025) / IONIQ 6 / EV6 / …” ilma kohandatud PID-ideta.
   Sisseehitatud profiili PID-e Car Scanner ei ekspordi, seega võetakse logidest parameetrite
   nimed ja väärtused ning PID-id ja valemid sobitatakse nende järgi.
-  Need pannakse repo kausta `testdata/carscanner/`. Nende järgi
+  Need pannakse repo kausta `testdata/carscanner/` **ilma GPS-veergudeta** (repo on avalik).
+  VIN-i repo ei salvestata. Nende järgi
   - kontrollitakse, et rakenduse dekodeeritud väärtused on samad mis Car Scanneris;
   - koostatakse PID-konfiguratsiooni algversioon;
   - toidetakse simulaatorit, et arendada UI-d ilma autota.
@@ -174,12 +188,12 @@ foreground service'is.
 | Adapter | LELink (BLE) |
 | Levitamine | Isiklik kasutus, APK; Play pood pole praegu eesmärk |
 | Android Auto | Jah, graafiline (navigatsioonikategooria, Surface), Ioniq 5 stiilis (jaotis 5.1) |
-| Aku | 77,4 kWh, 192 elementi (mudeliaasta 2022); rakendus kontrollib automaatselt |
+| Aku | 72,6 kWh, 180 elementi (Car Scanneri logi järgi); rakendus tuvastab automaatselt |
 | Välisteenused | Praegu ei ole vaja (ABRP, MQTT jms) |
 | Lähteandmed | Car Scanner PRO logid (sisseehitatud e-GMP profiil) |
 | Kasutajaliidese keel | Eesti ja inglise |
 
 ## 11. Avatud küsimused
 
-1. Kas Car Scanneri andurite nimekirjas on päikesekatuse parameetreid? Kui on, siis on päikesekatuse ECU juba teada ja avastusetapp (4.1) läheb kiiremini.
-2. Car Scanneri „ECU identifiers” vaate ekraanipildid: need näitavad, millised juhtplokid autos vastavad.
+1. Kas saad teha Bluetooth HCI snoop logi Car Scanneri päikesekatuse lugemisest (jaotis 4.1)?
+2. Logid muudes olukordades: sõit, AC-laadimine, seismine päikese käes (süüde sees, laadimata).
