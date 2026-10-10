@@ -1,6 +1,6 @@
 # Lähteülesanne: Ioniq 5 CAN-andmete Android-rakendus
 
-Versioon 0.6 (mustand) · 2026-10-10
+Versioon 0.7 (mustand) · 2026-10-10
 
 ## 1. Eesmärk
 
@@ -62,10 +62,14 @@ parandada ja lisada ilma koodi muutmata.
 | Näidikuplokk (cluster) | `7C6` → `7CE` | `22B002` | Läbisõit |
 | TPMS | `7A0` → `7A8` | `22C00B` | Nelja rehvi rõhk ja temperatuur |
 | Kliima (FATC) | `7B3` → `7BB` | `220100` | Sisetemperatuur, välistemperatuur, ventilaator, soojuspumba olek |
-| OBC / ICCU (laadija, 12 V muundur) | kinnitada | kinnitada | AC laadimise pinge ja vool, OBC temperatuur, LDC (12 V) vool |
-| **Päikesekatus** | **teadmata** | **teadmata** | Toodetud võimsus (W), päeva ja koguenergia (Wh), katuse olek, kuhu energia suunatakse (12 V / kõrgepinge aku) |
+| ICCU (OBC + 12 V muundur + **päikesekatus**) | `7E5` → `7ED` (kinnitada) | kinnitada, päikesekatus `22E011` | AC laadimise pinge ja vool, OBC temperatuur, LDC (12 V) vool, 12 V aku olek, päikesekatuse võimsus ja pinge |
 
 ### 4.1 Päikesekatuse andmed
+
+Päikesekatuse andmed tulevad **ICCU-moodulist** (Integrated Charging Control Unit: pardalaadija,
+12 V muundur ja päikesekatuse laadimine ühes plokis). ICCU diagnostikaaadress on tõenäoliselt
+`7E5` (vastus `7ED`); see klapib ka kasutaja Car Scanneri päikesekatuse PID-ide päisega. Aadress
+kinnitatakse Car Scanneri „ECU identifiers” vaatest või rakenduse skanneriga (`22 F190`, `22 F18C`).
 
 Car Scanneris on kasutaja **ise loodud** (kontrollimata) päikesekatuse PID-id:
 
@@ -83,8 +87,9 @@ Kontrollimine:
 1. **Toorvastus:** Car Scanneri terminalis `ATSH7E5` ja `22E011`; vastus salvestada (ekraanipilt
    või tekst) päikese käes, varjus ja öösel. Võrrelda, millised baidid valgusega muutuvad.
 2. **Võrdlus auto enda näiduga:** infosüsteemis näidatav päikeselaadimise statistika.
-3. Kui `7E5`/`22E011` ei sobi: Bluetooth HCI snoop log, ECU-skaneerimine (`3E 00` / `22 F190`
-   aadressidele `0x700–0x7FF`) ja tundmatute ECU-de DID-skaneerimine koos valguse võrdlusega.
+3. Kui `22E011` valemid ei sobi: ICCU DID-skaneerimine (eelkõige vahemik `E000–E0FF`, kus on ka
+   teised ICCU andmed) päikese käes ja varjus; baidid, mis muutuvad valgusega, on päikesekatuse andmed.
+4. Kui ka see ei anna tulemust: Bluetooth HCI snoop log Car Scanneri lugemisest.
 
 Rakendusse ehitatakse diagnostikakonsool ja skanner (jaotis 5.9), nii et kontroll käib sama rakendusega.
 
