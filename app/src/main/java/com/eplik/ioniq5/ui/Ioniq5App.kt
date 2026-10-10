@@ -26,6 +26,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.eplik.ioniq5.Ioniq5Application
 import com.eplik.ioniq5.ui.diagnostics.DiagnosticsScreen
+import com.eplik.ioniq5.ui.screens.BatteryScreen
 import com.eplik.ioniq5.ui.screens.ConnectionScreen
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
@@ -45,6 +46,7 @@ private enum class Tab(@StringRes val label: Int, val icon: ImageVector, val sta
 fun Ioniq5App() {
     val connection = (LocalContext.current.applicationContext as Ioniq5Application).connection
     val status by connection.status.collectAsStateWithLifecycle()
+    val readings by connection.readings.collectAsStateWithLifecycle()
     var selected by rememberSaveable { mutableStateOf(Tab.OVERVIEW) }
     var showConnection by rememberSaveable { mutableStateOf(false) }
     Scaffold(
@@ -81,7 +83,8 @@ fun Ioniq5App() {
         val modifier = Modifier.padding(padding)
         when {
             showConnection -> ConnectionScreen(connection, onBack = { showConnection = false }, modifier = modifier)
-            selected == Tab.OVERVIEW -> OverviewScreen(status, onConnectionClick = { showConnection = true }, modifier = modifier)
+            selected == Tab.OVERVIEW -> OverviewScreen(status, readings, onConnectionClick = { showConnection = true }, modifier = modifier)
+            selected == Tab.BATTERY -> BatteryScreen(readings, modifier)
             selected == Tab.DIAGNOSTICS -> DiagnosticsScreen(onConnectionClick = { showConnection = true }, modifier = modifier)
             else -> PlaceholderScreen(stringResource(selected.label), selected.stage, modifier)
         }

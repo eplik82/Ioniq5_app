@@ -30,4 +30,27 @@
     <string name="share_log">Share log</string>
     <string name="clear">Clear</string>
     <string name="invalid_hex">ECU / DID: invalid hex</string>
+    <string name="battery_power">Battery power</string>
+    <string name="charging_now">Charging</string>
+    <string name="discharging_now">Discharging</string>
+    <string name="idle_now">Idle</string>
+    <string name="battery_voltage">Battery voltage</string>
+    <string name="battery_current">Battery current</string>
+    <string name="battery_temp">Battery temperature</string>
+    <string name="aux_battery">12 V battery</string>
+    <string name="odometer">Odometer</string>
+    <string name="solar_panel_voltage">Solar panel voltage</string>
+    <string name="candidate">unverified</string>
+    <string name="soc_display">Charge (display)</string>
+    <string name="soc_bms">Charge (BMS)</string>
+    <string name="soh">Health (SOH)</string>
+    <string name="temp_max">Max temperature</string>
+    <string name="temp_min">Min temperature</string>
+    <string name="cell_max">Max cell</string>
+    <string name="cell_min">Min cell</string>
+    <string name="cell_deviation">Cell deviation</string>
+    <string name="total_charged">Total charged</string>
+    <string name="total_discharged">Total discharged</string>
+    <string name="operating_time">BMS operating time</string>
+    <string name="cells_summary">%1$d cells, %2$s…%3$s V</string>
 </resources>

@@ -127,9 +127,11 @@ class DiagnosticsViewModel(application: Application) : AndroidViewModel(applicat
         if (job?.isActive == true) return
         _message.value = null
         job = viewModelScope.launch {
+            connection.setPollingPaused(true)
             try {
                 block()
             } finally {
+                connection.setPollingPaused(false)
                 _progress.value = null
             }
         }

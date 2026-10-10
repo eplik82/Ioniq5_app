@@ -5,6 +5,9 @@ import com.eplik.ioniq5.ble.BleTransport
 import com.eplik.ioniq5.ble.FoundDevice
 import com.eplik.ioniq5.core.elm.Elm327
 import com.eplik.ioniq5.core.elm.TrafficEntry
+import com.eplik.ioniq5.core.pid.Ioniq5Pids
+import com.eplik.ioniq5.core.poll.Poller
+import com.eplik.ioniq5.core.poll.Readings
 import com.eplik.ioniq5.core.transport.Transport
 import com.eplik.ioniq5.core.transport.TransportState
 import kotlinx.coroutines.CoroutineScope
@@ -35,6 +38,13 @@ class ConnectionManager(
     private val _traffic = MutableStateFlow<List<TrafficEntry>>(emptyList())
     val traffic: StateFlow<List<TrafficEntry>> = _traffic.asStateFlow()
 
+    /** Viimased näidud; jäävad alles ka pärast ühenduse katkemist (UI näitab neid aegununa). */
+    private val _readings = MutableStateFlow<Readings>(emptyMap())
+    val readings: StateFlow<Readings> = _readings.asStateFlow()
+
+    private var poller: Poller? = null
+    private var pollJob: Job? = null
+
     private val prefs = context.getSharedPreferences("connection", Context.MODE_PRIVATE)
 
     private var transport: Transport? = null
@@ -61,6 +71,7 @@ class ConnectionManager(
                 elm = driver
                 prefs.edit().putString(KEY_LAST_ADDRESS, found.address).apply()
                 _status.value = ConnectionStatus.Connected(name, version)
+                startPolling(driver)
                 // Kui ühendus katkeb, märgime selle
                 newTransport.state.drop(1).first { it != TransportState.CONNECTED }
                 if (transport === newTransport) {
@@ -83,15 +94,34 @@ class ConnectionManager(
         }
     }
 
+    /** Peatab pollimise näiteks diagnostika skaneerimise ajaks. */
+    fun setPollingPaused(paused: Boolean) {
+        poller?.paused?.value = paused
+    }
+
+    private fun startPolling(driver: Elm327) {
+        val newPoller = Poller(driver, Ioniq5Pids.ALL)
+        poller = newPoller
+        pollJob = scope.launch {
+            launch { newPoller.readings.collect { latest -> _readings.update { it + latest } } }
+            newPoller.run()
+        }
+    }
+
     fun clearTraffic() {
         _traffic.value = emptyList()
     }
 
     private fun addTraffic(entry: TrafficEntry) {
+        // Pidevat pollimist logisse ei kirjuta, ainult seadistust ja diagnostikat (pollimine on siis peatatud)
+        if (poller?.paused?.value == false) return
         _traffic.update { (it + entry).takeLast(MAX_TRAFFIC) }
     }
 
     private suspend fun closeCurrent() {
+        pollJob?.cancel()
+        pollJob = null
+        poller = null
         elm = null
         transport?.let {
             transport = null

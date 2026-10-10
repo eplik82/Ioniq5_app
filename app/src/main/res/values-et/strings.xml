@@ -30,4 +30,27 @@
     <string name="share_log">Jaga logi</string>
     <string name="clear">Tühjenda</string>
     <string name="invalid_hex">ECU / DID: vigane hex</string>
+    <string name="battery_power">Aku võimsus</string>
+    <string name="charging_now">Laeb</string>
+    <string name="discharging_now">Kulutab</string>
+    <string name="idle_now">Ootel</string>
+    <string name="battery_voltage">Aku pinge</string>
+    <string name="battery_current">Aku vool</string>
+    <string name="battery_temp">Aku temperatuur</string>
+    <string name="aux_battery">12 V aku</string>
+    <string name="odometer">Läbisõit</string>
+    <string name="solar_panel_voltage">Päikesepaneeli pinge</string>
+    <string name="candidate">kontrollimata</string>
+    <string name="soc_display">Laetus (näidik)</string>
+    <string name="soc_bms">Laetus (BMS)</string>
+    <string name="soh">Tervis (SOH)</string>
+    <string name="temp_max">Max temperatuur</string>
+    <string name="temp_min">Min temperatuur</string>
+    <string name="cell_max">Max element</string>
+    <string name="cell_min">Min element</string>
+    <string name="cell_deviation">Elementide erinevus</string>
+    <string name="total_charged">Laetud kokku</string>
+    <string name="total_discharged">Tühjendatud kokku</string>
+    <string name="operating_time">BMS tööaeg</string>
+    <string name="cells_summary">%1$d elementi, %2$s…%3$s V</string>
 </resources>
