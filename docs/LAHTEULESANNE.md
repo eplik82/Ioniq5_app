@@ -1,6 +1,6 @@
 # Lähteülesanne: Ioniq 5 CAN-andmete Android-rakendus
 
-Versioon 0.12 (mustand) · 2026-10-10
+Versioon 0.13 (mustand) · 2026-10-10
 
 ## 1. Eesmärk
 
@@ -147,7 +147,22 @@ võib olla mõnes teises ICCU DID-vahemikus või teises juhtplokis (nt infosüst
 ICCU vahemikud `0100–01FF`, `1000–10FF`, `B000–B0FF`, `C000–C0FF` ei andnud ühtegi vastust; `F1xx` sisaldab ainult
 identifikaatoreid: tarkvara **NE1A039**, osa 364011XAB0, `F180` = „NEICCU50”, **valmistatud 2023-09-13**
 (ICCU on vahetatud), tarkvara uuendatud 2024-09-06.
-Järgmine samm: otsida 421,80 kWh infosüsteemist (`780`), näidikuplokist (`7C6`), VCU-st (`7E2`) ja BMS-ist (`7E4`).
+Edasised skaneeringud (`testdata/raw/did-scans_2026-10-10_1346.txt`):
+
+| ECU | Vahemik | Tulemus |
+|---|---|---|
+| `780` infosüsteem | `0100–01FF` | ei ühtegi vastust |
+| `7E2` VCU | `0100–01FF` | ei ühtegi vastust (VCU kasutab tõenäoliselt KWP `21xx`) |
+| `7C6` näidikuplokk | `B000–B0FF` | `B000`–`B004`; **`B002` baidid 9–11 = odomeeter** (0x0107E9 = 67 561 km) ✓ |
+| `7E4` BMS | `0100–01FF` | `0101–0108`, `010A–010C`, `0111`, `0114`, `0130–0138`, `01F2`; **`0101` baidid 41–44 ja 45–48 = kumulatiivne laetud/tühjendatud energia × 0,1 kWh** (9 903,5 / 9 207,6 kWh, klapib Car Scanneriga) ✓ |
+
+Päikesekatuse kogutoodangut (421,80 kWh) ei leitud üheski vastuses. Tõenäoliselt arvutab selle
+infosüsteem CAN-siini teadetest ja seda ei saa diagnostikapäringuga lugeda. Lahendus: **rakendus arvutab
+ise** päikeseenergia, integreerides hetkevõimsust aja järgi, ning kasutaja saab seadetes sisestada
+auto näidu algväärtuseks.
+
+Hetkevõimsuse kandidaat `E011`-st: M–N (paneeli pinge, V) × R (×0,001 A?) annab 20–26 W, mis on
+samas suurusjärgus kui kogutoodangu järgi arvutatud keskmine ~40 W. Kinnitamiseks on vaja öist mõõtmist.
 
 Pilvise päeva kohta tunduvad 149 W ja 114 W liiga suured (näidik 1/3, katuse tippvõimsus ~200 W);
 need ei pruugi olla hetkevõimsus. Ühe vastuse põhjal ei saa valemeid kinnitada; vaja on võrdlust
