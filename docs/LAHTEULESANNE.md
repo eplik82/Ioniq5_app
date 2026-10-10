@@ -103,7 +103,7 @@ Kandidaadid, mida järgmiste vastustega kontrollida:
 | Päikesekatuse tase (näidik 1/3) | E, F (7–8) või 29–31 | `01` | tase 1 | Peab muutuma koos näidikuga |
 | Kogunenud energia (loendur) | O, P (17–18) või R–U (20–23) | `19 91`, `7B 7F D2 51` | teadmata | Suured väärtused, võivad olla loendurid |
 
-**Teine vastus** (`…_sample2.txt`, sama päev, pilves) võrreldes esimesega:
+**Teine vastus** (`…_sample2.txt`, sama päev, pilves, **auto sõitis**) võrreldes esimesega:
 
 | Bait | 1. → 2. | Märkus |
 |---|---|---|
