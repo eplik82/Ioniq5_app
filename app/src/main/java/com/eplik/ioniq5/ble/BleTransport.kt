@@ -1,5 +1,6 @@
 package com.eplik.ioniq5.ble
 
+import com.eplik.ioniq5.R
 import android.annotation.SuppressLint
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothGatt
@@ -70,7 +71,7 @@ class BleTransport(
         override fun onServicesDiscovered(g: BluetoothGatt, status: Int) {
             val ch = findCharacteristic(g)
             if (status != BluetoothGatt.GATT_SUCCESS || ch == null) {
-                ready?.completeExceptionally(IOException("Adapteri teenust FFE0/FFE1 ei leitud"))
+                ready?.completeExceptionally(IOException(context.getString(R.string.error_service_not_found)))
                 return
             }
             characteristic = ch
@@ -112,7 +113,7 @@ class BleTransport(
         } catch (e: Exception) {
             closeGatt()
             _state.value = TransportState.FAILED
-            throw if (e is IOException) e else IOException("Adapteriga ei saanud ühendust", e)
+            throw if (e is IOException) e else IOException(context.getString(R.string.error_connect_failed), e)
         }
     }
 
@@ -122,8 +123,8 @@ class BleTransport(
     }
 
     override suspend fun write(data: ByteArray) = writeMutex.withLock {
-        val g = gatt ?: throw IOException("Pole ühendatud")
-        val ch = characteristic ?: throw IOException("Pole ühendatud")
+        val g = gatt ?: throw IOException(context.getString(R.string.error_not_connected))
+        val ch = characteristic ?: throw IOException(context.getString(R.string.error_not_connected))
         val writeType = if (ch.properties and BluetoothGattCharacteristic.PROPERTY_WRITE != 0) {
             BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT
         } else {
@@ -131,9 +132,9 @@ class BleTransport(
         }
         for (chunk in data.toList().chunked(maxChunk)) {
             writeDone.tryReceive() // vana tulemus minema
-            if (!writeCharacteristic(g, ch, chunk.toByteArray(), writeType)) throw IOException("Kirjutamine ebaõnnestus")
+            if (!writeCharacteristic(g, ch, chunk.toByteArray(), writeType)) throw IOException(context.getString(R.string.error_write_failed))
             val ok = withTimeout(WRITE_TIMEOUT_MS) { writeDone.receive() }
-            if (!ok) throw IOException("Kirjutamine ebaõnnestus")
+            if (!ok) throw IOException(context.getString(R.string.error_write_failed))
         }
     }
 

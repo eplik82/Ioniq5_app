@@ -67,6 +67,19 @@ fun SettingsScreen(
             )
         }
 
+        Section(stringResource(R.string.setting_low_soc) + ": " + formatValue(settings.lowSocPercent, 0) + " %") {
+            Slider(
+                value = settings.lowSocPercent.toFloat(),
+                onValueChange = { v -> onChange { it.copy(lowSocPercent = v.toInt().toDouble()) } },
+                valueRange = 5f..30f,
+            )
+        }
+
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(stringResource(R.string.setting_alert_notifications), style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
+            Switch(checked = settings.alertNotifications, onCheckedChange = { v -> onChange { it.copy(alertNotifications = v) } })
+        }
+
         Section(stringResource(R.string.setting_theme)) {
             FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 listOf(

@@ -17,7 +17,7 @@ android {
         // CI annab igale ehitusele kasvava numbri, et uus APK paigalduks vana peale
         val build = System.getenv("GITHUB_RUN_NUMBER")?.toIntOrNull() ?: 1
         versionCode = build
-        versionName = "0.3.$build"
+        versionName = "1.0.$build"
     }
 
     signingConfigs {

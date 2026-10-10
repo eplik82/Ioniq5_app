@@ -125,6 +125,7 @@ class CarRenderer(private val carContext: CarContext) : DefaultLifecycleObserver
                 app.connection.status.value,
                 app.connection.sleeping.value,
                 app.settings.settings.value,
+                app.alerts.alerts.value,
             )
         } finally {
             s.unlockCanvasAndPost(canvas)

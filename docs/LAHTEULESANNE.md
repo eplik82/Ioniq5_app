@@ -1,6 +1,6 @@
 # Lähteülesanne: Ioniq 5 CAN-andmete Android-rakendus
 
-Versioon 0.19 (mustand) · 2026-10-10
+Versioon 0.20 · 2026-10-10
 
 ## 1. Eesmärk
 
@@ -384,6 +384,26 @@ foreground service'is.
 - Rakendus ei tohi segada auto tööd: pollimissageduse piir ja päringute vaheline paus.
 - Kasutaja vastutus: rakendust ei kasutata sõidu ajal juhi poolt (hoiatus esmakäivitusel).
 
+### 9.1 Hoiatused (etapp 6)
+
+Hoiatusi hindab `core/alert/AlertMonitor` igal uuel näidul. Igal hoiatusel on hüsterees, et see ei
+vilguks piiri lähedal. Üle 10 min vanad väärtused hoiatuse olekut ei muuda.
+
+| Hoiatus | Sisse | Välja | Raskus |
+|---|---|---|---|
+| Madal rehvirõhk (iga ratas) | < seadetes piir (vaikimisi 2,2 bar) | ≥ piir + 0,05 bar | hoiatus; kriitiline < piir − 0,3 |
+| Rehvirõhkude erinevus | > 0,3 bar | < 0,25 bar | info |
+| 12 V aku | < 12,0 V | ≥ 12,2 V | hoiatus; kriitiline < 11,8 V |
+| Aku kuum (max temperatuur) | ≥ 45 °C | < 43 °C | hoiatus; kriitiline ≥ 50 °C |
+| Aku külm (min temperatuur) | ≤ 0 °C | > 2 °C | info |
+| Elementide pingevahe | ≥ 80 mV (ainult voolul < 30 A) | < 60 mV | hoiatus |
+| Madal laetus | ≤ seadetes piir (vaikimisi 10 %) | > piir + 2 % | hoiatus; kriitiline ≤ pool piirist |
+
+- **Telefonis:** hoiatused on ekraani ülaosas; puudutus avab vastava vaate (rehvid, aku, ülevaade).
+- **Teavitused:** uus hoiatus või kriitiline hoiatus annab telefoni teavituse (kanal „Hoiatused”,
+  kõrge tähtsus). Seadetes saab teavitused välja lülitada. Info-tasemel hoiatused teavitust ei anna.
+- **Android Autos:** kõige raskem hoiatus on ekraani all olekureal (kriitiline punaselt).
+
 ## 10. Otsused
 
 | Küsimus | Otsus |
@@ -396,7 +416,9 @@ foreground service'is.
 | Vedu | Nelikvedu (AWD), kaks mootorit |
 | Välisteenused | Praegu ei ole vaja (ABRP, MQTT jms) |
 | Lähteandmed | Car Scanner PRO logid (sisseehitatud e-GMP profiil) |
-| Kasutajaliidese keel | Eesti ja inglise |
+| Kasutajaliidese keel | Eesti ja inglise; kõik kasutajale nähtavad tekstid (ka veateated) on ressurssides, diagnostika toorlogi on eesti keeles |
+| APK allkiri | Ühine võti `app/debug.keystore`, et uuendused paigalduksid vana peale. Isiklikuks kasutuseks piisab; Play poodi minekul tuleb teha eraldi salajane väljalaskevõti |
+| Versioon | 1.0.x, kus x on CI ehituse number (`versionCode`) |
 
 ## 11. Avatud küsimused
 

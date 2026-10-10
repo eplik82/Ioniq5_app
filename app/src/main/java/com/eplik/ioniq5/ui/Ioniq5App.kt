@@ -50,6 +50,13 @@ import androidx.compose.ui.text.style.TextOverflow
 import com.eplik.ioniq5.R
 import com.eplik.ioniq5.ui.screens.OverviewScreen
 import com.eplik.ioniq5.ui.screens.PlaceholderScreen
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.TextButton
+import com.eplik.ioniq5.core.alert.AlertType
+import com.eplik.ioniq5.ui.components.AlertBanner
 
 private enum class Tab(@StringRes val label: Int, val icon: ImageVector, val stage: Int) {
     OVERVIEW(R.string.tab_overview, Icons.Filled.Speed, 2),
@@ -69,15 +76,11 @@ fun Ioniq5App() {
     var showHistory by rememberSaveable { mutableStateOf(false) }
     val context = LocalContext.current
     val status by connection.status.collectAsStateWithLifecycle()
-    val readings by connection.readings.collectAsStateWithLifecycle()
-    val chargeSession by connection.chargeSession.collectAsStateWithLifecycle()
-    val solarEnergyWh by connection.solarEnergyWh.collectAsStateWithLifecycle()
     var selected by rememberSaveable { mutableStateOf(Tab.OVERVIEW) }
     var showConnection by rememberSaveable { mutableStateOf(false) }
-    val sleeping by connection.sleeping.collectAsStateWithLifecycle()
+    val alerts by app.alerts.alerts.collectAsStateWithLifecycle()
     // Käivitamisel ühendu viimati kasutatud adapteriga
     LaunchedEffect(Unit) { if (settings.autoConnect) connection.connectToLast() }
-    val capacityKwh = settings.capacityKwh(readings.cellVoltages().size)
 
     // Teavituse luba (Android 13+) taustateenuse teavituse jaoks
     val notificationLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { }
@@ -91,6 +94,19 @@ fun Ioniq5App() {
     // Ühenduse ajal hoiab taustateenus rakenduse elus (lugemine ja salvestus ka kustunud ekraaniga)
     LaunchedEffect(status) {
         if (status is ConnectionStatus.Connected) runCatching { MonitorService.start(context) }
+    }
+    // Esmakäivitusel ohutushoiatus (lähteülesanne, jaotis 9)
+    if (!settings.safetyAccepted) {
+        AlertDialog(
+            onDismissRequest = {},
+            title = { Text(stringResource(R.string.safety_title)) },
+            text = { Text(stringResource(R.string.safety_text)) },
+            confirmButton = {
+                TextButton(onClick = { app.settings.update { it.copy(safetyAccepted = true) } }) {
+                    Text(stringResource(R.string.safety_accept))
+                }
+            },
+        )
     }
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
@@ -125,33 +141,80 @@ fun Ioniq5App() {
             }
         },
     ) { padding ->
-        val modifier = Modifier.padding(padding)
-        when {
-            showConnection -> ConnectionScreen(connection, onBack = { showConnection = false }, modifier = modifier)
-            showHistory -> HistoryScreen(app.recordings, onBack = { showHistory = false }, modifier = modifier)
-            showSettings -> SettingsScreen(
-                settings,
-                detectedCapacityKwh = settings.copy(batteryCapacityKwh = null).capacityKwh(readings.cellVoltages().size),
-                onChange = { app.settings.update(it) },
-                onBack = { showSettings = false },
-                modifier = modifier,
-            )
-            selected == Tab.OVERVIEW -> OverviewScreen(
-                status,
-                readings,
-                sleeping = sleeping,
-                onWake = { connection.wakePolling() },
-                onConnectionClick = { showConnection = true },
-                onSettingsClick = { showSettings = true },
-                onHistoryClick = { showHistory = true },
-                modifier = modifier,
-            )
-            selected == Tab.BATTERY -> BatteryScreen(readings, modifier)
-            selected == Tab.AXLES -> AxlesScreen(readings, settings.pressureUnit, settings.lowPressureBar, modifier)
-            selected == Tab.CHARGING -> ChargingScreen(readings, chargeSession, capacityKwh, modifier)
-            selected == Tab.SOLAR -> SolarScreen(readings, solarEnergyWh, modifier)
-            selected == Tab.DIAGNOSTICS -> DiagnosticsScreen(onConnectionClick = { showConnection = true }, modifier = modifier)
-            else -> PlaceholderScreen(stringResource(selected.label), selected.stage, modifier)
+        val overlay = showConnection || showHistory || showSettings
+        Column(Modifier.padding(padding).fillMaxSize()) {
+            if (!overlay) {
+                AlertBanner(alerts, settings.pressureUnit, onClick = { alert ->
+                    selected = when (alert.type) {
+                        AlertType.TIRE_LOW, AlertType.TIRE_IMBALANCE -> Tab.AXLES
+                        AlertType.AUX_LOW, AlertType.SOC_LOW -> Tab.OVERVIEW
+                        else -> Tab.BATTERY
+                    }
+                })
+            }
+            Box(Modifier.weight(1f)) {
+                AppContent(
+                    app, selected, showConnection, showHistory, showSettings,
+                    onCloseConnection = { showConnection = false },
+                    onCloseHistory = { showHistory = false },
+                    onCloseSettings = { showSettings = false },
+                    onOpenConnection = { showConnection = true },
+                    onOpenSettings = { showSettings = true },
+                    onOpenHistory = { showHistory = true },
+                )
+            }
         }
+    }
+}
+
+@Composable
+private fun AppContent(
+    app: Ioniq5Application,
+    selected: Tab,
+    showConnection: Boolean,
+    showHistory: Boolean,
+    showSettings: Boolean,
+    onCloseConnection: () -> Unit,
+    onCloseHistory: () -> Unit,
+    onCloseSettings: () -> Unit,
+    onOpenConnection: () -> Unit,
+    onOpenSettings: () -> Unit,
+    onOpenHistory: () -> Unit,
+) {
+    val connection = app.connection
+    val settings by app.settings.settings.collectAsStateWithLifecycle()
+    val status by connection.status.collectAsStateWithLifecycle()
+    val readings by connection.readings.collectAsStateWithLifecycle()
+    val chargeSession by connection.chargeSession.collectAsStateWithLifecycle()
+    val solarEnergyWh by connection.solarEnergyWh.collectAsStateWithLifecycle()
+    val sleeping by connection.sleeping.collectAsStateWithLifecycle()
+    val capacityKwh = settings.capacityKwh(readings.cellVoltages().size)
+    val modifier = Modifier.fillMaxSize()
+    when {
+        showConnection -> ConnectionScreen(connection, onBack = onCloseConnection, modifier = modifier)
+        showHistory -> HistoryScreen(app.recordings, onBack = onCloseHistory, modifier = modifier)
+        showSettings -> SettingsScreen(
+            settings,
+            detectedCapacityKwh = settings.copy(batteryCapacityKwh = null).capacityKwh(readings.cellVoltages().size),
+            onChange = { app.settings.update(it) },
+            onBack = onCloseSettings,
+            modifier = modifier,
+        )
+        selected == Tab.OVERVIEW -> OverviewScreen(
+            status,
+            readings,
+            sleeping = sleeping,
+            onWake = { connection.wakePolling() },
+            onConnectionClick = onOpenConnection,
+            onSettingsClick = onOpenSettings,
+            onHistoryClick = onOpenHistory,
+            modifier = modifier,
+        )
+        selected == Tab.BATTERY -> BatteryScreen(readings, modifier)
+        selected == Tab.AXLES -> AxlesScreen(readings, settings.pressureUnit, settings.lowPressureBar, modifier)
+        selected == Tab.CHARGING -> ChargingScreen(readings, chargeSession, capacityKwh, modifier)
+        selected == Tab.SOLAR -> SolarScreen(readings, solarEnergyWh, modifier)
+        selected == Tab.DIAGNOSTICS -> DiagnosticsScreen(onConnectionClick = onOpenConnection, modifier = modifier)
+        else -> PlaceholderScreen(stringResource(selected.label), selected.stage, modifier)
     }
 }

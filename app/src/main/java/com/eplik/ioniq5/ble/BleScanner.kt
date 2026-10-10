@@ -1,5 +1,6 @@
 package com.eplik.ioniq5.ble
 
+import com.eplik.ioniq5.R
 import android.annotation.SuppressLint
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothManager
@@ -22,7 +23,7 @@ fun scanBleDevices(context: Context): Flow<FoundDevice> = callbackFlow {
     val adapter = context.getSystemService(BluetoothManager::class.java)?.adapter
     val scanner = adapter?.bluetoothLeScanner
     if (adapter == null || !adapter.isEnabled || scanner == null) {
-        close(IllegalStateException("Bluetooth on välja lülitatud"))
+        close(IllegalStateException(context.getString(R.string.error_bluetooth_off)))
         return@callbackFlow
     }
     val callback = object : ScanCallback() {

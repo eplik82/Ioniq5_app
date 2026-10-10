@@ -1,5 +1,6 @@
 package com.eplik.ioniq5.connection
 
+import com.eplik.ioniq5.R
 import android.Manifest
 import android.bluetooth.BluetoothManager
 import android.content.Context
@@ -133,7 +134,7 @@ class ConnectionManager(
             startPolling(driver)
             newTransport.state.drop(1).first { it != TransportState.CONNECTED }
             closeCurrent()
-            if (!userDisconnected) _status.value = ConnectionStatus.Failed("Ühendus katkes")
+            if (!userDisconnected) _status.value = ConnectionStatus.Failed(context.getString(R.string.error_connection_lost))
             true
         } catch (e: Exception) {
             if (e is kotlinx.coroutines.CancellationException) throw e

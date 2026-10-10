@@ -8,6 +8,9 @@ import android.graphics.Rect
 import android.graphics.RectF
 import android.graphics.Typeface
 import com.eplik.ioniq5.R
+import com.eplik.ioniq5.alert.text
+import com.eplik.ioniq5.core.alert.Alert
+import com.eplik.ioniq5.core.alert.Severity
 import com.eplik.ioniq5.connection.ConnectionStatus
 import com.eplik.ioniq5.core.pid.Ioniq5Pids as P
 import com.eplik.ioniq5.core.poll.Readings
@@ -35,6 +38,7 @@ class CarDrawing(private val context: Context, dark: Boolean) {
     private val pixelOff = if (dark) 0xFF2A3036.toInt() else 0xFFDDE2E6.toInt()
     private val accent = 0xFF2FD1C5.toInt()
     private val warning = 0xFFFFB547.toInt()
+    private val critical = 0xFFFF6B6B.toInt()
     private val cold = 0xFF3D6FD8.toInt()
     private val regen = 0xFF7CD957.toInt()
 
@@ -53,6 +57,7 @@ class CarDrawing(private val context: Context, dark: Boolean) {
         status: ConnectionStatus,
         sleeping: Boolean,
         settings: Settings,
+        alerts: List<Alert> = emptyList(),
     ) {
         r = readings
         now = System.currentTimeMillis()
@@ -65,13 +70,16 @@ class CarDrawing(private val context: Context, dark: Boolean) {
             CarPage.WHEELS -> wheels(canvas, box, settings)
             CarPage.CHARGING -> charging(canvas, box, settings)
         }
-        // Olekurida all
+        // Olekurida all: ühenduse olek või kõige raskem hoiatus
+        val alert = alerts.firstOrNull { it.severity != Severity.INFO }
         val statusText = when {
             status !is ConnectionStatus.Connected -> context.getString(R.string.connection_disconnected)
+            alert != null -> "⚠ " + alert.text(context, settings.pressureUnit)
             sleeping -> context.getString(R.string.sleep_banner)
             else -> null
         }
-        statusText?.let { label(canvas, it, box.left, box.bottom, area.height() * 0.035f, warning) }
+        val statusColor = if (alert?.severity == Severity.CRITICAL && status is ConnectionStatus.Connected) critical else warning
+        statusText?.let { label(canvas, it, box.left, box.bottom, area.height() * 0.035f, statusColor) }
     }
 
     // ---------- Lehed ----------

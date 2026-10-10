@@ -1,6 +1,7 @@
 package com.eplik.ioniq5
 
 import android.app.Application
+import com.eplik.ioniq5.alert.AlertManager
 import com.eplik.ioniq5.connection.ConnectionManager
 import com.eplik.ioniq5.record.RecordingManager
 import com.eplik.ioniq5.settings.AppSettings
@@ -14,8 +15,11 @@ class Ioniq5Application : Application() {
 
     val recordings: RecordingManager by lazy { RecordingManager(this, connection, MainScope()) }
 
+    val alerts: AlertManager by lazy { AlertManager(this, connection, settings, MainScope()) }
+
     override fun onCreate() {
         super.onCreate()
         recordings.start()
+        alerts.start()
     }
 }
