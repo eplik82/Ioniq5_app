@@ -1,6 +1,6 @@
 # Lähteülesanne: Ioniq 5 CAN-andmete Android-rakendus
 
-Versioon 0.9 (mustand) · 2026-10-10
+Versioon 0.10 (mustand) · 2026-10-10
 
 ## 1. Eesmärk
 
@@ -113,6 +113,28 @@ Kandidaadid, mida järgmiste vastustega kontrollida:
 | P (18), R (20), T (22), W (25) | väikesed muutused | võivad olla vool, võimsus või temperatuurid |
 | Q (19) | 114 → 114 | muutumatu |
 | V (24) | 34 → 34 | muutumatu; sobib „3,4–3,5 km” kandidaadiga, kinnitust vajab kasv |
+
+**Rakenduse DID-skaneering** (10.10 13:18–13:20, pilves; `testdata/raw/iccu_7E5_did-scan_E000-E0FF_2026-10-10_1320.txt`):
+ICCU vastab DID-idele `E001`, `E002`, `E003`, `E011`, `E021`, `E031`, `E032`, `E033`, `E034`, `E041`;
+kõigile teistele vahemikus `E000–E0FF` tuleb `7F 22 31` (requestOutOfRange).
+
+`E011` neli vastust kõrvuti:
+
+| Mõõtmine | J | K–L ÷100 | M–N ÷10 | O–P ÷10 | Q | R | V | W |
+|---|---|---|---|---|---|---|---|---|
+| 13:03 | 120 | 149,26 | 164,5 | 654,5 | 57 | 123 | 34 | 77 |
+| sõit | 119 | 149,24 | 184,4 | 651,8 | 57 | 127 | 34 | 75 |
+| 13:18 | 117 | 149,28 | 166,4 | 647,2 | 57 | 126 | 34 | 74 |
+| 13:19 | 117 | 149,33 | 197,2 | 649,0 | 57 | 132 | 34 | 81 |
+
+Järeldused (esialgsed):
+- **O–P ÷ 10 = kõrgepinge aku pinge** (647–655 V): 180 elementi × ~3,6 V sobib SOC 47%-ga.
+  Sama suurusjärk (`0x1965`, `0x1968`, `0x1995`) on ka `E001`, `E002`, `E003` vastustes.
+- **M–N ÷ 10 = tõenäoliselt päikesepaneeli pinge** (164–197 V, muutub kiiresti).
+- K–L püsib ~149,3 juures ega ole hetkevõimsus; Q (57) ja V (34) ei muutunud.
+- `E041` sisaldab 9 kirjet kujul `0043 000A xxxx`, kus `xxxx` kasvab (3F27 → 4CBA):
+  võib olla päikeseenergia ajalugu või loendurid.
+- `E033` sisaldab kaks korda väärtust `0008BC4B` (572 491): võib olla kogusumma (nt Wh).
 
 Pilvise päeva kohta tunduvad 149 W ja 114 W liiga suured (näidik 1/3, katuse tippvõimsus ~200 W);
 need ei pruugi olla hetkevõimsus. Ühe vastuse põhjal ei saa valemeid kinnitada; vaja on võrdlust

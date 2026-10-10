@@ -28,6 +28,7 @@ import com.eplik.ioniq5.Ioniq5Application
 import com.eplik.ioniq5.ui.diagnostics.DiagnosticsScreen
 import com.eplik.ioniq5.ui.screens.ConnectionScreen
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
 import com.eplik.ioniq5.R
 import com.eplik.ioniq5.ui.screens.OverviewScreen
 import com.eplik.ioniq5.ui.screens.PlaceholderScreen
@@ -58,7 +59,15 @@ fun Ioniq5App() {
                             showConnection = false
                         },
                         icon = { Icon(tab.icon, contentDescription = null) },
-                        label = { Text(stringResource(tab.label)) },
+                        label = {
+                            Text(
+                                stringResource(tab.label),
+                                style = MaterialTheme.typography.labelSmall,
+                                maxLines = 1,
+                                softWrap = false,
+                                overflow = TextOverflow.Ellipsis,
+                            )
+                        },
                         colors = NavigationBarItemDefaults.colors(
                             selectedIconColor = MaterialTheme.colorScheme.primary,
                             selectedTextColor = MaterialTheme.colorScheme.primary,

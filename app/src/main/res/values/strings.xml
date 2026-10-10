@@ -5,7 +5,7 @@
     <string name="tab_overview">Overview</string>
     <string name="tab_battery">Battery</string>
     <string name="tab_charging">Charging</string>
-    <string name="tab_solar">Solar roof</string>
+    <string name="tab_solar">Solar</string>
     <string name="tab_diagnostics">Diagnostics</string>
     <string name="settings">Settings</string>
 

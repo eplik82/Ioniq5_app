@@ -5,7 +5,7 @@
     <string name="tab_overview">Ülevaade</string>
     <string name="tab_battery">Aku</string>
     <string name="tab_charging">Laadimine</string>
-    <string name="tab_solar">Päikesekatus</string>
+    <string name="tab_solar">Päike</string>
     <string name="tab_diagnostics">Diagnostika</string>
     <string name="settings">Seaded</string>
 
