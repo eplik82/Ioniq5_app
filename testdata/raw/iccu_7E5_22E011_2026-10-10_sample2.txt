@@ -1,5 +1,5 @@
 # ICCU (7E5 -> 7ED), päring 22E011, Car Scanneri terminal, 2026-10-10 pärast 13:03. Auto sõitis, ilm sama (pilves).
-# Auto näit tõenäoliselt sama: päikesekatuse näidik 1/3, päikeselt +3,5 km.
+# Auto näit tõenäoliselt sama: päikesekatuse näidik 1/3.
 7ED103162E011FFFFFF
 7ED21F8010100000077
 7ED223A4C0734197639

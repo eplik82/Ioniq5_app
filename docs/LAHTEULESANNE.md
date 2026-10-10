@@ -1,6 +1,6 @@
 # Lähteülesanne: Ioniq 5 CAN-andmete Android-rakendus
 
-Versioon 0.10 (mustand) · 2026-10-10
+Versioon 0.11 (mustand) · 2026-10-10
 
 ## 1. Eesmärk
 
@@ -92,14 +92,14 @@ Rakenduse ISO-TP kokkupanek ja baitide asukohad on selle vastusega testitud (`So
 | Solar roof voltage | M, N (15–16) | `06 6D` | 164,5 V (logis 279–303 V) |
 | Solar to High Voltage | Q (19) | `39` | 114 W (logis 112 W) |
 
-**Auto enda näit samal ajal** (infosüsteemi „Solar roof” vaade): päikesekatuse näidik 1/3,
-päikeselt saadud **+3,5 km**, aku 47%.
+**Auto enda näit samal ajal** (infosüsteemi „Solar roof” vaade): päikesekatuse näidik 1/3, aku 47%.
+(Sama vaate „3,5 km Elektrum” on navigatsiooni kaugus lähima laadijani, mitte päikeselt saadud läbisõit:
+hiljem näitas sama koht „9,9 km Alexela”.)
 
 Kandidaadid, mida järgmiste vastustega kontrollida:
 
 | Kandidaat | Baidid | Toorväärtus | Tõlgendus | Põhjendus |
 |---|---|---|---|---|
-| Päikeselt saadud läbisõit | V (24) | `22` = 34 | 3,4 km (×0,1) | Auto näitas veidi hiljem 3,5 km |
 | Päikesekatuse tase (näidik 1/3) | E, F (7–8) või 29–31 | `01` | tase 1 | Peab muutuma koos näidikuga |
 | Kogunenud energia (loendur) | O, P (17–18) või R–U (20–23) | `19 91`, `7B 7F D2 51` | teadmata | Suured väärtused, võivad olla loendurid |
 
@@ -112,7 +112,7 @@ Kandidaadid, mida järgmiste vastustega kontrollida:
 | M, N (15–16) | 164,5 → 184,4 V | muutub kiiresti: tõenäoliselt päikesepaneeli pinge |
 | P (18), R (20), T (22), W (25) | väikesed muutused | võivad olla vool, võimsus või temperatuurid |
 | Q (19) | 114 → 114 | muutumatu |
-| V (24) | 34 → 34 | muutumatu; sobib „3,4–3,5 km” kandidaadiga, kinnitust vajab kasv |
+| V (24) | 34 → 34 | muutumatu (3,5 km oli navigatsiooni kaugus, mitte selle bait) |
 
 **Rakenduse DID-skaneering** (10.10 13:18–13:20, pilves; `testdata/raw/iccu_7E5_did-scan_E000-E0FF_2026-10-10_1320.txt`):
 ICCU vastab DID-idele `E001`, `E002`, `E003`, `E011`, `E021`, `E031`, `E032`, `E033`, `E034`, `E041`;
@@ -132,9 +132,16 @@ Järeldused (esialgsed):
   Sama suurusjärk (`0x1965`, `0x1968`, `0x1995`) on ka `E001`, `E002`, `E003` vastustes.
 - **M–N ÷ 10 = tõenäoliselt päikesepaneeli pinge** (164–197 V, muutub kiiresti).
 - K–L püsib ~149,3 juures ega ole hetkevõimsus; Q (57) ja V (34) ei muutunud.
-- `E041` sisaldab 9 kirjet kujul `0043 000A xxxx`, kus `xxxx` kasvab (3F27 → 4CBA):
-  võib olla päikeseenergia ajalugu või loendurid.
-- `E033` sisaldab kaks korda väärtust `0008BC4B` (572 491): võib olla kogusumma (nt Wh).
+- `E041` on **sündmuste ajalugu läbisõiduga**: kirjed `kood(2) + läbisõit(4) × 0,1 km`, nt
+  `0043 000A4CBA` = kood 0x43, 67 500,2 km (odomeeter näitas 13:27 67 533 km). Koodid 0x43 ja 0x48.
+  Tõenäoliselt laadimis- või rikkesündmused, mitte päikesekatus.
+- `E033` sisaldab samuti läbisõite: `00087CFD` = 55 628,5 km, `0008BC4B` = 57 249,1 km (sündmuste ajalugu).
+
+**Auto näidud 10.10 13:23–13:27:** päikesekatuse kogutoodang (Energy information → „Total cumulative
+power generation”) **421,79 kWh**; odomeeter 67 533–67 534 km; aku 38%.
+Väärtust 421,79 kWh (nt 42 179, 421 790 või 4 217 900) ICCU `E0xx` vastustes **ei leidu**. Kogutoodang
+võib olla mõnes teises ICCU DID-vahemikus või teises juhtplokis (nt infosüsteem või VCMS); järgmine
+samm on ECU-skaneerimine ja ICCU teiste vahemike (`0100–01FF`, `B000–B0FF`, `C000–C0FF`, `F100–F1FF`) skaneerimine.
 
 Pilvise päeva kohta tunduvad 149 W ja 114 W liiga suured (näidik 1/3, katuse tippvõimsus ~200 W);
 need ei pruugi olla hetkevõimsus. Ühe vastuse põhjal ei saa valemeid kinnitada; vaja on võrdlust
