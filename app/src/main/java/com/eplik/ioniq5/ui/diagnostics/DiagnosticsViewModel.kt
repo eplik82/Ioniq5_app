@@ -1,6 +1,14 @@
 package com.eplik.ioniq5.ui.diagnostics
 
+import android.Manifest
 import android.app.Application
+import android.content.pm.PackageManager
+import android.location.Location
+import android.location.LocationListener
+import android.location.LocationManager
+import android.os.Bundle
+import android.os.Looper
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.eplik.ioniq5.Ioniq5Application
@@ -51,6 +59,55 @@ class DiagnosticsViewModel(application: Application) : AndroidViewModel(applicat
     private val _captureFile = MutableStateFlow<File?>(null)
     val captureFile: StateFlow<File?> = _captureFile.asStateFlow()
 
+    // GPS arenduslogi jaoks: read kogutakse järjekorda ja kirjutatakse faili logitsükli sees
+    private val gpsLines = ConcurrentLinkedQueue<String>()
+    private var locationListener: LocationListener? = null
+    private var lastLocation: Location? = null
+
+    private fun startGps() {
+        val app = getApplication<Application>()
+        if (ContextCompat.checkSelfPermission(app, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            gpsLines.add("# GPS: asukohaluba puudub")
+            return
+        }
+        val manager = app.getSystemService(LocationManager::class.java) ?: return
+        val time = SimpleDateFormat("HH:mm:ss.SSS", Locale.US)
+        val listener = object : LocationListener {
+            override fun onLocationChanged(location: Location) {
+                gpsLines.add(formatLocation(location, lastLocation, time))
+                lastLocation = location
+            }
+
+            override fun onProviderEnabled(provider: String) = Unit
+
+            override fun onProviderDisabled(provider: String) {
+                gpsLines.add("# GPS: välja lülitatud")
+            }
+
+            @Deprecated("API 29")
+            override fun onStatusChanged(provider: String?, status: Int, extras: Bundle?) = Unit
+        }
+        try {
+            manager.requestLocationUpdates(LocationManager.GPS_PROVIDER, GPS_INTERVAL_MS, 0f, listener, Looper.getMainLooper())
+            locationListener = listener
+        } catch (e: SecurityException) {
+            gpsLines.add("# GPS: ${e.message}")
+        } catch (e: IllegalArgumentException) {
+            gpsLines.add("# GPS: seadmel puudub")
+        }
+    }
+
+    private fun stopGps() {
+        locationListener?.let { getApplication<Application>().getSystemService(LocationManager::class.java)?.removeUpdates(it) }
+        locationListener = null
+        lastLocation = null
+    }
+
+    override fun onCleared() {
+        stopGps()
+        super.onCleared()
+    }
+
     /**
      * Arenduslogi: küsib [DevCapture.REQUESTS] ringiratast, kuni peatatakse, ja kirjutab toorvastused
      * ajatemplitega faili. Märkused lisatakse logisse järgmise päringu eel.
@@ -64,11 +121,13 @@ class DiagnosticsViewModel(application: Application) : AndroidViewModel(applicat
         val file = File(File(app.cacheDir, "logs").apply { mkdirs() }, "ioniq5_dev_$stamp.txt")
         val version = runCatching { app.packageManager.getPackageInfo(app.packageName, 0).versionName }.getOrNull()
         pendingNotes.clear()
+        gpsLines.clear()
         if (note.isNotBlank()) pendingNotes.add(note)
         _message.value = null
         _capturing.value = true
         _captureFile.value = file
         connection.pausePolling()
+        startGps()
         captureJob = viewModelScope.launch(Dispatchers.IO) {
             file.bufferedWriter().use { w ->
                 w.write("# Ioniq 5 Monitor arenduslogi $stamp, versioon $version\n")
@@ -82,6 +141,11 @@ class DiagnosticsViewModel(application: Application) : AndroidViewModel(applicat
                         while (true) {
                             val n = pendingNotes.poll() ?: break
                             w.write("# MÄRKUS ${time.format(Date())}: $n\n")
+                        }
+                        while (true) {
+                            val g = gpsLines.poll() ?: break
+                            w.write(g)
+                            w.write("\n")
                         }
                         val lines = try {
                             elm.consoleRequest(r.ecu, r.request)
@@ -97,6 +161,7 @@ class DiagnosticsViewModel(application: Application) : AndroidViewModel(applicat
             }
         }.also {
             it.invokeOnCompletion {
+                viewModelScope.launch(Dispatchers.Main) { stopGps() }
                 connection.resumePolling()
                 _progress.value = null
                 _capturing.value = false
@@ -253,4 +318,37 @@ class DiagnosticsViewModel(application: Application) : AndroidViewModel(applicat
             }
         }
     }
+
+    private companion object {
+        const val GPS_INTERVAL_MS = 1_000L
+    }
+}
+
+/**
+ * GPS-rida arenduslogi jaoks: aeg, koordinaadid, kiirus, suund, täpsus, kõrgus ning eelmise punkti
+ * suhtes arvutatud kiirendus ja pöörde kiirus.
+ */
+internal fun formatLocation(loc: Location, prev: Location?, time: SimpleDateFormat): String {
+    val sb = StringBuilder("# GPS ")
+    sb.append(time.format(Date(loc.time)))
+    sb.append(String.format(Locale.US, " %.6f %.6f", loc.latitude, loc.longitude))
+    if (loc.hasSpeed()) sb.append(String.format(Locale.US, " kiirus %.1f km/h", loc.speed * 3.6))
+    if (loc.hasBearing()) sb.append(String.format(Locale.US, " suund %.0f°", loc.bearing))
+    if (loc.hasAccuracy()) sb.append(String.format(Locale.US, " täpsus %.0f m", loc.accuracy))
+    if (loc.hasAltitude()) sb.append(String.format(Locale.US, " kõrgus %.0f m", loc.altitude))
+    if (prev != null) {
+        val dt = (loc.time - prev.time) / 1000.0
+        if (dt > 0 && dt < 5) {
+            if (loc.hasSpeed() && prev.hasSpeed()) {
+                sb.append(String.format(Locale.US, " kiirendus %.2f m/s²", (loc.speed - prev.speed) / dt))
+            }
+            if (loc.hasBearing() && prev.hasBearing() && loc.speed > 2) {
+                var d = loc.bearing - prev.bearing
+                if (d > 180) d -= 360
+                if (d < -180) d += 360
+                sb.append(String.format(Locale.US, " pööre %.1f °/s", d / dt))
+            }
+        }
+    }
+    return sb.toString()
 }

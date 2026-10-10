@@ -1,6 +1,12 @@
 package com.eplik.ioniq5.ui.diagnostics
 
+import android.Manifest
 import android.content.ClipData
+import android.content.pm.PackageManager
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.runtime.remember
+import androidx.core.content.ContextCompat
 import android.content.ClipboardManager
 import android.content.Intent
 import android.widget.Toast
@@ -73,6 +79,23 @@ fun DiagnosticsScreen(
     val captureFile by viewModel.captureFile.collectAsStateWithLifecycle()
     var note by rememberSaveable { mutableStateOf("") }
 
+    // Arenduslogi küsib asukohaloa (GPS); ilma loata logib ilma GPS-ita
+    var pendingCaptureNote by remember { mutableStateOf<String?>(null) }
+    val locationLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
+        pendingCaptureNote?.let { viewModel.startCapture(it) }
+        pendingCaptureNote = null
+    }
+    fun startCaptureWithGps(text: String) {
+        val granted = ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) ==
+            PackageManager.PERMISSION_GRANTED
+        if (granted) {
+            viewModel.startCapture(text)
+        } else {
+            pendingCaptureNote = text
+            locationLauncher.launch(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION))
+        }
+    }
+
     fun share(file: java.io.File) {
         val uri = FileProvider.getUriForFile(context, "${context.packageName}.files", file)
         val send = Intent(Intent.ACTION_SEND)
@@ -140,7 +163,7 @@ fun DiagnosticsScreen(
             } else {
                 Button(
                     onClick = {
-                        viewModel.startCapture(note)
+                        startCaptureWithGps(note)
                         note = ""
                     },
                     enabled = connected && !busy,
