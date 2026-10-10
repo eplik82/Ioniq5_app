@@ -25,3 +25,7 @@ fun Readings.cellVoltages(): List<Double> =
         .map { value(Ioniq5Pids.cellId(it)) }
         .takeWhile { it != null && it > 1.0 }
         .map { it!! }
+
+/** Mooduli temperatuurid 1..16 (puuduvad jäetakse null-iks). */
+fun Readings.moduleTemperatures(): List<Double?> =
+    (1..Ioniq5Pids.MODULE_TEMP_COUNT).map { value(Ioniq5Pids.moduleTempId(it)) }

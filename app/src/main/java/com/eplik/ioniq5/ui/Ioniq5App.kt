@@ -7,6 +7,7 @@ import androidx.compose.material.icons.filled.BatteryChargingFull
 import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.EvStation
 import androidx.compose.material.icons.filled.Speed
+import androidx.compose.material.icons.filled.DirectionsCar
 import androidx.compose.material.icons.filled.WbSunny
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -26,6 +27,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.eplik.ioniq5.Ioniq5Application
 import com.eplik.ioniq5.ui.diagnostics.DiagnosticsScreen
+import com.eplik.ioniq5.ui.screens.AxlesScreen
 import com.eplik.ioniq5.ui.screens.BatteryScreen
 import com.eplik.ioniq5.ui.screens.ConnectionScreen
 import androidx.compose.ui.res.stringResource
@@ -37,6 +39,7 @@ import com.eplik.ioniq5.ui.screens.PlaceholderScreen
 private enum class Tab(@StringRes val label: Int, val icon: ImageVector, val stage: Int) {
     OVERVIEW(R.string.tab_overview, Icons.Filled.Speed, 2),
     BATTERY(R.string.tab_battery, Icons.Filled.BatteryChargingFull, 2),
+    AXLES(R.string.tab_axles, Icons.Filled.DirectionsCar, 3),
     CHARGING(R.string.tab_charging, Icons.Filled.EvStation, 3),
     SOLAR(R.string.tab_solar, Icons.Filled.WbSunny, 3),
     DIAGNOSTICS(R.string.tab_diagnostics, Icons.Filled.Build, 1),
@@ -85,6 +88,7 @@ fun Ioniq5App() {
             showConnection -> ConnectionScreen(connection, onBack = { showConnection = false }, modifier = modifier)
             selected == Tab.OVERVIEW -> OverviewScreen(status, readings, onConnectionClick = { showConnection = true }, modifier = modifier)
             selected == Tab.BATTERY -> BatteryScreen(readings, modifier)
+            selected == Tab.AXLES -> AxlesScreen(readings, modifier)
             selected == Tab.DIAGNOSTICS -> DiagnosticsScreen(onConnectionClick = { showConnection = true }, modifier = modifier)
             else -> PlaceholderScreen(stringResource(selected.label), selected.stage, modifier)
         }

@@ -46,4 +46,18 @@ class ScannerTest {
         assertEquals(listOf(0xE011), found.map { it.did })
         assertEquals(5, found[0].data.size)
     }
+
+    @Test
+    fun kwpScanUsesOneByteIds() = runTest {
+        val transport = transport(mapOf("2101" to "7EB0461010203"))
+        val found = DidScanner(Elm327(transport)).scan(EcuAddress(0x7E3), 0x01..0x02, service = 0x21)
+        assertEquals(listOf(0x01), found.map { it.did })
+        assertEquals(listOf("ATSH7E3", "ATCRA7EB", "2101", "2102"), transport.sent)
+    }
+
+    @Test
+    fun discoveryPlanIsReadOnly() {
+        DiscoveryPlan.STAGE3.forEach { assert(it.service == 0x22 || it.service == 0x21) }
+        assertEquals("7E3 21 01–0F", DiscoveryPlan.STAGE3[2].describe())
+    }
 }

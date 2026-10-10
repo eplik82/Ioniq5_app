@@ -53,4 +53,17 @@
     <string name="total_discharged">Tühjendatud kokku</string>
     <string name="operating_time">BMS tööaeg</string>
     <string name="cells_summary">%1$d elementi, %2$s…%3$s V</string>
+    <string name="tab_axles">Rattad</string>
+    <string name="tires_axles_title">Rehvid ja sillad</string>
+    <string name="front_axle">Ees</string>
+    <string name="rear_axle">Taga</string>
+    <string name="steering_angle">Roolinurk</string>
+    <string name="torque_split">Veojaotus ees / taga</string>
+    <string name="axles_data_note">Rehvide, rooli ja pöördemomendi andmed tulevad pärast avastusskaneeringut (Diagnostika → Avasta).</string>
+    <string name="mode_voltage">Pinge</string>
+    <string name="mode_deviation">Erinevus, mV</string>
+    <string name="tap_cell_hint">Puuduta elementi detailide nägemiseks</string>
+    <string name="selected_cell">Element %1$d: %2$s V (%3$s mV keskmisest)</string>
+    <string name="module_temps">Moodulite temperatuurid</string>
+    <string name="discover_stage3">Avasta (3. etapp)</string>
 </resources>

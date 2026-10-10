@@ -27,13 +27,37 @@ object Ioniq5Pids {
     const val CUMULATIVE_DISCHARGED_KWH = "cumulative_discharged_kwh"
     const val OPERATING_HOURS = "operating_hours"
     const val MOTOR_RPM = "motor_rpm"
+    const val MOTOR2_RPM = "motor2_rpm"
+
+    // 3. etapi signaalid: PID-id leitakse avastusskaneeringuga, seni on väärtused tühjad
+    const val TIRE_PRESSURE_FL = "tire_pressure_fl"
+    const val TIRE_PRESSURE_FR = "tire_pressure_fr"
+    const val TIRE_PRESSURE_RL = "tire_pressure_rl"
+    const val TIRE_PRESSURE_RR = "tire_pressure_rr"
+    const val TIRE_TEMP_FL = "tire_temp_fl"
+    const val TIRE_TEMP_FR = "tire_temp_fr"
+    const val TIRE_TEMP_RL = "tire_temp_rl"
+    const val TIRE_TEMP_RR = "tire_temp_rr"
+    const val STEERING_ANGLE = "steering_angle"
+    const val FRONT_MOTOR_TORQUE = "front_motor_torque"
+    const val REAR_MOTOR_TORQUE = "rear_motor_torque"
+    const val LATERAL_ACCEL = "lateral_accel"
+    const val LONGITUDINAL_ACCEL = "longitudinal_accel"
     const val ODOMETER = "odometer"
     const val ICCU_HV_VOLTAGE = "iccu_hv_voltage"
     const val SOLAR_PANEL_VOLTAGE = "solar_panel_voltage"
 
     const val CELL_COUNT_MAX = 192
+    const val MODULE_TEMP_COUNT = 16
 
     fun cellId(index: Int) = "cell_%03d".format(index)
+
+    fun moduleTempId(index: Int) = "module_temp_%02d".format(index)
+
+    private fun moduleTemp(index: Int, start: Int) = SignalDefinition(
+        moduleTempId(index), "Mooduli $index temperatuur", "Module $index temperature", "°C",
+        ParameterGroup.BATTERY, start, signed = true,
+    )
 
     private fun s(
         id: String,
@@ -67,7 +91,9 @@ object Ioniq5Pids {
             s(CUMULATIVE_DISCHARGED_KWH, "Tühjendatud kokku", "Total discharged", "kWh", ParameterGroup.BATTERY, 45, 4, scale = 0.1),
             s(OPERATING_HOURS, "BMS tööaeg", "BMS operating time", "h", ParameterGroup.BATTERY, 49, 4, scale = 1.0 / 3600),
             s(MOTOR_RPM, "Mootori pöörded", "Motor speed", "rpm", ParameterGroup.DRIVE, 56, 2, signed = true),
-        ),
+            // Kandidaat: teine (eesmine) mootor; ~115 km/h juures 0 (lahti ühendatud?)
+            s(MOTOR2_RPM, "Mootori 2 pöörded", "Motor 2 speed", "rpm", ParameterGroup.DRIVE, 58, 2, signed = true),
+        ) + (1..5).map { moduleTemp(it, 18 + it) }, // moodulid 1–5: baidid 19–23
     )
 
     private val bmsHealth = PidDefinition(
@@ -79,7 +105,10 @@ object Ioniq5Pids {
             s(SOH, "Aku tervis (SOH)", "State of health", "%", ParameterGroup.BATTERY, 28, 2, scale = 0.1),
             // Kandidaat: kontrollida auto näiduga
             s(SOC_DISPLAY, "Laetus (näidik)", "State of charge (display)", "%", ParameterGroup.BATTERY, 34, scale = 0.5),
-        ),
+        ) +
+            // Moodulid 6–12: baidid 12–18, moodulid 13–16: baidid 42–45 (Car Scanneri B06–B16 järgi)
+            (6..12).map { moduleTemp(it, it + 6) } +
+            (13..16).map { moduleTemp(it, it + 29) },
     )
 
     /** Elementide pinged: 6 päringut × kuni 32 elementi, igaüks 1 bait × 0,02 V alates baidist 7. */

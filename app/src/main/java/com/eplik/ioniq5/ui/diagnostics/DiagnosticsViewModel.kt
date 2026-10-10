@@ -8,6 +8,7 @@ import com.eplik.ioniq5.R
 import com.eplik.ioniq5.core.elm.toHex
 import com.eplik.ioniq5.core.pid.EcuAddress
 import com.eplik.ioniq5.core.scan.DidScanner
+import com.eplik.ioniq5.core.scan.DiscoveryPlan
 import com.eplik.ioniq5.core.scan.EcuScanner
 import java.io.File
 import java.text.SimpleDateFormat
@@ -82,6 +83,30 @@ class DiagnosticsViewModel(application: Application) : AndroidViewModel(applicat
             } catch (e: Exception) {
                 if (e is kotlinx.coroutines.CancellationException) throw e
                 _message.value = e.message
+            }
+        }
+    }
+
+    /** 3. etapi avastusskaneering: kõik [DiscoveryPlan.STAGE3] sammud järjest. */
+    fun runDiscovery() {
+        val elm = connection.elm ?: return notConnected()
+        val plan = DiscoveryPlan.STAGE3
+        launchExclusive {
+            _results.value = emptyList()
+            plan.forEachIndexed { step, task ->
+                try {
+                    val found = DidScanner(elm).scan(task.ecu, task.ids, task.service) { done, total ->
+                        _progress.value = "${step + 1}/${plan.size} ${task.label} ${task.describe()}: $done/$total"
+                    }
+                    val lines = found.map { did ->
+                        val id = if (task.service == 0x22) "22%04X".format(did.did) else "21%02X".format(did.did)
+                        "${task.ecu.requestHex} $id: ${did.data.toHex()}"
+                    }
+                    _results.value = _results.value + "${task.label} (${task.describe()}): ${found.size}" + lines
+                } catch (e: Exception) {
+                    if (e is kotlinx.coroutines.CancellationException) throw e
+                    _results.value = _results.value + "${task.label}: ${e.message}"
+                }
             }
         }
     }

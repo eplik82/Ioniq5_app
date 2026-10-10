@@ -69,6 +69,13 @@ class Ioniq5PidsTest {
     }
 
     @Test
+    fun moduleTemperatures() {
+        // 0101: 14, 21, 14, 20, 18; 0105: 21, 15, 22, 15, 21, 18, 22, 15, 21, 15, 20
+        val expected = listOf(14, 21, 14, 20, 18, 21, 15, 22, 15, 21, 18, 22, 15, 21, 15, 20)
+        expected.forEachIndexed { i, t -> check(t.toDouble(), P.moduleTempId(i + 1)) }
+    }
+
+    @Test
     fun signalIdsAreUnique() {
         val ids = P.ALL.flatMap { it.signals }.map { it.id }
         assertEquals(ids.size, ids.toSet().size)

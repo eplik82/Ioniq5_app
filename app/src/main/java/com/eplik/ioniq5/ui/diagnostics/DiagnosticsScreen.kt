@@ -105,6 +105,9 @@ fun DiagnosticsScreen(
             OutlinedButton(onClick = { viewModel.scanDids(ecu, didFrom, didTo) }, enabled = connected && !busy) {
                 Text(stringResource(R.string.scan_dids))
             }
+            OutlinedButton(onClick = { viewModel.runDiscovery() }, enabled = connected && !busy) {
+                Text(stringResource(R.string.discover_stage3))
+            }
             if (busy) Button(onClick = { viewModel.stop() }) { Text(stringResource(R.string.stop)) }
             OutlinedButton(
                 onClick = {

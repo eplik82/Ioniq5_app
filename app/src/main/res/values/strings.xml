@@ -53,4 +53,17 @@
     <string name="total_discharged">Total discharged</string>
     <string name="operating_time">BMS operating time</string>
     <string name="cells_summary">%1$d cells, %2$s…%3$s V</string>
+    <string name="tab_axles">Wheels</string>
+    <string name="tires_axles_title">Tires and axles</string>
+    <string name="front_axle">Front</string>
+    <string name="rear_axle">Rear</string>
+    <string name="steering_angle">Steering angle</string>
+    <string name="torque_split">Torque split front / rear</string>
+    <string name="axles_data_note">Tire, steering and torque data appear after the discovery scan (Diagnostics → Discover).</string>
+    <string name="mode_voltage">Voltage</string>
+    <string name="mode_deviation">Deviation, mV</string>
+    <string name="tap_cell_hint">Tap a cell for details</string>
+    <string name="selected_cell">Cell %1$d: %2$s V (%3$s mV from average)</string>
+    <string name="module_temps">Module temperatures</string>
+    <string name="discover_stage3">Discover (stage 3)</string>
 </resources>
