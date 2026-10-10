@@ -106,6 +106,24 @@ class Elm327(
         UdsResponse.parse(data, requestSid = payload[0].toInt() and 0xFF)
     }
 
+    /**
+     * Konsooli hex-päring kindlale ECU-le: seab vajadusel päise ja tagastab adapteri toorvastuse read
+     * (ilma ISO-TP kokkupanekuta), et kasutaja näeks täpselt, mis tuli.
+     */
+    suspend fun consoleRequest(ecu: EcuAddress, input: String): List<String> = requestMutex.withLock {
+        val cmd = input.uppercase().filterNot { it.isWhitespace() }
+        if (cmd.isEmpty() || cmd.length % 2 != 0 || !cmd.all { it in '0'..'9' || it in 'A'..'F' }) {
+            throw IllegalArgumentException("Vigane hex-päring: $input")
+        }
+        UdsSafety.requireAllowed(cmd.hexToBytes())
+        if (currentHeader != ecu) {
+            expectOk("ATSH${ecu.requestHex}")
+            expectOk("ATCRA${ecu.responseHex}")
+            currentHeader = ecu
+        }
+        command(cmd)
+    }
+
     private suspend fun expectOk(cmd: String) {
         val reply = command(cmd)
         if (reply.none { it.endsWith("OK") }) throw ElmException("$cmd: ${reply.joinToString(" ")}")

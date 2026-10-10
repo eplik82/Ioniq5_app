@@ -84,4 +84,6 @@
     <string name="speed_calc">Speed (from motor rpm)</string>
     <string name="to_left">left</string>
     <string name="to_right">right</string>
+    <string name="copy">Copy</string>
+    <string name="copied">Log copied</string>
 </resources>

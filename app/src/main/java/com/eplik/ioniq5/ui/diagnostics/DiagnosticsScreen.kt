@@ -1,6 +1,12 @@
 package com.eplik.ioniq5.ui.diagnostics
 
+import android.content.ClipData
+import android.content.ClipboardManager
 import android.content.Intent
+import android.widget.Toast
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -45,8 +51,11 @@ import com.eplik.ioniq5.R
 import com.eplik.ioniq5.connection.ConnectionStatus
 import com.eplik.ioniq5.ui.screens.statusText
 
+private const val MAX_CLIPBOARD_CHARS = 200_000
+
 private val Mono = TextStyle(fontFamily = FontFamily.Monospace, fontSize = 12.sp)
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun DiagnosticsScreen(
     onConnectionClick: () -> Unit,
@@ -87,11 +96,11 @@ fun DiagnosticsScreen(
                 modifier = Modifier.weight(1f),
                 singleLine = true,
                 textStyle = Mono,
-                placeholder = { Text("22E011 / ATSH7E5", style = Mono) },
+                placeholder = { Text("22E011 → ECU", style = Mono) },
                 keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Characters, imeAction = ImeAction.Send),
-                keyboardActions = KeyboardActions(onSend = { viewModel.send(input) }),
+                keyboardActions = KeyboardActions(onSend = { viewModel.send(input, ecu) }),
             )
-            Button(onClick = { viewModel.send(input) }, enabled = connected && !busy) { Text(stringResource(R.string.send)) }
+            Button(onClick = { viewModel.send(input, ecu) }, enabled = connected && !busy) { Text(stringResource(R.string.send)) }
         }
 
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -100,7 +109,7 @@ fun DiagnosticsScreen(
             HexField(didTo, { didTo = it }, "…", Modifier.width(96.dp))
         }
 
-        Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             OutlinedButton(onClick = { viewModel.scanEcus() }, enabled = connected && !busy) { Text(stringResource(R.string.scan_ecus)) }
             OutlinedButton(onClick = { viewModel.scanDids(ecu, didFrom, didTo) }, enabled = connected && !busy) {
                 Text(stringResource(R.string.scan_dids))
@@ -121,6 +130,15 @@ fun DiagnosticsScreen(
                 },
                 enabled = traffic.isNotEmpty(),
             ) { Text(stringResource(R.string.share_log)) }
+            OutlinedButton(
+                onClick = {
+                    val text = viewModel.logText().takeLast(MAX_CLIPBOARD_CHARS)
+                    context.getSystemService(ClipboardManager::class.java)
+                        ?.setPrimaryClip(ClipData.newPlainText("ioniq5-log", text))
+                    Toast.makeText(context, R.string.copied, Toast.LENGTH_SHORT).show()
+                },
+                enabled = traffic.isNotEmpty(),
+            ) { Text(stringResource(R.string.copy)) }
             OutlinedButton(onClick = { viewModel.clear() }) { Text(stringResource(R.string.clear)) }
         }
 
@@ -134,9 +152,11 @@ fun DiagnosticsScreen(
 
         LazyColumn(Modifier.fillMaxWidth().weight(1f), state = listState) {
             items(traffic) { entry ->
-                Column(Modifier.padding(vertical = 2.dp)) {
-                    Text("> ${entry.command}", style = Mono, color = MaterialTheme.colorScheme.primary)
-                    entry.response.forEach { Text(it, style = Mono) }
+                SelectionContainer {
+                    Column(Modifier.padding(vertical = 2.dp)) {
+                        Text("> ${entry.command}", style = Mono, color = MaterialTheme.colorScheme.primary)
+                        entry.response.forEach { Text(it, style = Mono) }
+                    }
                 }
             }
         }

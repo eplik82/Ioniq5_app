@@ -34,4 +34,19 @@ class Elm327ConsoleTest {
         assertTrue(runCatching { elm.console("22E01") }.exceptionOrNull() is IllegalArgumentException)
         assertTrue(transport.sent.isEmpty())
     }
+
+    @Test
+    fun consoleRequestSetsHeaderForEcu() = runTest {
+        val transport = FakeTransport(
+            mapOf("ATSH7E5" to "OK", "ATCRA7ED" to "OK", "22E011" to "7ED0462E01101"),
+        )
+        val elm = Elm327(transport)
+        assertEquals(listOf("7ED0462E01101"), elm.consoleRequest(com.eplik.ioniq5.core.pid.EcuAddress(0x7E5), "22 e0 11"))
+        elm.consoleRequest(com.eplik.ioniq5.core.pid.EcuAddress(0x7E5), "22E011")
+        assertEquals(listOf("ATSH7E5", "ATCRA7ED", "22E011", "22E011"), transport.sent)
+        assertTrue(
+            runCatching { elm.consoleRequest(com.eplik.ioniq5.core.pid.EcuAddress(0x7E5), "2E0101") }
+                .exceptionOrNull() is SecurityException,
+        )
+    }
 }

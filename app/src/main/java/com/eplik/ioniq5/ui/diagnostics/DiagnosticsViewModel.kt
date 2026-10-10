@@ -39,11 +39,29 @@ class DiagnosticsViewModel(application: Application) : AndroidViewModel(applicat
 
     private var job: Job? = null
 
-    fun send(input: String) {
+    /** AT-käsk läheb adapterile; hex-päring läheb [ecuHex] väljal olevale juhtplokile. */
+    fun send(input: String, ecuHex: String) {
         val elm = connection.elm ?: return notConnected()
         if (input.isBlank()) return
+        val isAt = input.trim().uppercase().startsWith("AT")
+        val ecu = ecuHex.trim().toIntOrNull(16)
+        if (!isAt && ecu == null) {
+            _message.value = getApplication<Application>().getString(R.string.invalid_hex)
+            return
+        }
         launchExclusive {
-            runCatching { elm.console(input) }.onFailure { _message.value = it.message }
+            runCatching {
+                if (isAt) elm.console(input) else elm.consoleRequest(EcuAddress(ecu!!), input)
+            }.onFailure { _message.value = it.message }
+        }
+    }
+
+    /** Logi tekstina (kopeerimiseks). */
+    fun logText(): String = buildString {
+        traffic.value.forEach { append(it.format()) }
+        if (_results.value.isNotEmpty()) {
+            append("# Skaneerimise tulemused\n")
+            _results.value.forEach { append("# ").append(it).append('\n') }
         }
     }
 

@@ -84,4 +84,6 @@
     <string name="speed_calc">Kiirus (mootori pööretest)</string>
     <string name="to_left">vasakule</string>
     <string name="to_right">paremale</string>
+    <string name="copy">Kopeeri</string>
+    <string name="copied">Logi kopeeritud</string>
 </resources>
