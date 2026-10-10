@@ -14,4 +14,20 @@
     <string name="state_of_charge">Laetus</string>
     <string name="no_value">—</string>
     <string name="coming_in_stage">Andmed tulevad alates %1$d. etapist.</string>
+    <string name="connection_title">Ühendus</string>
+    <string name="connection_connecting">Ühendan: %1$s…</string>
+    <string name="connection_connected">Ühendatud: %1$s (%2$s)</string>
+    <string name="connection_failed">Ühendus ebaõnnestus: %1$s</string>
+    <string name="scan">Otsi</string>
+    <string name="disconnect">Katkesta</string>
+    <string name="back">Tagasi</string>
+    <string name="unknown_device">Nimeta seade</string>
+    <string name="permission_denied">Adapteri leidmiseks on vaja Bluetoothi luba</string>
+    <string name="send">Saada</string>
+    <string name="scan_ecus">Skaneeri ECU-d</string>
+    <string name="scan_dids">Skaneeri DID-e</string>
+    <string name="stop">Peata</string>
+    <string name="share_log">Jaga logi</string>
+    <string name="clear">Tühjenda</string>
+    <string name="invalid_hex">ECU / DID: vigane hex</string>
 </resources>

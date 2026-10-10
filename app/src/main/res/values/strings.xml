@@ -14,4 +14,20 @@
     <string name="state_of_charge">State of charge</string>
     <string name="no_value">—</string>
     <string name="coming_in_stage">Data will be shown from stage %1$d onwards.</string>
+    <string name="connection_title">Connection</string>
+    <string name="connection_connecting">Connecting to %1$s…</string>
+    <string name="connection_connected">Connected: %1$s (%2$s)</string>
+    <string name="connection_failed">Connection failed: %1$s</string>
+    <string name="scan">Search</string>
+    <string name="disconnect">Disconnect</string>
+    <string name="back">Back</string>
+    <string name="unknown_device">Unnamed device</string>
+    <string name="permission_denied">Bluetooth permission is required to find the adapter</string>
+    <string name="send">Send</string>
+    <string name="scan_ecus">Scan ECUs</string>
+    <string name="scan_dids">Scan DIDs</string>
+    <string name="stop">Stop</string>
+    <string name="share_log">Share log</string>
+    <string name="clear">Clear</string>
+    <string name="invalid_hex">ECU / DID: invalid hex</string>
 </resources>

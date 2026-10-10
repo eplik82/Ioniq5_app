@@ -14,10 +14,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.eplik.ioniq5.R
+import com.eplik.ioniq5.connection.ConnectionStatus
 import com.eplik.ioniq5.ui.components.PixelGauge
 
 @Composable
-fun OverviewScreen(modifier: Modifier = Modifier) {
+fun OverviewScreen(status: ConnectionStatus, onConnectionClick: () -> Unit, modifier: Modifier = Modifier) {
     Column(
         modifier = modifier.fillMaxSize().padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -28,16 +29,16 @@ fun OverviewScreen(modifier: Modifier = Modifier) {
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
+        // Andmed tulevad 2. etapis
         Text(text = stringResource(R.string.no_value), style = MaterialTheme.typography.displayLarge)
         PixelGauge(fraction = null, modifier = Modifier.fillMaxWidth(0.8f))
         Text(
-            text = stringResource(R.string.connection_disconnected),
+            text = statusText(status),
             style = MaterialTheme.typography.titleMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            color = if (status is ConnectionStatus.Failed) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant,
         )
-        // Ühendus tuleb 1. etapis
-        OutlinedButton(onClick = {}, enabled = false) {
-            Text(stringResource(R.string.connect))
+        OutlinedButton(onClick = onConnectionClick) {
+            Text(stringResource(if (status is ConnectionStatus.Connected) R.string.connection_title else R.string.connect))
         }
     }
 }

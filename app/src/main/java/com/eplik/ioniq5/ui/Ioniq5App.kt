@@ -22,6 +22,11 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.eplik.ioniq5.Ioniq5Application
+import com.eplik.ioniq5.ui.diagnostics.DiagnosticsScreen
+import com.eplik.ioniq5.ui.screens.ConnectionScreen
 import androidx.compose.ui.res.stringResource
 import com.eplik.ioniq5.R
 import com.eplik.ioniq5.ui.screens.OverviewScreen
@@ -37,7 +42,10 @@ private enum class Tab(@StringRes val label: Int, val icon: ImageVector, val sta
 
 @Composable
 fun Ioniq5App() {
+    val connection = (LocalContext.current.applicationContext as Ioniq5Application).connection
+    val status by connection.status.collectAsStateWithLifecycle()
     var selected by rememberSaveable { mutableStateOf(Tab.OVERVIEW) }
+    var showConnection by rememberSaveable { mutableStateOf(false) }
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
         bottomBar = {
@@ -45,7 +53,10 @@ fun Ioniq5App() {
                 Tab.entries.forEach { tab ->
                     NavigationBarItem(
                         selected = tab == selected,
-                        onClick = { selected = tab },
+                        onClick = {
+                            selected = tab
+                            showConnection = false
+                        },
                         icon = { Icon(tab.icon, contentDescription = null) },
                         label = { Text(stringResource(tab.label)) },
                         colors = NavigationBarItemDefaults.colors(
@@ -59,8 +70,10 @@ fun Ioniq5App() {
         },
     ) { padding ->
         val modifier = Modifier.padding(padding)
-        when (selected) {
-            Tab.OVERVIEW -> OverviewScreen(modifier)
+        when {
+            showConnection -> ConnectionScreen(connection, onBack = { showConnection = false }, modifier = modifier)
+            selected == Tab.OVERVIEW -> OverviewScreen(status, onConnectionClick = { showConnection = true }, modifier = modifier)
+            selected == Tab.DIAGNOSTICS -> DiagnosticsScreen(onConnectionClick = { showConnection = true }, modifier = modifier)
             else -> PlaceholderScreen(stringResource(selected.label), selected.stage, modifier)
         }
     }
