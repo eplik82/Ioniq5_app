@@ -29,6 +29,7 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -76,6 +77,12 @@ fun DiagnosticsScreen(
     val connected = status is ConnectionStatus.Connected
     val busy = progress != null
     val listState = rememberLazyListState()
+
+    // Diagnostika ajal taustal pollimist ei toimu: konsooli käsud ja logi ei segune
+    DisposableEffect(Unit) {
+        viewModel.connection.pausePolling()
+        onDispose { viewModel.connection.resumePolling() }
+    }
 
     LaunchedEffect(traffic.size) {
         if (traffic.isNotEmpty()) listState.scrollToItem(traffic.size - 1)

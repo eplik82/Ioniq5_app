@@ -100,13 +100,27 @@ class ConnectionManager(
         }
     }
 
-    /** Peatab pollimise näiteks diagnostika skaneerimise ajaks. */
-    fun setPollingPaused(paused: Boolean) {
-        poller?.paused?.value = paused
+    private var pauseCount = 0
+
+    /**
+     * Peatab pollimise (diagnostika vaade, skaneerimine). Iga [pausePolling] vajab oma [resumePolling];
+     * pollimine jätkub, kui kõik peatajad on lõpetanud.
+     */
+    @Synchronized
+    fun pausePolling() {
+        pauseCount++
+        poller?.paused?.value = true
+    }
+
+    @Synchronized
+    fun resumePolling() {
+        pauseCount = (pauseCount - 1).coerceAtLeast(0)
+        poller?.paused?.value = pauseCount > 0
     }
 
     private fun startPolling(driver: Elm327) {
         val newPoller = Poller(driver, Ioniq5Pids.ALL)
+        newPoller.paused.value = synchronized(this) { pauseCount > 0 }
         poller = newPoller
         pollJob = scope.launch {
             launch {
