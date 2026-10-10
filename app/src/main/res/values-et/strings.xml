@@ -82,4 +82,6 @@
     <string name="not_found_yet">veel leidmata</string>
     <string name="solar_note">Päikesekatuse andmed tulevad ICCU-st (7E5, 22E011). Paneeli pinge on leitud; hetkevõimsuse ja koguenergia leidmiseks on vaja öist võrdlusmõõtmist.</string>
     <string name="speed_calc">Kiirus (mootori pööretest)</string>
+    <string name="to_left">vasakule</string>
+    <string name="to_right">paremale</string>
 </resources>

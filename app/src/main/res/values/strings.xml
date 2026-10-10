@@ -82,4 +82,6 @@
     <string name="not_found_yet">not found yet</string>
     <string name="solar_note">The solar roof data comes from the ICCU (7E5, 22E011). Panel voltage has been identified; instantaneous power and total energy need a night-time comparison measurement.</string>
     <string name="speed_calc">Speed (from motor rpm)</string>
+    <string name="to_left">left</string>
+    <string name="to_right">right</string>
 </resources>

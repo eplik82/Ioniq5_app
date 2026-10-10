@@ -103,7 +103,12 @@ fun AxlesScreen(readings: Readings, modifier: Modifier = Modifier) {
             style = MaterialTheme.typography.titleMedium,
         )
         Text(
-            stringResource(R.string.steering_angle) + ": " + formatValue(steering, 1) + "°",
+            stringResource(R.string.steering_angle) + ": " + formatValue(steering?.let { abs(it) }, 1) + "° " +
+                when {
+                    steering == null || abs(steering) < 0.5 -> ""
+                    steering > 0 -> stringResource(R.string.to_left)
+                    else -> stringResource(R.string.to_right)
+                },
             style = MaterialTheme.typography.titleMedium,
         )
         Text(
@@ -186,7 +191,8 @@ private fun DrawScope.drawCar(
             low -> Warning
             else -> Accent
         }
-        val angle = if (wheel.front) steeringDeg / STEERING_RATIO else 0f
+        // Hyundai roolinurk on positiivne vasakule, Compose'i pööre positiivne päripäeva: märk vastupidi
+        val angle = if (wheel.front) -steeringDeg / STEERING_RATIO else 0f
         rotate(angle, pivot = Offset(cx, cy)) {
             drawRoundRect(color, Offset(cx - wheelW / 2, cy - wheelH / 2), Size(wheelW, wheelH), CornerRadius(wheelW * 0.3f))
         }

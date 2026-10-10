@@ -171,7 +171,7 @@ object Ioniq5Pids {
         },
     )
 
-    /** Roolinurk × 0,1°; sama väärtus on ka pidurisüsteemi 7D1 220104 baitides 34–35. Märk kontrollida. */
+    /** Roolinurk × 0,1°, positiivne = vasakule (kinnitatud autos); sama väärtus on ka 7D1 220104 baitides 34–35. */
     private val steering = PidDefinition(
         id = "mdps_0101",
         ecu = MDPS,
