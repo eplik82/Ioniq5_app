@@ -207,11 +207,12 @@ class CarDrawing(private val context: Context, dark: Boolean) {
                 Tile(
                     str(R.string.steering_angle),
                     formatValue(steering?.let { abs(it) }, 0) + when {
-                        steering == null || abs(steering) < 0.5 -> ""
-                        steering > 0 -> " ←"
-                        else -> " →"
+                        steering == null -> ""
+                        abs(steering) < 0.5 -> "°"
+                        steering > 0 -> "° ←"
+                        else -> "° →"
                     },
-                    "°",
+                    "",
                     fresh(P.STEERING_ANGLE),
                 ),
                 Tile(str(R.string.speed_calc), formatValue(r.speedKmh(), 0), "km/h", fresh(P.MOTOR_RPM)),
@@ -276,11 +277,11 @@ class CarDrawing(private val context: Context, dark: Boolean) {
             text.textAlign = Paint.Align.LEFT
             text.color = textSecondary
             text.alpha = alpha
-            text.textSize = min(h * 0.2f, w * 0.09f)
+            fitTextSize(t.label.uppercase(), min(h * 0.2f, w * 0.09f), w * 0.88f)
             c.drawText(t.label.uppercase(), x + w * 0.06f, y + h * 0.3f, text)
             text.color = t.valueColor ?: textPrimary
             text.alpha = alpha
-            text.textSize = min(h * 0.42f, w * 0.2f)
+            fitTextSize(t.value, min(h * 0.42f, w * 0.2f), w * 0.7f)
             val valueX = x + w * 0.06f
             val valueY = y + h * 0.82f
             c.drawText(t.value, valueX, valueY, text)
@@ -291,6 +292,13 @@ class CarDrawing(private val context: Context, dark: Boolean) {
             c.drawText(" " + t.unit, valueX + vw, valueY, text)
         }
         text.alpha = 255
+    }
+
+    /** Seab teksti suuruse nii, et [s] mahub laiusesse [maxWidth] (pikad sildid, eriti eesti keeles). */
+    private fun fitTextSize(s: String, size: Float, maxWidth: Float) {
+        text.textSize = size
+        val width = text.measureText(s)
+        if (width > maxWidth) text.textSize = size * maxWidth / width
     }
 
     private fun pixelGauge(c: Canvas, area: RectF, fraction: Double?) {
