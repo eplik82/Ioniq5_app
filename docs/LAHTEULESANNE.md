@@ -103,6 +103,17 @@ Kandidaadid, mida järgmiste vastustega kontrollida:
 | Päikesekatuse tase (näidik 1/3) | E, F (7–8) või 29–31 | `01` | tase 1 | Peab muutuma koos näidikuga |
 | Kogunenud energia (loendur) | O, P (17–18) või R–U (20–23) | `19 91`, `7B 7F D2 51` | teadmata | Suured väärtused, võivad olla loendurid |
 
+**Teine vastus** (`…_sample2.txt`, sama päev, pilves) võrreldes esimesega:
+
+| Bait | 1. → 2. | Märkus |
+|---|---|---|
+| J (12) | 120 → 119 | aeglane muutus (temperatuur?) |
+| K, L (13–14) | 149,26 → 149,24 W | peaaegu konstantne: tõenäoliselt mitte hetkevõimsus |
+| M, N (15–16) | 164,5 → 184,4 V | muutub kiiresti: tõenäoliselt päikesepaneeli pinge |
+| P (18), R (20), T (22), W (25) | väikesed muutused | võivad olla vool, võimsus või temperatuurid |
+| Q (19) | 114 → 114 | muutumatu |
+| V (24) | 34 → 34 | muutumatu; sobib „3,4–3,5 km” kandidaadiga, kinnitust vajab kasv |
+
 Pilvise päeva kohta tunduvad 149 W ja 114 W liiga suured (näidik 1/3, katuse tippvõimsus ~200 W);
 need ei pruugi olla hetkevõimsus. Ühe vastuse põhjal ei saa valemeid kinnitada; vaja on võrdlust
 päikese käes, varjus ja öösel ning auto näidu (km, tase) üleskirjutamist iga vastuse juures.

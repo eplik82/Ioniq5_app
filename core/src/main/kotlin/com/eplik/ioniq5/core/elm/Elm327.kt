@@ -5,6 +5,7 @@ import com.eplik.ioniq5.core.transport.Transport
 import com.eplik.ioniq5.core.uds.UdsResponse
 import com.eplik.ioniq5.core.uds.UdsSafety
 import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.collect
@@ -25,6 +26,9 @@ class Elm327(
     private val requestMutex = Mutex()
     private var currentHeader: EcuAddress? = null
 
+    /** Kutsutakse iga käsu järel (ka aegumisel); diagnostikalogi ja seansi salvestamise jaoks. */
+    var trafficListener: ((TrafficEntry) -> Unit)? = null
+
     /** Saadab käsu ja tagastab vastuse read ilma kaja, viiba ja tühjade ridadeta. */
     suspend fun command(cmd: String, timeoutMs: Long = defaultTimeoutMs): List<String> = mutex.withLock {
         coroutineScope {
@@ -39,21 +43,48 @@ class Elm327(
                 text.toString()
             }
             transport.write("$cmd\r".encodeToByteArray())
-            val text = withTimeout(timeoutMs) { response.await() }
-            text.substringBefore(PROMPT)
+            val text = try {
+                withTimeout(timeoutMs) { response.await() }
+            } catch (e: TimeoutCancellationException) {
+                response.cancel()
+                trafficListener?.invoke(TrafficEntry(System.currentTimeMillis(), cmd, listOf(TIMEOUT)))
+                throw ElmException("$TIMEOUT: $cmd")
+            }
+            val lines = text.substringBefore(PROMPT)
                 .split('\r', '\n')
                 .map { it.trim() }
                 .filter { it.isNotEmpty() && it != cmd && !it.startsWith("SEARCHING") }
+            trafficListener?.invoke(TrafficEntry(System.currentTimeMillis(), cmd, lines))
+            lines
         }
     }
 
-    suspend fun initialize() {
-        command("ATZ", timeoutMs = 5_000)
-        for (cmd in INIT_COMMANDS) {
-            val reply = command(cmd)
-            if (reply.none { it.endsWith("OK") }) throw ElmException("$cmd: ${reply.joinToString(" ")}")
-        }
+    /** Lähtestab adapteri ja seadistab CAN-i. Tagastab adapteri versiooni (ATZ vastus). */
+    suspend fun initialize(): String {
+        val version = command("ATZ", timeoutMs = 5_000).lastOrNull().orEmpty()
+        for (cmd in INIT_COMMANDS) expectOk(cmd)
         currentHeader = null
+        return version
+    }
+
+    /**
+     * Diagnostikakonsooli käsk: AT-käsk adapterile või hex-päring praegusele päisele.
+     * Hex-päringud läbivad sama ohutuskontrolli mis [request].
+     */
+    suspend fun console(input: String): List<String> = requestMutex.withLock {
+        val cmd = input.uppercase().filterNot { it.isWhitespace() }
+        if (cmd.startsWith("AT")) {
+            if (BLOCKED_AT.any { cmd.startsWith(it) }) throw SecurityException("$cmd ei ole konsoolis lubatud")
+            // Kasutaja võib muuta päist või seadeid, seega järgmine request() seab päise uuesti
+            currentHeader = null
+            command(cmd, timeoutMs = if (cmd == "ATZ") 5_000 else defaultTimeoutMs)
+        } else {
+            if (cmd.isEmpty() || cmd.length % 2 != 0 || !cmd.all { it in '0'..'9' || it in 'A'..'F' }) {
+                throw IllegalArgumentException("Vigane hex-päring: $input")
+            }
+            UdsSafety.requireAllowed(cmd.hexToBytes())
+            command(cmd)
+        }
     }
 
     /** UDS/OBD päring ühele ECU-le. Lubatud on ainult lugemisteenused (vt [UdsSafety]). */
@@ -82,6 +113,10 @@ class Elm327(
 
     companion object {
         private const val PROMPT = ">"
+        const val TIMEOUT = "TIMEOUT"
+
+        /** Monitooringurežiimid ujutavad adapteri üle, ATPP kirjutab adapteri püsimällu. */
+        private val BLOCKED_AT = listOf("ATMA", "ATMR", "ATMT", "ATPP")
 
         val INIT_COMMANDS = listOf(
             "ATE0", // kaja välja
