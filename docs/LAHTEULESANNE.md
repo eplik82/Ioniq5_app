@@ -1,6 +1,6 @@
 # Lähteülesanne: Ioniq 5 CAN-andmete Android-rakendus
 
-Versioon 0.7 (mustand) · 2026-10-10
+Versioon 0.8 (mustand) · 2026-10-10
 
 ## 1. Eesmärk
 
@@ -81,6 +81,18 @@ Car Scanneris on kasutaja **ise loodud** (kontrollimata) päikesekatuse PID-id:
 
 Car Scanneri tähed: `A` on esimene bait pärast vastuse SID-i ja DID-i (`62 E0 11`), seega
 `K` = 11. andmebait. Rakenduse `SignalDefinition` loeb baite vastuse algusest, st `K` → `startByte = 13`.
+
+**Esimene toorvastus** (Car Scanneri terminal, 10.10 13:03, olud täpsustamata;
+`testdata/raw/iccu_7E5_22E011_2026-10-10_1303.txt`): ICCU vastab, vastuse pikkus 49 baiti.
+Rakenduse ISO-TP kokkupanek ja baitide asukohad on selle vastusega testitud (`SolarRoofSampleTest`).
+
+| Parameeter | Baidid | Toorväärtus | Car Scanneri valemiga |
+|---|---|---|---|
+| Solar roof power | K, L (13–14) | `3A 4E` | 149,26 W (logis 150,07: püsib ~150 juures, võib olla piir või muu suurus) |
+| Solar roof voltage | M, N (15–16) | `06 6D` | 164,5 V (logis 279–303 V) |
+| Solar to High Voltage | Q (19) | `39` | 114 W (logis 112 W) |
+
+Ühe vastuse põhjal ei saa valemeid kinnitada; vaja on võrdlust päikese käes, varjus ja öösel.
 
 Kontrollimine:
 
