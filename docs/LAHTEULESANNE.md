@@ -82,7 +82,7 @@ Car Scanneris on kasutaja **ise loodud** (kontrollimata) päikesekatuse PID-id:
 Car Scanneri tähed: `A` on esimene bait pärast vastuse SID-i ja DID-i (`62 E0 11`), seega
 `K` = 11. andmebait. Rakenduse `SignalDefinition` loeb baite vastuse algusest, st `K` → `startByte = 13`.
 
-**Esimene toorvastus** (Car Scanneri terminal, 10.10 13:03, olud täpsustamata;
+**Esimene toorvastus** (Car Scanneri terminal, 10.10 13:03, päev, pilves;
 `testdata/raw/iccu_7E5_22E011_2026-10-10_1303.txt`): ICCU vastab, vastuse pikkus 49 baiti.
 Rakenduse ISO-TP kokkupanek ja baitide asukohad on selle vastusega testitud (`SolarRoofSampleTest`).
 
