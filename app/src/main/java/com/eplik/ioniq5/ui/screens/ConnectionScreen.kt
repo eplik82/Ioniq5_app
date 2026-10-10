@@ -105,7 +105,7 @@ fun ConnectionScreen(connection: ConnectionManager, onBack: () -> Unit, modifier
 
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             Button(onClick = { startScan() }, enabled = !scanning) { Text(stringResource(R.string.scan)) }
-            if (status is ConnectionStatus.Connected || status is ConnectionStatus.Connecting) {
+            if (status is ConnectionStatus.Connected || status is ConnectionStatus.Connecting || status is ConnectionStatus.Reconnecting) {
                 OutlinedButton(onClick = { connection.disconnect() }) { Text(stringResource(R.string.disconnect)) }
             }
             OutlinedButton(onClick = onBack) { Text(stringResource(R.string.back)) }
@@ -143,4 +143,5 @@ fun statusText(status: ConnectionStatus): String = when (status) {
     is ConnectionStatus.Connecting -> stringResource(R.string.connection_connecting, status.deviceName)
     is ConnectionStatus.Connected -> stringResource(R.string.connection_connected, status.deviceName, status.adapterVersion)
     is ConnectionStatus.Failed -> stringResource(R.string.connection_failed, status.message)
+    is ConnectionStatus.Reconnecting -> stringResource(R.string.connection_reconnecting, status.deviceName, status.inSeconds)
 }

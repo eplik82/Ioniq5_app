@@ -47,4 +47,33 @@ class PollerTest {
         }
         assertEquals(180, readings.cellVoltages().size)
     }
+
+    @Test
+    fun sleepsWhenAuxLowOrNoAnswers() = runTest {
+        var now = 0L
+        // 0101 vastus, kus 12 V = 14,4 V (bait 32 = 0x90); madal pinge: 0x7C = 12,4 V
+        val high = bms0101
+        val low = bms0101.replace("7EC2436AE0100009000", "7EC2436AE0100007C00")
+        val replies = mutableMapOf("220101" to high)
+        val transport = FakeTransport(replies) { if (it.startsWith("AT")) "OK" else "NO DATA" }
+        val poller = Poller(Elm327(transport), Ioniq5Pids.ALL, clock = { now })
+        val bms = Ioniq5Pids.ALL.first { it.id == "bms_0101" }
+
+        poller.pollOnce(bms)
+        org.junit.Assert.assertFalse(poller.updateSleepState(now))
+        replies["220101"] = low
+        now = 1_000; poller.pollOnce(bms)
+        now = 100_000; poller.pollOnce(bms)
+        org.junit.Assert.assertFalse(poller.updateSleepState(now))
+        now = 130_000; poller.pollOnce(bms)
+        org.junit.Assert.assertTrue(poller.updateSleepState(now))
+        // Pinge tõuseb (auto käivitati): ärkab
+        replies["220101"] = high
+        now = 131_000; poller.pollOnce(bms)
+        org.junit.Assert.assertFalse(poller.updateSleepState(now))
+        // Keegi ei vasta 2 min: magab
+        replies.remove("220101")
+        now = 260_000; poller.pollOnce(bms)
+        org.junit.Assert.assertTrue(poller.updateSleepState(now))
+    }
 }

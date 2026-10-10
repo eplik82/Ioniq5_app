@@ -33,6 +33,8 @@ import com.eplik.ioniq5.ui.components.rememberNow
 fun OverviewScreen(
     status: ConnectionStatus,
     readings: Readings,
+    sleeping: Boolean,
+    onWake: () -> Unit,
     onConnectionClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -51,6 +53,22 @@ fun OverviewScreen(
         horizontalArrangement = Arrangement.spacedBy(10.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
+        if (sleeping) {
+            item(span = { GridItemSpan(maxLineSpan) }) {
+                Column(
+                    Modifier.fillMaxWidth().padding(top = 12.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(4.dp),
+                ) {
+                    Text(
+                        stringResource(R.string.sleep_banner),
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.primary,
+                    )
+                    OutlinedButton(onClick = onWake) { Text(stringResource(R.string.wake_now)) }
+                }
+            }
+        }
         item(span = { GridItemSpan(maxLineSpan) }) {
             Column(
                 Modifier.fillMaxWidth().padding(top = 16.dp).alpha(if (soc.isFresh(now)) 1f else 0.45f),

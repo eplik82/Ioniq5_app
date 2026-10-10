@@ -99,4 +99,7 @@
     <string name="capture_add_note">Lisa märkus</string>
     <string name="capture_share">Jaga arenduslogi</string>
     <string name="capture_progress">Arenduslogi: tsükkel %1$d, %2$s</string>
+    <string name="connection_reconnecting">Ühendus %1$s-ga katkes, uus katse %2$d s pärast</string>
+    <string name="sleep_banner">Auto on välja lülitatud: lugemine iga 5 min järel, et säästa 12 V akut</string>
+    <string name="wake_now">Loe kohe</string>
 </resources>

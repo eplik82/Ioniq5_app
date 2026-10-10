@@ -17,6 +17,7 @@ import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -56,6 +57,9 @@ fun Ioniq5App() {
     val solarEnergyWh by connection.solarEnergyWh.collectAsStateWithLifecycle()
     var selected by rememberSaveable { mutableStateOf(Tab.OVERVIEW) }
     var showConnection by rememberSaveable { mutableStateOf(false) }
+    val sleeping by connection.sleeping.collectAsStateWithLifecycle()
+    // Käivitamisel ühendu viimati kasutatud adapteriga
+    LaunchedEffect(Unit) { connection.connectToLast() }
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
         bottomBar = {
@@ -90,7 +94,14 @@ fun Ioniq5App() {
         val modifier = Modifier.padding(padding)
         when {
             showConnection -> ConnectionScreen(connection, onBack = { showConnection = false }, modifier = modifier)
-            selected == Tab.OVERVIEW -> OverviewScreen(status, readings, onConnectionClick = { showConnection = true }, modifier = modifier)
+            selected == Tab.OVERVIEW -> OverviewScreen(
+                status,
+                readings,
+                sleeping = sleeping,
+                onWake = { connection.wakePolling() },
+                onConnectionClick = { showConnection = true },
+                modifier = modifier,
+            )
             selected == Tab.BATTERY -> BatteryScreen(readings, modifier)
             selected == Tab.AXLES -> AxlesScreen(readings, modifier)
             selected == Tab.CHARGING -> ChargingScreen(readings, chargeSession, modifier)

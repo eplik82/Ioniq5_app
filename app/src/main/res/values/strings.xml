@@ -99,4 +99,7 @@
     <string name="capture_add_note">Add note</string>
     <string name="capture_share">Share developer log</string>
     <string name="capture_progress">Developer log: cycle %1$d, %2$s</string>
+    <string name="connection_reconnecting">Connection lost to %1$s, retrying in %2$d s</string>
+    <string name="sleep_banner">Car is off: reading every 5 min to spare the 12 V battery</string>
+    <string name="wake_now">Read now</string>
 </resources>
