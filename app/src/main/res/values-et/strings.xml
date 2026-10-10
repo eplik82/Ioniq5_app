@@ -111,4 +111,14 @@
     <string name="setting_capacity">Aku mahutavus</string>
     <string name="capacity_auto">Automaatne (%1$s kWh)</string>
     <string name="setting_auto_connect">Ühenda käivitamisel automaatselt</string>
+    <string name="history_title">Ajalugu</string>
+    <string name="history_empty">Salvestusi veel pole. Salvestus algab ühenduse ajal automaatselt.</string>
+    <string name="type_drive">Sõit</string>
+    <string name="type_charge">Laadimine</string>
+    <string name="type_parked">Seisak</string>
+    <string name="charge_curve">Laadimiskõver</string>
+    <string name="export_csv">Ekspordi CSV</string>
+    <string name="delete">Kustuta</string>
+    <string name="notification_channel">Jälgimine</string>
+    <string name="sleeping_short">auto väljas</string>
 </resources>

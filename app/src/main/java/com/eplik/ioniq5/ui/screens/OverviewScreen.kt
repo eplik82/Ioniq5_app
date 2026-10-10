@@ -38,6 +38,7 @@ fun OverviewScreen(
     onWake: () -> Unit,
     onConnectionClick: () -> Unit,
     onSettingsClick: () -> Unit,
+    onHistoryClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val now by rememberNow()
@@ -135,6 +136,7 @@ fun OverviewScreen(
                     OutlinedButton(onClick = onConnectionClick) {
                         Text(stringResource(if (status is ConnectionStatus.Connected) R.string.connection_title else R.string.connect))
                     }
+                    OutlinedButton(onClick = onHistoryClick) { Text(stringResource(R.string.history_title)) }
                     OutlinedButton(onClick = onSettingsClick) { Text(stringResource(R.string.settings)) }
                 }
             }

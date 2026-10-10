@@ -111,4 +111,14 @@
     <string name="setting_capacity">Battery capacity</string>
     <string name="capacity_auto">Auto (%1$s kWh)</string>
     <string name="setting_auto_connect">Connect automatically on start</string>
+    <string name="history_title">History</string>
+    <string name="history_empty">No recordings yet. Recording starts automatically while connected.</string>
+    <string name="type_drive">Drive</string>
+    <string name="type_charge">Charging</string>
+    <string name="type_parked">Parked</string>
+    <string name="charge_curve">Charging curve</string>
+    <string name="export_csv">Export CSV</string>
+    <string name="delete">Delete</string>
+    <string name="notification_channel">Monitoring</string>
+    <string name="sleeping_short">car off</string>
 </resources>

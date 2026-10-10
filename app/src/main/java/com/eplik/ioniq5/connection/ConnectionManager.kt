@@ -71,6 +71,9 @@ class ConnectionManager(
 
     @Volatile private var userDisconnected = false
 
+    /** Kas ühendamise/taasühendamise tsükkel käib (ka siis, kui olek on hetkel Failed). */
+    val isReconnecting: Boolean get() = connectJob?.isActive == true && !userDisconnected
+
     private val prefs = context.getSharedPreferences("connection", Context.MODE_PRIVATE)
 
     private var transport: Transport? = null

@@ -33,6 +33,15 @@ import com.eplik.ioniq5.ui.screens.BatteryScreen
 import com.eplik.ioniq5.ui.screens.ChargingScreen
 import com.eplik.ioniq5.ui.screens.ConnectionScreen
 import com.eplik.ioniq5.ui.screens.SettingsScreen
+import com.eplik.ioniq5.ui.screens.HistoryScreen
+import com.eplik.ioniq5.service.MonitorService
+import com.eplik.ioniq5.connection.ConnectionStatus
+import android.Manifest
+import android.content.pm.PackageManager
+import android.os.Build
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.ContextCompat
 import com.eplik.ioniq5.ui.screens.SolarScreen
 import com.eplik.ioniq5.core.poll.cellVoltages
 import com.eplik.ioniq5.settings.capacityKwh
@@ -57,6 +66,8 @@ fun Ioniq5App() {
     val connection = app.connection
     val settings by app.settings.settings.collectAsStateWithLifecycle()
     var showSettings by rememberSaveable { mutableStateOf(false) }
+    var showHistory by rememberSaveable { mutableStateOf(false) }
+    val context = LocalContext.current
     val status by connection.status.collectAsStateWithLifecycle()
     val readings by connection.readings.collectAsStateWithLifecycle()
     val chargeSession by connection.chargeSession.collectAsStateWithLifecycle()
@@ -67,6 +78,20 @@ fun Ioniq5App() {
     // Käivitamisel ühendu viimati kasutatud adapteriga
     LaunchedEffect(Unit) { if (settings.autoConnect) connection.connectToLast() }
     val capacityKwh = settings.capacityKwh(readings.cellVoltages().size)
+
+    // Teavituse luba (Android 13+) taustateenuse teavituse jaoks
+    val notificationLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { }
+    LaunchedEffect(Unit) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+            ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
+        ) {
+            notificationLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+        }
+    }
+    // Ühenduse ajal hoiab taustateenus rakenduse elus (lugemine ja salvestus ka kustunud ekraaniga)
+    LaunchedEffect(status) {
+        if (status is ConnectionStatus.Connected) runCatching { MonitorService.start(context) }
+    }
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
         bottomBar = {
@@ -78,6 +103,7 @@ fun Ioniq5App() {
                             selected = tab
                             showConnection = false
                             showSettings = false
+                            showHistory = false
                         },
                         icon = { Icon(tab.icon, contentDescription = null) },
                         label = {
@@ -102,6 +128,7 @@ fun Ioniq5App() {
         val modifier = Modifier.padding(padding)
         when {
             showConnection -> ConnectionScreen(connection, onBack = { showConnection = false }, modifier = modifier)
+            showHistory -> HistoryScreen(app.recordings, onBack = { showHistory = false }, modifier = modifier)
             showSettings -> SettingsScreen(
                 settings,
                 detectedCapacityKwh = settings.copy(batteryCapacityKwh = null).capacityKwh(readings.cellVoltages().size),
@@ -116,6 +143,7 @@ fun Ioniq5App() {
                 onWake = { connection.wakePolling() },
                 onConnectionClick = { showConnection = true },
                 onSettingsClick = { showSettings = true },
+                onHistoryClick = { showHistory = true },
                 modifier = modifier,
             )
             selected == Tab.BATTERY -> BatteryScreen(readings, modifier)

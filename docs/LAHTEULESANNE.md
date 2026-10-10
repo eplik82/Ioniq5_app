@@ -1,6 +1,6 @@
 # Lähteülesanne: Ioniq 5 CAN-andmete Android-rakendus
 
-Versioon 0.18 (mustand) · 2026-10-10
+Versioon 0.19 (mustand) · 2026-10-10
 
 ## 1. Eesmärk
 
@@ -293,7 +293,7 @@ foreground service'is.
 ## 6. Mittefunktsionaalsed nõuded
 
 - **Platvorm:** Android 8.0+ (minSdk 26), targetSdk viimane stabiilne. Telefon ja tahvel, püsti- ja põikpaigutus.
-- **Tehnoloogia:** Kotlin, Jetpack Compose, Coroutines/Flow, Room (logid), DataStore (seaded), Hilt (DI).
+- **Tehnoloogia:** Kotlin, Jetpack Compose, Coroutines/Flow. Salvestused CSV-failidena (otse eksporditavad, Room-i asemel), seaded SharedPreferences'is, sõltuvused käsitsi (ilma Hiltita).
 - **Arhitektuur:** kihid `transport` (BLE/SPP) → `elm327` (AT-käsud, vastuste parsimine, ISO-TP) → `protocol` (UDS, PID-konfiguratsioon, dekodeerimine) → `repository` → UI (MVVM). Transport on liidese taga, et testida ilma autota (simulaator / salvestatud vastuste taasesitus).
 - **Load:** `BLUETOOTH_SCAN`, `BLUETOOTH_CONNECT` (Android 12+), vanematel `ACCESS_FINE_LOCATION`. Taustlogimiseks foreground service koos teavitusega.
 - **Töökindlus:** ühenduse katkemisel automaatne taasühendus, rakendus ei jookse kokku vigase või puuduva vastuse peale.
