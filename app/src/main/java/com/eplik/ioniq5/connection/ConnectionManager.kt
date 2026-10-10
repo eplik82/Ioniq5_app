@@ -6,6 +6,8 @@ import com.eplik.ioniq5.ble.FoundDevice
 import com.eplik.ioniq5.core.elm.Elm327
 import com.eplik.ioniq5.core.elm.TrafficEntry
 import com.eplik.ioniq5.core.pid.Ioniq5Pids
+import com.eplik.ioniq5.core.poll.ChargeSession
+import com.eplik.ioniq5.core.poll.ChargeSessionTracker
 import com.eplik.ioniq5.core.poll.Poller
 import com.eplik.ioniq5.core.poll.Readings
 import com.eplik.ioniq5.core.transport.Transport
@@ -41,6 +43,10 @@ class ConnectionManager(
     /** Viimased näidud; jäävad alles ka pärast ühenduse katkemist (UI näitab neid aegununa). */
     private val _readings = MutableStateFlow<Readings>(emptyMap())
     val readings: StateFlow<Readings> = _readings.asStateFlow()
+
+    private val chargeTracker = ChargeSessionTracker()
+    private val _chargeSession = MutableStateFlow<ChargeSession?>(null)
+    val chargeSession: StateFlow<ChargeSession?> = _chargeSession.asStateFlow()
 
     private var poller: Poller? = null
     private var pollJob: Job? = null
@@ -103,7 +109,12 @@ class ConnectionManager(
         val newPoller = Poller(driver, Ioniq5Pids.ALL)
         poller = newPoller
         pollJob = scope.launch {
-            launch { newPoller.readings.collect { latest -> _readings.update { it + latest } } }
+            launch {
+                newPoller.readings.collect { latest ->
+                    _readings.update { it + latest }
+                    _chargeSession.value = chargeTracker.update(_readings.value, System.currentTimeMillis())
+                }
+            }
             newPoller.run()
         }
     }

@@ -31,6 +31,7 @@ import androidx.compose.ui.unit.dp
 import com.eplik.ioniq5.R
 import com.eplik.ioniq5.core.pid.Ioniq5Pids as P
 import com.eplik.ioniq5.core.poll.Readings
+import com.eplik.ioniq5.core.poll.speedKmh
 import com.eplik.ioniq5.ui.components.formatValue
 import com.eplik.ioniq5.ui.components.isFresh
 import com.eplik.ioniq5.ui.components.rememberNow
@@ -97,6 +98,10 @@ fun AxlesScreen(readings: Readings, modifier: Modifier = Modifier) {
                 gLon = v(P.LONGITUDINAL_ACCEL),
             )
         }
+        Text(
+            stringResource(R.string.speed_calc) + ": " + formatValue(readings.takeIf { v(P.MOTOR_RPM) != null }?.speedKmh(), 0) + " km/h",
+            style = MaterialTheme.typography.titleMedium,
+        )
         Text(
             stringResource(R.string.steering_angle) + ": " + formatValue(steering, 1) + "°",
             style = MaterialTheme.typography.titleMedium,

@@ -29,7 +29,9 @@ import com.eplik.ioniq5.Ioniq5Application
 import com.eplik.ioniq5.ui.diagnostics.DiagnosticsScreen
 import com.eplik.ioniq5.ui.screens.AxlesScreen
 import com.eplik.ioniq5.ui.screens.BatteryScreen
+import com.eplik.ioniq5.ui.screens.ChargingScreen
 import com.eplik.ioniq5.ui.screens.ConnectionScreen
+import com.eplik.ioniq5.ui.screens.SolarScreen
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import com.eplik.ioniq5.R
@@ -50,6 +52,7 @@ fun Ioniq5App() {
     val connection = (LocalContext.current.applicationContext as Ioniq5Application).connection
     val status by connection.status.collectAsStateWithLifecycle()
     val readings by connection.readings.collectAsStateWithLifecycle()
+    val chargeSession by connection.chargeSession.collectAsStateWithLifecycle()
     var selected by rememberSaveable { mutableStateOf(Tab.OVERVIEW) }
     var showConnection by rememberSaveable { mutableStateOf(false) }
     Scaffold(
@@ -89,6 +92,8 @@ fun Ioniq5App() {
             selected == Tab.OVERVIEW -> OverviewScreen(status, readings, onConnectionClick = { showConnection = true }, modifier = modifier)
             selected == Tab.BATTERY -> BatteryScreen(readings, modifier)
             selected == Tab.AXLES -> AxlesScreen(readings, modifier)
+            selected == Tab.CHARGING -> ChargingScreen(readings, chargeSession, modifier)
+            selected == Tab.SOLAR -> SolarScreen(readings, modifier)
             selected == Tab.DIAGNOSTICS -> DiagnosticsScreen(onConnectionClick = { showConnection = true }, modifier = modifier)
             else -> PlaceholderScreen(stringResource(selected.label), selected.stage, modifier)
         }

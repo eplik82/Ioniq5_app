@@ -66,4 +66,20 @@
     <string name="selected_cell">Cell %1$d: %2$s V (%3$s mV from average)</string>
     <string name="module_temps">Module temperatures</string>
     <string name="discover_stage3">Discover (stage 3)</string>
+    <string name="not_charging">Not charging</string>
+    <string name="time_to_80" formatted="false">Time to 80 %</string>
+    <string name="time_to_100" formatted="false">Time to 100 %</string>
+    <string name="session_current">Current charging session</string>
+    <string name="session_last">Last charging session</string>
+    <string name="session_energy">Charged</string>
+    <string name="session_duration">Duration</string>
+    <string name="session_soc">Charge level</string>
+    <string name="charging_note">Times are estimated from current power and remaining capacity (72.6 kWh × SOH). Charger, AC/DC and charge port data will be added after discovery.</string>
+    <string name="solar_title">Solar roof</string>
+    <string name="iccu_hv_voltage">High voltage (ICCU)</string>
+    <string name="solar_power">Solar power</string>
+    <string name="solar_energy_total">Total generated</string>
+    <string name="not_found_yet">not found yet</string>
+    <string name="solar_note">The solar roof data comes from the ICCU (7E5, 22E011). Panel voltage has been identified; instantaneous power and total energy need a night-time comparison measurement.</string>
+    <string name="speed_calc">Speed (from motor rpm)</string>
 </resources>

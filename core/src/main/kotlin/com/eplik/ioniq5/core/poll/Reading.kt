@@ -29,3 +29,27 @@ fun Readings.cellVoltages(): List<Double> =
 /** Mooduli temperatuurid 1..16 (puuduvad jäetakse null-iks). */
 fun Readings.moduleTemperatures(): List<Double?> =
     (1..Ioniq5Pids.MODULE_TEMP_COUNT).map { value(Ioniq5Pids.moduleTempId(it)) }
+
+/** Ioniq 5 AWD tagasilla ülekandearv ja 255/45 R20 rehvi ümbermõõt (m). */
+private const val REAR_GEAR_RATIO = 10.65
+private const val TIRE_CIRCUMFERENCE_M = 2.316
+
+/**
+ * Kiirus km/h tagamootori pööretest. Kontrollitud: 8766 p/min ≈ 114 km/h (auto näit ~115 km/h).
+ */
+fun Readings.speedKmh(): Double? =
+    value(Ioniq5Pids.MOTOR_RPM)?.let { kotlin.math.abs(it) / REAR_GEAR_RATIO * TIRE_CIRCUMFERENCE_M * 60 / 1000 }
+
+/** Aku kasutatav mahutavus kWh (72,6 kWh × SOH). */
+fun Readings.usableCapacityKwh(nominalKwh: Double = 72.6): Double =
+    nominalKwh * (value(Ioniq5Pids.SOH) ?: 100.0) / 100
+
+/** Hinnanguline laadimisaeg minutites sihtlaetuseni praeguse võimsusega; null, kui ei lae. */
+fun Readings.minutesToSoc(targetPercent: Double): Double? {
+    val power = batteryPowerKw() ?: return null
+    if (power > -0.5) return null
+    val soc = value(Ioniq5Pids.SOC_DISPLAY) ?: value(Ioniq5Pids.SOC_BMS) ?: return null
+    if (soc >= targetPercent) return 0.0
+    val energyKwh = (targetPercent - soc) / 100 * usableCapacityKwh()
+    return energyKwh / -power * 60
+}

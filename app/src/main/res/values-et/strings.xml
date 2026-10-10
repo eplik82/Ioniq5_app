@@ -66,4 +66,20 @@
     <string name="selected_cell">Element %1$d: %2$s V (%3$s mV keskmisest)</string>
     <string name="module_temps">Moodulite temperatuurid</string>
     <string name="discover_stage3">Avasta (3. etapp)</string>
+    <string name="not_charging">Ei lae</string>
+    <string name="time_to_80" formatted="false">Aeg 80 %-ni</string>
+    <string name="time_to_100" formatted="false">Aeg 100 %-ni</string>
+    <string name="session_current">Käimasolev laadimine</string>
+    <string name="session_last">Viimane laadimine</string>
+    <string name="session_energy">Laetud</string>
+    <string name="session_duration">Kestus</string>
+    <string name="session_soc">Laetus</string>
+    <string name="charging_note">Ajad on arvutatud praeguse võimsuse ja järelejäänud mahutavuse järgi (72,6 kWh × SOH). Laadija, AC/DC ja laadimispesa andmed lisanduvad pärast avastusskaneeringut.</string>
+    <string name="solar_title">Päikesekatus</string>
+    <string name="iccu_hv_voltage">Kõrgepinge (ICCU)</string>
+    <string name="solar_power">Päikese võimsus</string>
+    <string name="solar_energy_total">Toodetud kokku</string>
+    <string name="not_found_yet">veel leidmata</string>
+    <string name="solar_note">Päikesekatuse andmed tulevad ICCU-st (7E5, 22E011). Paneeli pinge on leitud; hetkevõimsuse ja koguenergia leidmiseks on vaja öist võrdlusmõõtmist.</string>
+    <string name="speed_calc">Kiirus (mootori pööretest)</string>
 </resources>
