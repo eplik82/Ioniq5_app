@@ -7,8 +7,11 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 
-/** Vastab etteantud käskudele nagu ELM327; teadmata käsule vastab "?". */
-class FakeTransport(private val replies: Map<String, String>) : Transport {
+/** Vastab etteantud käskudele nagu ELM327; teadmata käsule vastab [fallback] (vaikimisi "?"). */
+class FakeTransport(
+    private val replies: Map<String, String>,
+    private val fallback: (String) -> String = { "?" },
+) : Transport {
     val sent = mutableListOf<String>()
 
     private val _state = MutableStateFlow(TransportState.DISCONNECTED)
@@ -28,7 +31,7 @@ class FakeTransport(private val replies: Map<String, String>) : Transport {
     override suspend fun write(data: ByteArray) {
         val cmd = data.decodeToString().trimEnd('\r')
         sent += cmd
-        val reply = replies[cmd] ?: "?"
+        val reply = replies[cmd] ?: fallback(cmd)
         // Vastus tuleb kahes tükis nagu päris BLE-adapterist
         val text = "$reply\r\r>"
         _incoming.emit(text.substring(0, text.length / 2).encodeToByteArray())
