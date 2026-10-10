@@ -8,6 +8,7 @@ import com.eplik.ioniq5.core.elm.TrafficEntry
 import com.eplik.ioniq5.core.pid.Ioniq5Pids
 import com.eplik.ioniq5.core.poll.ChargeSession
 import com.eplik.ioniq5.core.poll.ChargeSessionTracker
+import com.eplik.ioniq5.core.poll.EnergyIntegrator
 import com.eplik.ioniq5.core.poll.Poller
 import com.eplik.ioniq5.core.poll.Readings
 import com.eplik.ioniq5.core.transport.Transport
@@ -47,6 +48,12 @@ class ConnectionManager(
     private val chargeTracker = ChargeSessionTracker()
     private val _chargeSession = MutableStateFlow<ChargeSession?>(null)
     val chargeSession: StateFlow<ChargeSession?> = _chargeSession.asStateFlow()
+
+    /** Päikeseenergia, mis on kogutud selle rakenduse ühenduse ajal (Wh). */
+    private val solarIntegrator = EnergyIntegrator()
+    private var lastSolarTimeMs = 0L
+    private val _solarEnergyWh = MutableStateFlow(0.0)
+    val solarEnergyWh: StateFlow<Double> = _solarEnergyWh.asStateFlow()
 
     private var poller: Poller? = null
     private var pollJob: Job? = null
@@ -127,6 +134,11 @@ class ConnectionManager(
                 newPoller.readings.collect { latest ->
                     _readings.update { it + latest }
                     _chargeSession.value = chargeTracker.update(_readings.value, System.currentTimeMillis())
+                    latest[Ioniq5Pids.SOLAR_POWER]?.takeIf { it.timeMs != lastSolarTimeMs }?.let {
+                        lastSolarTimeMs = it.timeMs
+                        solarIntegrator.add(it.value, it.timeMs)
+                        _solarEnergyWh.value = solarIntegrator.energyWh
+                    }
                 }
             }
             newPoller.run()

@@ -53,6 +53,7 @@ fun Ioniq5App() {
     val status by connection.status.collectAsStateWithLifecycle()
     val readings by connection.readings.collectAsStateWithLifecycle()
     val chargeSession by connection.chargeSession.collectAsStateWithLifecycle()
+    val solarEnergyWh by connection.solarEnergyWh.collectAsStateWithLifecycle()
     var selected by rememberSaveable { mutableStateOf(Tab.OVERVIEW) }
     var showConnection by rememberSaveable { mutableStateOf(false) }
     Scaffold(
@@ -93,7 +94,7 @@ fun Ioniq5App() {
             selected == Tab.BATTERY -> BatteryScreen(readings, modifier)
             selected == Tab.AXLES -> AxlesScreen(readings, modifier)
             selected == Tab.CHARGING -> ChargingScreen(readings, chargeSession, modifier)
-            selected == Tab.SOLAR -> SolarScreen(readings, modifier)
+            selected == Tab.SOLAR -> SolarScreen(readings, solarEnergyWh, modifier)
             selected == Tab.DIAGNOSTICS -> DiagnosticsScreen(onConnectionClick = { showConnection = true }, modifier = modifier)
             else -> PlaceholderScreen(stringResource(selected.label), selected.stage, modifier)
         }

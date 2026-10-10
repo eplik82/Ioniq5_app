@@ -51,6 +51,7 @@ object Ioniq5Pids {
     const val ODOMETER = "odometer"
     const val ICCU_HV_VOLTAGE = "iccu_hv_voltage"
     const val SOLAR_PANEL_VOLTAGE = "solar_panel_voltage"
+    const val SOLAR_POWER = "solar_power"
     const val OBC_AC_VOLTAGE = "obc_ac_voltage"
     const val OBC_AC_CURRENT_1 = "obc_ac_current_1"
     const val OBC_AC_CURRENT_2 = "obc_ac_current_2"
@@ -152,8 +153,11 @@ object Ioniq5Pids {
         pollIntervalMs = 5_000,
         signals = listOf(
             s(ICCU_HV_VOLTAGE, "Kõrgepinge (ICCU)", "High voltage (ICCU)", "V", ParameterGroup.SOLAR, 17, 2, scale = 0.1),
-            // Kandidaat: tõenäoliselt päikesepaneeli pinge
-            s(SOLAR_PANEL_VOLTAGE, "Päikesepaneeli pinge", "Solar panel voltage", "V", ParameterGroup.SOLAR, 15, 2, scale = 0.1),
+            // M–N: tähendus teadmata (pimedas 275,8 V, päeval 164–197 V), seega mitte paneeli pinge
+            s(SOLAR_PANEL_VOLTAGE, "ICCU M–N", "ICCU M–N", "V", ParameterGroup.SOLAR, 15, 2, scale = 0.1),
+            // Kandidaat: päikesekatuse võimsus = bait 25 × 0,5 W. Päeval pilves 37–40 W (klapib auto
+            // kogutoodangu kasvuga ~37,5 W), pimedas 3 W.
+            s(SOLAR_POWER, "Päikese võimsus", "Solar power", "W", ParameterGroup.SOLAR, 25, scale = 0.5),
         ),
     )
 

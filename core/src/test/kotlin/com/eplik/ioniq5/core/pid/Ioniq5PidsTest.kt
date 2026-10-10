@@ -72,6 +72,7 @@ class Ioniq5PidsTest {
         check(67561.0, P.ODOMETER)
         check(649.0, P.ICCU_HV_VOLTAGE)
         check(197.2, P.SOLAR_PANEL_VOLTAGE)
+        check(40.5, P.SOLAR_POWER)
     }
 
     @Test

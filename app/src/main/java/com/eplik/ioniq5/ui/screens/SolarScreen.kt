@@ -23,7 +23,7 @@ import com.eplik.ioniq5.ui.components.rememberNow
 
 /** Päikesekatus: seni kinnitatud ja kandidaatväärtused; võimsus ja energia lisanduvad, kui leitud. */
 @Composable
-fun SolarScreen(readings: Readings, modifier: Modifier = Modifier) {
+fun SolarScreen(readings: Readings, sessionEnergyWh: Double, modifier: Modifier = Modifier) {
     val now by rememberNow()
     LazyVerticalGrid(
         columns = GridCells.Adaptive(minSize = 150.dp),
@@ -36,13 +36,14 @@ fun SolarScreen(readings: Readings, modifier: Modifier = Modifier) {
         }
         item {
             ValueTile(
-                stringResource(R.string.solar_panel_voltage),
-                formatValue(readings[P.SOLAR_PANEL_VOLTAGE]?.value, 1),
-                "V",
-                readings[P.SOLAR_PANEL_VOLTAGE].isFresh(now),
+                stringResource(R.string.solar_power),
+                formatValue(readings[P.SOLAR_POWER]?.value, 0),
+                "W",
+                readings[P.SOLAR_POWER].isFresh(now),
                 detail = stringResource(R.string.candidate),
             )
         }
+        item { ValueTile(stringResource(R.string.solar_session_energy), formatValue(sessionEnergyWh, 1), "Wh", true) }
         item {
             ValueTile(
                 stringResource(R.string.iccu_hv_voltage),
@@ -51,7 +52,6 @@ fun SolarScreen(readings: Readings, modifier: Modifier = Modifier) {
                 readings[P.ICCU_HV_VOLTAGE].isFresh(now),
             )
         }
-        item { ValueTile(stringResource(R.string.solar_power), "—", "W", false, detail = stringResource(R.string.not_found_yet)) }
         item { ValueTile(stringResource(R.string.solar_energy_total), "—", "kWh", false, detail = stringResource(R.string.not_found_yet)) }
         item(span = { GridItemSpan(maxLineSpan) }) {
             Text(

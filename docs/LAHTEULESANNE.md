@@ -1,6 +1,6 @@
 # Lähteülesanne: Ioniq 5 CAN-andmete Android-rakendus
 
-Versioon 0.17 (mustand) · 2026-10-10
+Versioon 0.18 (mustand) · 2026-10-10
 
 ## 1. Eesmärk
 
@@ -199,6 +199,21 @@ seistes kõik nullid (võib olla esimootor). `733` ja `744` ei vasta. Järgmine 
 „Avasta (3. etapp)”) otsib `7E3`/`7E6` vahemikest `E000–E0FF` ja `2000–20FF`, VCU-st, pidurisüsteemist,
 roolivõimendist, esikaamerast ja radarist. Rataste kiirused ja kiirendused tuleb leida sõidu ajal
 (kaasreisija käivitab skaneeringu).
+
+### 4.2b Päikesekatuse võimsus (pime mõõtmine ilma laadimiseta, 10.10 20:41)
+
+Fail: `testdata/raw/iccu_night_no-charging_2026-10-10_2041.txt`.
+
+| `E011` bait | Päeval (pilves) | AC-laadimise ajal | Pimedas, ei lae |
+|---|---|---|---|
+| W (25) | 74–81 | 38 | 6 |
+| M–N (15–16) ÷ 10 | 164–197 | 95,5 | 275,8 |
+| O–P (17–18) ÷ 10 | 647–655 V | 733,4 V | 729,7 V (= aku pinge ✓) |
+
+- **Päikese võimsus = W × 0,5 W** (kandidaat): päeval 37–40 W, mis klapib auto kogutoodangu kasvuga
+  (10 Wh / 16 min ≈ 37,5 W); pimedas 3 W (müra). Kinnitada päikesepaistel, kus võimsus peaks olema 100–200 W.
+- M–N ei ole paneeli pinge (pimedas suurem kui päeval); tähendus teadmata.
+- Auto kogutoodangut (421,8 kWh) diagnostika kaudu ei leitud; rakendus integreerib võimsust ühenduse ajal.
 
 ### 4.3 Pardalaadija (OBC) AC-laadimisel (10.10 20:32, pime, auto lukus)
 

@@ -80,7 +80,7 @@
     <string name="solar_power">Päikese võimsus</string>
     <string name="solar_energy_total">Toodetud kokku</string>
     <string name="not_found_yet">veel leidmata</string>
-    <string name="solar_note">Päikesekatuse andmed tulevad ICCU-st (7E5, 22E011). Paneeli pinge on leitud; hetkevõimsuse ja koguenergia leidmiseks on vaja öist võrdlusmõõtmist.</string>
+    <string name="solar_note">Päikesekatuse andmed tulevad ICCU-st (7E5, 22E011). Võimsus = bait 25 × 0,5 W: pilvisel päeval ~40 W, mis klapib auto kogutoodangu kasvuga, ja pimedas ~3 W. Energiat loetakse ainult siis, kui rakendus on ühendatud; auto enda kogusummat diagnostika kaudu lugeda ei saa.</string>
     <string name="speed_calc">Kiirus (mootori pööretest)</string>
     <string name="to_left">vasakule</string>
     <string name="to_right">paremale</string>
@@ -92,4 +92,5 @@
     <string name="ac_phase_currents">Faasivoolud L1/L2/L3</string>
     <string name="obc_output_power">Laadija väljund</string>
     <string name="obc_efficiency">Laadija kasutegur</string>
+    <string name="solar_session_energy">Kogutud ühenduse ajal</string>
 </resources>

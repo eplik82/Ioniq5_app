@@ -80,7 +80,7 @@
     <string name="solar_power">Solar power</string>
     <string name="solar_energy_total">Total generated</string>
     <string name="not_found_yet">not found yet</string>
-    <string name="solar_note">The solar roof data comes from the ICCU (7E5, 22E011). Panel voltage has been identified; instantaneous power and total energy need a night-time comparison measurement.</string>
+    <string name="solar_note">The solar roof data comes from the ICCU (7E5, 22E011). Power = byte 25 × 0.5 W: about 40 W on an overcast day, matching the growth of the car\'s total, and about 3 W in the dark. Energy is counted only while the app is connected; the car\'s own total is not readable over diagnostics.</string>
     <string name="speed_calc">Speed (from motor rpm)</string>
     <string name="to_left">left</string>
     <string name="to_right">right</string>
@@ -92,4 +92,5 @@
     <string name="ac_phase_currents">Phase currents L1/L2/L3</string>
     <string name="obc_output_power">Charger output</string>
     <string name="obc_efficiency">Charger efficiency</string>
+    <string name="solar_session_energy">Collected while connected</string>
 </resources>
