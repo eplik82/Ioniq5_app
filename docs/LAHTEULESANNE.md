@@ -1,6 +1,6 @@
 # Lähteülesanne: Ioniq 5 CAN-andmete Android-rakendus
 
-Versioon 0.2 (mustand) · 2026-10-10
+Versioon 0.3 (mustand) · 2026-10-10
 
 ## 1. Eesmärk
 
@@ -8,7 +8,10 @@ Teha Android-rakendus, mis ühendub Hyundai Ioniq 5 (E-GMP platvorm) diagnostika
 **LELink Bluetooth OBD-II adapteri** kaudu ning näitab auto parameetreid loogiliselt
 gruppidena, kaasa arvatud **päikesekatuse (solar roof)** andmeid.
 
-**Sõiduk:** Hyundai Ioniq 5 („Projekt 45”), päikesekatusega. Mudeliaasta ja aku maht on veel täpsustamata.
+**Sõiduk:** Hyundai Ioniq 5 („Projekt 45”), mudeliaasta 2022, päikesekatusega, aku 77,4 kWh
+(192 elementi). Mudeliaastal 2022 pakuti algul 58 ja 72,6 kWh akusid; 77,4 kWh tuli hiljem
+(2022. aasta teisest poolest). Seepärast tuvastab rakendus aku variandi ise elementide pingete
+PID-ide järgi (180 vs 192 elementi) ja kasutaja saab seda seadetes muuta.
 
 **Kasutus:** esialgu ainult isiklikuks kasutuseks (APK paigaldatakse ise, mitte Play poe kaudu).
 Telefonirakenduse kõrval on **Android Auto** tugi (jaotis 5.1). Kasutajaliides on **eesti ja inglise keeles**.
@@ -101,13 +104,22 @@ foreground service'is.
   - Laadimine: võimsus, SOC, hinnanguline lõpuaeg.
   - Rehvid: nelja rehvi rõhk.
   - Päikesekatus: hetkevõimsus, tänane energia.
-- **Piirangud:** Android Auto lubab ainult malle (List, Grid, Pane), mitte vabalt joonistatud
-  näidikuid. Mallide värskendamine on piiratud, seega uuendatakse andmeid umbes iga paari sekundi järel.
-  Sõidu ajal on tekst ja kerimine piiratud.
-- **Kategooria:** isiklikuks kasutuseks paigaldatakse rakendus Android Auto arendajarežiimis
-  („Unknown sources”). Vaikimisi kategooria on IOT (mallid). Valikuna saab hiljem kasutada
-  navigatsioonikategooriat: see annab joonistuspinna (Surface) päris graafilistele näidikutele,
-  kuid Play poodi see nii ei läheks.
+- **Graafiline kuva (nõue):** auto ekraanil on päris graafilised näidikud, mitte tekstiloendid.
+  Selleks kasutatakse Car App Library **navigatsioonikategooriat**, mis annab joonistuspinna
+  (`SurfaceCallback`). Näidikud joonistatakse ise Canvasele, nupud ja menüü on `NavigationTemplate`
+  ActionStripis. See sobib isiklikuks kasutuseks; Play poodi rakendus nii ei läheks.
+- **Kujundus:** sobitub Ioniq 5 enda näidikuploki ja infosüsteemi stiiliga:
+  - tume taust, valged ja helehallid õhukesed kirjad, sinakas-türkiissed aktsendid;
+  - „parametric pixel” motiiv (ruudukujulised pikslid) SOC-i ja võimsuse näidikutes;
+  - minimalistlikud ringikujulised ja kaarnäidikud, palju tühja ruumi;
+  - öö- ja päevarežiim vastavalt auto valgusandurile (Car App Library `isDarkMode`);
+  - Hyundai logosid ega kaubamärke ei kasutata, ainult stiili.
+  Sama kujunduskeel on ka telefonirakenduses.
+- **Ekraanide paigutus:** kohandub eri suurustega auto ekraanidele; Ioniq 5 12,3" laiekraan on peamine sihtmärk.
+- **Värskendus:** joonistuspinnal uuendatakse näidikuid sujuvalt (kuni ~10 kaadrit sekundis);
+  andmed tulevad sama kiiresti, kui autost pollitakse. Sõidu ajal ei ole kerimist ega pikka teksti.
+- **Paigaldus:** isiklikuks kasutuseks paigaldatakse APK ise ja Android Autos lülitatakse
+  arendajarežiimis sisse „Unknown sources”.
 - **Testimine:** Desktop Head Unit (DHU) emulaatoriga arvutis, seejärel päris autos.
 
 ## 6. Mittefunktsionaalsed nõuded
@@ -158,13 +170,12 @@ foreground service'is.
 | Sõiduk | Hyundai Ioniq 5 („Projekt 45”), päikesekatusega |
 | Adapter | LELink (BLE) |
 | Levitamine | Isiklik kasutus, APK; Play pood pole praegu eesmärk |
-| Android Auto | Jah (jaotis 5.1) |
+| Android Auto | Jah, graafiline (navigatsioonikategooria, Surface), Ioniq 5 stiilis (jaotis 5.1) |
+| Aku | 77,4 kWh, 192 elementi (mudeliaasta 2022); rakendus kontrollib automaatselt |
+| Välisteenused | Praegu ei ole vaja (ABRP, MQTT jms) |
 | Lähteandmed | Car Scanner PRO logid |
 | Kasutajaliidese keel | Eesti ja inglise |
 
 ## 11. Avatud küsimused
 
-1. Mudeliaasta ja aku maht (58 / 63 / 72,6 / 77,4 / 84 kWh)? Sellest sõltub elementide arv.
-2. Kas Car Scanner PRO-s on kasutusel mõni konkreetne Ioniq 5 profiil või kohandatud PID-id? Kui jah, siis selle eksport.
-3. Kas Android Autos piisab mallipõhisest vaatest või on vaja graafilisi näidikuid (navigatsioonikategooria)?
-4. Kas vaja on ühendust ka välisteenustega (nt ABRP, Home Assistant / MQTT)?
+1. Kas Car Scanner PRO-s on kasutusel mõni konkreetne Ioniq 5 profiil või kohandatud PID-id? Kui jah, siis selle eksport.
