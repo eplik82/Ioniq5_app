@@ -1,12 +1,17 @@
 # Lähteülesanne: Ioniq 5 CAN-andmete Android-rakendus
 
-Versioon 0.1 (mustand) · 2026-10-10
+Versioon 0.2 (mustand) · 2026-10-10
 
 ## 1. Eesmärk
 
 Teha Android-rakendus, mis ühendub Hyundai Ioniq 5 (E-GMP platvorm) diagnostika-CAN-võrku
 **LELink Bluetooth OBD-II adapteri** kaudu ning näitab auto parameetreid loogiliselt
 gruppidena, kaasa arvatud **päikesekatuse (solar roof)** andmeid.
+
+**Sõiduk:** Hyundai Ioniq 5 („Projekt 45”), päikesekatusega. Mudeliaasta ja aku maht on veel täpsustamata.
+
+**Kasutus:** esialgu ainult isiklikuks kasutuseks (APK paigaldatakse ise, mitte Play poe kaudu).
+Telefonirakenduse kõrval on **Android Auto** tugi (jaotis 5.1). Kasutajaliides on **eesti ja inglise keeles**.
 
 Rakendus loeb andmeid ainult lugemisrežiimis. See ei kirjuta ECU-desse midagi, ei kustuta
 veakoode ega muuda seadeid (vt jaotis 9).
@@ -23,7 +28,7 @@ veakoode ega muuda seadeid (vt jaotis 9).
 
 | Teema | Nõue / eeldus |
 |---|---|
-| Adapter | LELink (BLE, ELM327-ühilduv). GATT-teenus `FFE0`, karakteristik `FFE1` (notify + write). Tuleb kinnitada konkreetse mudeli peal (LELink vs LELink²). |
+| Adapter | LELink (esimene põlvkond, BLE, ELM327-ühilduv). GATT-teenus `FFE0`, karakteristik `FFE1` (notify + write). UUID-d kinnitatakse 1. etapis. |
 | Ühendus | Bluetooth Low Energy. Klassikalist Bluetoothi (SPP) toetada arhitektuuris, aga v1-s pole see kohustuslik. |
 | CAN | ISO 15765-4, 11-bit ID, 500 kbit/s (`ATSP6`). |
 | Protokoll | UDS teenus `0x22` (ReadDataByIdentifier). ISO-TP mitmekaadrilised vastused koostab ELM327. |
@@ -34,6 +39,8 @@ veakoode ega muuda seadeid (vt jaotis 9).
 ## 4. Andmeallikad (ECU-d ja PID-id)
 
 Allolev loend põhineb kogukonna teadaolevatel andmetel (EVNotify, OVMS, Car Scanneri profiilid).
+Kasutaja Car Scanner PRO logid on peamine lähteandmestik: nende järgi kontrollitakse PID-e ja
+dekodeerimisvalemeid (vt jaotis 7).
 **Iga aadress ja dekodeerimisvalem tuleb 1. etapis päris autoga üle kontrollida.**
 PID-id ja valemid hoitakse rakenduses eraldi konfiguratsioonifailis (JSON), et neid saaks
 parandada ja lisada ilma koodi muutmata.
@@ -82,6 +89,27 @@ käib sama rakendusega.
 
 Iga parameetri juures on ühik, värskendamise aeg ja märge, kui väärtus on aegunud (ECU ei vastanud).
 
+### 5.1 Android Auto
+
+Android Auto rakendus tehakse Google'i **Car App Library** abil. Sama andmeallikas (repository)
+teenindab nii telefoni kui ka auto ekraani; BLE-ühendus ja pollimine käivad telefonis
+foreground service'is.
+
+- **Ekraanid auto ekraanil:**
+  - Ülevaade: SOC, aku võimsus (kW), aku temperatuur, päikesekatuse hetkevõimsus, 12 V pinge.
+  - Aku: SOC, SOH, min/max elemendipinge, temperatuurid.
+  - Laadimine: võimsus, SOC, hinnanguline lõpuaeg.
+  - Rehvid: nelja rehvi rõhk.
+  - Päikesekatus: hetkevõimsus, tänane energia.
+- **Piirangud:** Android Auto lubab ainult malle (List, Grid, Pane), mitte vabalt joonistatud
+  näidikuid. Mallide värskendamine on piiratud, seega uuendatakse andmeid umbes iga paari sekundi järel.
+  Sõidu ajal on tekst ja kerimine piiratud.
+- **Kategooria:** isiklikuks kasutuseks paigaldatakse rakendus Android Auto arendajarežiimis
+  („Unknown sources”). Vaikimisi kategooria on IOT (mallid). Valikuna saab hiljem kasutada
+  navigatsioonikategooriat: see annab joonistuspinna (Surface) päris graafilistele näidikutele,
+  kuid Play poodi see nii ei läheks.
+- **Testimine:** Desktop Head Unit (DHU) emulaatoriga arvutis, seejärel päris autos.
+
 ## 6. Mittefunktsionaalsed nõuded
 
 - **Platvorm:** Android 8.0+ (minSdk 26), targetSdk viimane stabiilne. Telefon ja tahvel, püsti- ja põikpaigutus.
@@ -95,8 +123,13 @@ Iga parameetri juures on ühik, värskendamise aeg ja märge, kui väärtus on a
 
 ## 7. Testimine
 
+- **Car Scanner PRO logid:** kasutaja ekspordib logid (CSV) ja võimalusel ka kasutatud PID-profiili.
+  Need pannakse repo kausta `testdata/carscanner/`. Nende järgi
+  - kontrollitakse, et rakenduse dekodeeritud väärtused on samad mis Car Scanneris;
+  - koostatakse PID-konfiguratsiooni algversioon;
+  - toidetakse simulaatorit, et arendada UI-d ilma autota.
 - Ühiktestid iga PID-i dekodeerimisvalemile päris autost salvestatud vastuste põhjal.
-- Simulaatorrežiim (võlts-transport), mis mängib salvestatud seansi uuesti läbi; sellega saab UI-d arendada ilma autota.
+- Simulaatorrežiim (võlts-transport), mis mängib salvestatud seansi uuesti läbi; sellega saab UI-d (ka Android Auto) arendada ilma autota.
 - Päris autoga testid: seisab, sõidab, AC-laadimine, DC-laadimine, päikese käes seismine.
 
 ## 8. Etapid
@@ -108,7 +141,8 @@ Iga parameetri juures on ühik, värskendamise aeg ja märge, kui väärtus on a
 | 2 | PID-konfiguratsioon, dekodeerimine, BMS ja ülevaade | SOC, võimsus, temperatuurid, elementide pinged |
 | 3 | Ülejäänud grupid: laadimine, sõit, rehvid, kliima, päikesekatus | Kõik ekraanid |
 | 4 | Logimine, graafikud, CSV eksport, foreground service | Sõidu- ja laadimislogid |
-| 5 | Viimistlus, lokaliseerimine, hoiatused, väljalase (APK / Play pood) | v1.0 |
+| 5 | Android Auto (Car App Library, DHU testid) | Andmed auto ekraanil |
+| 6 | Viimistlus, lokaliseerimine, hoiatused, allkirjastatud APK | v1.0 |
 
 ## 9. Ohutus ja piirangud
 
@@ -117,12 +151,20 @@ Iga parameetri juures on ühik, värskendamise aeg ja märge, kui väärtus on a
 - Rakendus ei tohi segada auto tööd: pollimissageduse piir ja päringute vaheline paus.
 - Kasutaja vastutus: rakendust ei kasutata sõidu ajal juhi poolt (hoiatus esmakäivitusel).
 
-## 10. Avatud küsimused
+## 10. Otsused
 
-1. Mis on "projektr5"? Kas see on konkreetne projekt, mudeliaasta, varustustase või mõni muu sõiduk?
-2. Auto mudeliaasta ja aku maht (58 / 72,6 / 77,4 / 84 kWh)? Kas on Ioniq 5 N?
-3. Milline LELinki mudel täpselt (LELink BLE, LELink²)?
-4. Kas rakendus on isiklikuks kasutuseks (APK) või Play poodi?
-5. Kas on vaja Android Auto toe või kodukoha/pilve ühendust (nt ABRP, Home Assistant / MQTT)?
-6. Kas on varasemaid logisid või Car Scanneri profiile, mida saaks lähteandmetena kasutada?
-7. Kas kasutajaliidese keel peab olema ainult eesti, ainult inglise või mõlemad?
+| Küsimus | Otsus |
+|---|---|
+| Sõiduk | Hyundai Ioniq 5 („Projekt 45”), päikesekatusega |
+| Adapter | LELink (BLE) |
+| Levitamine | Isiklik kasutus, APK; Play pood pole praegu eesmärk |
+| Android Auto | Jah (jaotis 5.1) |
+| Lähteandmed | Car Scanner PRO logid |
+| Kasutajaliidese keel | Eesti ja inglise |
+
+## 11. Avatud küsimused
+
+1. Mudeliaasta ja aku maht (58 / 63 / 72,6 / 77,4 / 84 kWh)? Sellest sõltub elementide arv.
+2. Kas Car Scanner PRO-s on kasutusel mõni konkreetne Ioniq 5 profiil või kohandatud PID-id? Kui jah, siis selle eksport.
+3. Kas Android Autos piisab mallipõhisest vaatest või on vaja graafilisi näidikuid (navigatsioonikategooria)?
+4. Kas vaja on ühendust ka välisteenustega (nt ABRP, Home Assistant / MQTT)?
