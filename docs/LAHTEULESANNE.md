@@ -1,6 +1,6 @@
 # Lähteülesanne: Ioniq 5 CAN-andmete Android-rakendus
 
-Versioon 0.8 (mustand) · 2026-10-10
+Versioon 0.9 (mustand) · 2026-10-10
 
 ## 1. Eesmärk
 
@@ -92,7 +92,20 @@ Rakenduse ISO-TP kokkupanek ja baitide asukohad on selle vastusega testitud (`So
 | Solar roof voltage | M, N (15–16) | `06 6D` | 164,5 V (logis 279–303 V) |
 | Solar to High Voltage | Q (19) | `39` | 114 W (logis 112 W) |
 
-Ühe vastuse põhjal ei saa valemeid kinnitada; vaja on võrdlust päikese käes, varjus ja öösel.
+**Auto enda näit samal ajal** (infosüsteemi „Solar roof” vaade): päikesekatuse näidik 1/3,
+päikeselt saadud **+3,5 km**, aku 47%.
+
+Kandidaadid, mida järgmiste vastustega kontrollida:
+
+| Kandidaat | Baidid | Toorväärtus | Tõlgendus | Põhjendus |
+|---|---|---|---|---|
+| Päikeselt saadud läbisõit | V (24) | `22` = 34 | 3,4 km (×0,1) | Auto näitas veidi hiljem 3,5 km |
+| Päikesekatuse tase (näidik 1/3) | E, F (7–8) või 29–31 | `01` | tase 1 | Peab muutuma koos näidikuga |
+| Kogunenud energia (loendur) | O, P (17–18) või R–U (20–23) | `19 91`, `7B 7F D2 51` | teadmata | Suured väärtused, võivad olla loendurid |
+
+Pilvise päeva kohta tunduvad 149 W ja 114 W liiga suured (näidik 1/3, katuse tippvõimsus ~200 W);
+need ei pruugi olla hetkevõimsus. Ühe vastuse põhjal ei saa valemeid kinnitada; vaja on võrdlust
+päikese käes, varjus ja öösel ning auto näidu (km, tase) üleskirjutamist iga vastuse juures.
 
 Kontrollimine:
 
