@@ -93,4 +93,10 @@
     <string name="obc_output_power">Charger output</string>
     <string name="obc_efficiency">Charger efficiency</string>
     <string name="solar_session_energy">Collected while connected</string>
+    <string name="capture_note">Note (situation)</string>
+    <string name="capture_start">Developer log</string>
+    <string name="capture_stop">Stop</string>
+    <string name="capture_add_note">Add note</string>
+    <string name="capture_share">Share developer log</string>
+    <string name="capture_progress">Developer log: cycle %1$d, %2$s</string>
 </resources>

@@ -93,4 +93,10 @@
     <string name="obc_output_power">Laadija väljund</string>
     <string name="obc_efficiency">Laadija kasutegur</string>
     <string name="solar_session_energy">Kogutud ühenduse ajal</string>
+    <string name="capture_note">Märkus (olukord)</string>
+    <string name="capture_start">Arenduslogi</string>
+    <string name="capture_stop">Peata</string>
+    <string name="capture_add_note">Lisa märkus</string>
+    <string name="capture_share">Jaga arenduslogi</string>
+    <string name="capture_progress">Arenduslogi: tsükkel %1$d, %2$s</string>
 </resources>

@@ -2,6 +2,7 @@ package com.eplik.ioniq5.core.scan
 
 import com.eplik.ioniq5.core.elm.Elm327
 import com.eplik.ioniq5.core.elm.FakeTransport
+import com.eplik.ioniq5.core.elm.hexToBytes
 import com.eplik.ioniq5.core.pid.EcuAddress
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
@@ -59,5 +60,12 @@ class ScannerTest {
     fun discoveryPlanIsReadOnly() {
         DiscoveryPlan.STAGE3.forEach { assert(it.service == 0x22 || it.service == 0x21) }
         assertEquals("7E3 22 E000–E0FF", DiscoveryPlan.STAGE3[0].describe())
+    }
+
+    @Test
+    fun devCaptureIsReadOnly() {
+        DevCapture.REQUESTS.forEach {
+            assert(com.eplik.ioniq5.core.uds.UdsSafety.isAllowed(it.request.hexToBytes()))
+        }
     }
 }

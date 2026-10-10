@@ -7,6 +7,7 @@ import com.eplik.ioniq5.Ioniq5Application
 import com.eplik.ioniq5.R
 import com.eplik.ioniq5.core.elm.toHex
 import com.eplik.ioniq5.core.pid.EcuAddress
+import com.eplik.ioniq5.core.scan.DevCapture
 import com.eplik.ioniq5.core.scan.DidScanner
 import com.eplik.ioniq5.core.scan.DiscoveryPlan
 import com.eplik.ioniq5.core.scan.EcuScanner
@@ -14,7 +15,10 @@ import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import java.util.concurrent.ConcurrentLinkedQueue
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -38,6 +42,75 @@ class DiagnosticsViewModel(application: Application) : AndroidViewModel(applicat
     val results: StateFlow<List<String>> = _results.asStateFlow()
 
     private var job: Job? = null
+
+    // Arenduslogi
+    private var captureJob: Job? = null
+    private val pendingNotes = ConcurrentLinkedQueue<String>()
+    private val _capturing = MutableStateFlow(false)
+    val capturing: StateFlow<Boolean> = _capturing.asStateFlow()
+    private val _captureFile = MutableStateFlow<File?>(null)
+    val captureFile: StateFlow<File?> = _captureFile.asStateFlow()
+
+    /**
+     * Arenduslogi: küsib [DevCapture.REQUESTS] ringiratast, kuni peatatakse, ja kirjutab toorvastused
+     * ajatemplitega faili. Märkused lisatakse logisse järgmise päringu eel.
+     */
+    fun startCapture(note: String) {
+        val elm = connection.elm ?: return notConnected()
+        if (job?.isActive == true || captureJob?.isActive == true) return
+        val app = getApplication<Application>()
+        val stamp = SimpleDateFormat("yyyy-MM-dd_HHmmss", Locale.US).format(Date())
+        val time = SimpleDateFormat("HH:mm:ss.SSS", Locale.US)
+        val file = File(File(app.cacheDir, "logs").apply { mkdirs() }, "ioniq5_dev_$stamp.txt")
+        val version = runCatching { app.packageManager.getPackageInfo(app.packageName, 0).versionName }.getOrNull()
+        pendingNotes.clear()
+        if (note.isNotBlank()) pendingNotes.add(note)
+        _message.value = null
+        _capturing.value = true
+        _captureFile.value = file
+        connection.pausePolling()
+        captureJob = viewModelScope.launch(Dispatchers.IO) {
+            file.bufferedWriter().use { w ->
+                w.write("# Ioniq 5 Monitor arenduslogi $stamp, versioon $version\n")
+                val start = System.currentTimeMillis()
+                var cycle = 0
+                while (isActive) {
+                    cycle++
+                    val elapsed = (System.currentTimeMillis() - start) / 1000
+                    _progress.value = app.getString(R.string.capture_progress, cycle, "%d:%02d".format(elapsed / 60, elapsed % 60))
+                    for (r in DevCapture.REQUESTS) {
+                        while (true) {
+                            val n = pendingNotes.poll() ?: break
+                            w.write("# MÄRKUS ${time.format(Date())}: $n\n")
+                        }
+                        val lines = try {
+                            elm.consoleRequest(r.ecu, r.request)
+                        } catch (e: Exception) {
+                            if (e is kotlinx.coroutines.CancellationException) throw e
+                            listOf("VIGA: ${e.message}")
+                        }
+                        w.write("# ${time.format(Date())} ${r.ecu.requestHex} ${r.label}\n> ${r.request}\n")
+                        lines.forEach { w.write(it); w.write("\n") }
+                    }
+                    w.flush()
+                }
+            }
+        }.also {
+            it.invokeOnCompletion {
+                connection.resumePolling()
+                _progress.value = null
+                _capturing.value = false
+            }
+        }
+    }
+
+    fun stopCapture() {
+        captureJob?.cancel()
+    }
+
+    fun addNote(note: String) {
+        if (note.isNotBlank()) pendingNotes.add(note)
+    }
 
     /** AT-käsk läheb adapterile; hex-päring läheb [ecuHex] väljal olevale juhtplokile. */
     fun send(input: String, ecuHex: String) {
@@ -131,6 +204,7 @@ class DiagnosticsViewModel(application: Application) : AndroidViewModel(applicat
 
     fun stop() {
         job?.cancel()
+        captureJob?.cancel()
         _progress.value = null
     }
 

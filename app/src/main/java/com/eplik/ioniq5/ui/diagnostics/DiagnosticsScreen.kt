@@ -69,6 +69,18 @@ fun DiagnosticsScreen(
     val progress by viewModel.progress.collectAsStateWithLifecycle()
     val message by viewModel.message.collectAsStateWithLifecycle()
     val results by viewModel.results.collectAsStateWithLifecycle()
+    val capturing by viewModel.capturing.collectAsStateWithLifecycle()
+    val captureFile by viewModel.captureFile.collectAsStateWithLifecycle()
+    var note by rememberSaveable { mutableStateOf("") }
+
+    fun share(file: java.io.File) {
+        val uri = FileProvider.getUriForFile(context, "${context.packageName}.files", file)
+        val send = Intent(Intent.ACTION_SEND)
+            .setType("text/plain")
+            .putExtra(Intent.EXTRA_STREAM, uri)
+            .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        context.startActivity(Intent.createChooser(send, null))
+    }
 
     var input by rememberSaveable { mutableStateOf("") }
     var ecu by rememberSaveable { mutableStateOf("7E5") }
@@ -110,6 +122,32 @@ fun DiagnosticsScreen(
             Button(onClick = { viewModel.send(input, ecu) }, enabled = connected && !busy) { Text(stringResource(R.string.send)) }
         }
 
+        // Arenduslogi
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+            OutlinedTextField(
+                value = note,
+                onValueChange = { note = it },
+                modifier = Modifier.weight(1f),
+                singleLine = true,
+                label = { Text(stringResource(R.string.capture_note)) },
+            )
+            if (capturing) {
+                OutlinedButton(onClick = {
+                    viewModel.addNote(note)
+                    note = ""
+                }) { Text(stringResource(R.string.capture_add_note)) }
+                Button(onClick = { viewModel.stopCapture() }) { Text(stringResource(R.string.capture_stop)) }
+            } else {
+                Button(
+                    onClick = {
+                        viewModel.startCapture(note)
+                        note = ""
+                    },
+                    enabled = connected && !busy,
+                ) { Text(stringResource(R.string.capture_start)) }
+            }
+        }
+
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             HexField(ecu, { ecu = it }, "ECU", Modifier.width(88.dp))
             HexField(didFrom, { didFrom = it }, "DID", Modifier.width(96.dp))
@@ -125,16 +163,11 @@ fun DiagnosticsScreen(
                 Text(stringResource(R.string.discover_stage3))
             }
             if (busy) Button(onClick = { viewModel.stop() }) { Text(stringResource(R.string.stop)) }
+            if (captureFile != null && !capturing) {
+                Button(onClick = { captureFile?.let { share(it) } }) { Text(stringResource(R.string.capture_share)) }
+            }
             OutlinedButton(
-                onClick = {
-                    val file = viewModel.exportLog()
-                    val uri = FileProvider.getUriForFile(context, "${context.packageName}.files", file)
-                    val send = Intent(Intent.ACTION_SEND)
-                        .setType("text/plain")
-                        .putExtra(Intent.EXTRA_STREAM, uri)
-                        .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                    context.startActivity(Intent.createChooser(send, null))
-                },
+                onClick = { share(viewModel.exportLog()) },
                 enabled = traffic.isNotEmpty(),
             ) { Text(stringResource(R.string.share_log)) }
             OutlinedButton(
