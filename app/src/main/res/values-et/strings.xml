@@ -66,6 +66,7 @@
     <string name="selected_cell">Element %1$d: %2$s V (%3$s mV keskmisest)</string>
     <string name="module_temps">Moodulite temperatuurid</string>
     <string name="discover_stage3">Avasta (3. etapp)</string>
+    <string name="discover_climate">Avasta kliima</string>
     <string name="not_charging">Ei lae</string>
     <string name="time_to_80" formatted="false">Aeg 80 %-ni</string>
     <string name="time_to_100" formatted="false">Aeg 100 %-ni</string>

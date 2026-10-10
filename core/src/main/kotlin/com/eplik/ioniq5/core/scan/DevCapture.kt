@@ -17,6 +17,7 @@ object DevCapture {
     private val MDPS = EcuAddress(0x7D4)
     private val ESC = EcuAddress(0x7D1)
     private val VCU = EcuAddress(0x7E2)
+    private val HVAC = EcuAddress(0x7B3)
 
     val REQUESTS: List<Request> = listOf(
         Request(BMS, "220101", "BMS põhiandmed"),
@@ -38,6 +39,8 @@ object DevCapture {
         Request(MDPS, "220112", "Roolivõimendi"),
         Request(TPMS, "22C00B", "Rehvid"),
         Request(CLUSTER, "22B002", "Odomeeter"),
+        Request(HVAC, "220100", "Kliima: temperatuurid"),
+        Request(HVAC, "220102", "Kliima"),
         // Elemendid harvem pole vajalik: ühe tsükli kohta 6 päringut
         Request(BMS, "220102", "Elemendid 1–32"),
         Request(BMS, "220103", "Elemendid 33–64"),

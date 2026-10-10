@@ -66,6 +66,7 @@
     <string name="selected_cell">Cell %1$d: %2$s V (%3$s mV from average)</string>
     <string name="module_temps">Module temperatures</string>
     <string name="discover_stage3">Discover (stage 3)</string>
+    <string name="discover_climate">Discover climate</string>
     <string name="not_charging">Not charging</string>
     <string name="time_to_80" formatted="false">Time to 80 %</string>
     <string name="time_to_100" formatted="false">Time to 100 %</string>

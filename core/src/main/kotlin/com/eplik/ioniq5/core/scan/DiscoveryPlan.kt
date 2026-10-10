@@ -33,4 +33,17 @@ object DiscoveryPlan {
         ScanTask(EcuAddress(0x7C4), 0x22, 0x0100..0x01FF, "Esikaamera"),
         ScanTask(EcuAddress(0x7D0), 0x22, 0x0100..0x01FF, "Esiradar"),
     )
+
+    /**
+     * Kliima ja soojendused (lähteülesanne 4.4): sise- ja välistemperatuur, kliima režiim,
+     * istme-, rooli-, klaasi- ja peeglisoojendus. Skaneerida süüde sees.
+     */
+    val CLIMATE: List<ScanTask> = listOf(
+        ScanTask(EcuAddress(0x7B3), 0x22, 0x0100..0x01FF, "Kliima (HVAC) 7B3"),
+        ScanTask(EcuAddress(0x7A0), 0x22, 0xB000..0xB0FF, "IBU/BCM 7A0"),
+        ScanTask(EcuAddress(0x770), 0x22, 0xBC00..0xBCFF, "IBU 770"),
+        ScanTask(EcuAddress(0x770), 0x22, 0xB000..0xB0FF, "IBU 770"),
+        ScanTask(EcuAddress(0x706), 0x22, 0x0100..0x01FF, "Istmemoodul? 706"),
+        ScanTask(EcuAddress(0x7A1), 0x22, 0x0100..0x01FF, "7A1"),
+    )
 }

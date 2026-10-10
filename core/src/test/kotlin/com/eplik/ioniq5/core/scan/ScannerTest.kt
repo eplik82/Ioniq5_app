@@ -58,7 +58,7 @@ class ScannerTest {
 
     @Test
     fun discoveryPlanIsReadOnly() {
-        DiscoveryPlan.STAGE3.forEach { assert(it.service == 0x22 || it.service == 0x21) }
+        (DiscoveryPlan.STAGE3 + DiscoveryPlan.CLIMATE).forEach { assert(it.service == 0x22 || it.service == 0x21) }
         assertEquals("7E3 22 E000–E0FF", DiscoveryPlan.STAGE3[0].describe())
     }
 

@@ -18,6 +18,7 @@ import com.eplik.ioniq5.core.pid.EcuAddress
 import com.eplik.ioniq5.core.scan.DevCapture
 import com.eplik.ioniq5.core.scan.DidScanner
 import com.eplik.ioniq5.core.scan.DiscoveryPlan
+import com.eplik.ioniq5.core.scan.ScanTask
 import com.eplik.ioniq5.core.scan.EcuScanner
 import java.io.File
 import java.text.SimpleDateFormat
@@ -243,10 +244,9 @@ class DiagnosticsViewModel(application: Application) : AndroidViewModel(applicat
         }
     }
 
-    /** 3. etapi avastusskaneering: kõik [DiscoveryPlan.STAGE3] sammud järjest. */
-    fun runDiscovery() {
+    /** Avastusskaneering: kõik plaani sammud järjest (vaikimisi [DiscoveryPlan.STAGE3]). */
+    fun runDiscovery(plan: List<ScanTask> = DiscoveryPlan.STAGE3) {
         val elm = connection.elm ?: return notConnected()
-        val plan = DiscoveryPlan.STAGE3
         launchExclusive {
             _results.value = emptyList()
             plan.forEachIndexed { step, task ->

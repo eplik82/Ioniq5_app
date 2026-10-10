@@ -56,6 +56,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.eplik.ioniq5.R
 import com.eplik.ioniq5.connection.ConnectionStatus
+import com.eplik.ioniq5.core.scan.DiscoveryPlan
 import com.eplik.ioniq5.ui.screens.statusText
 
 private const val MAX_CLIPBOARD_CHARS = 200_000
@@ -184,6 +185,9 @@ fun DiagnosticsScreen(
             }
             OutlinedButton(onClick = { viewModel.runDiscovery() }, enabled = connected && !busy) {
                 Text(stringResource(R.string.discover_stage3))
+            }
+            OutlinedButton(onClick = { viewModel.runDiscovery(DiscoveryPlan.CLIMATE) }, enabled = connected && !busy) {
+                Text(stringResource(R.string.discover_climate))
             }
             if (busy) Button(onClick = { viewModel.stop() }) { Text(stringResource(R.string.stop)) }
             if (captureFile != null && !capturing) {

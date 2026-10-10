@@ -232,6 +232,34 @@ Päikesekatus pimedas (sama mõõtmine): `E011` M–N = 95,5 V (päeval 164–19
 W 38 (päeval 74–81); O–P = 733,4 V = aku pinge ✓. Kuna ICCU samal ajal laadis, ei ole see puhas
 võrdlus: vaja on pimedat mõõtmist ilma laadimiseta.
 
+### 4.4 Kliima, temperatuurid ja soojendused (avastamata)
+
+Car Scanneri HVAC-profiil luges selles autos sise- ja välistemperatuuri, aurusti temperatuuri,
+õhuniiskust ja puhuritemperatuure (vt `PARAMEETRID.md` jaotis HVAC), seega on andmed diagnostikaga
+loetavad. Aadress ja PID-id tuleb oma logist kinnitada: kogukonna järgi on kliima ECU `7B3`
+(`220100`, `220102`), kuid skaneerimisel see `3E 00`-le ei vastanud. Võimalik, et see vastab ainult
+siis, kui süüde on sees.
+
+| Andmed | Oletatav allikas | Märkus |
+|---|---|---|
+| Salongi temperatuur, välistemperatuur | kliima `7B3` `220100` | Car Scanner: sees 22,5…23 °C, väljas 11 °C |
+| Aurusti temperatuur, niiskus, puhuritemperatuurid | kliima `7B3` `220100`/`220102` | |
+| Seatud temperatuur (juht/kõrvalistuja), AUTO/A/C/ringlus, puhuri kiirus, õhu suund, soojuspumba režiim | kliima `7B3` | avastada |
+| Istmete soojendus/ventilatsioon (tase 0–3, iga iste) | istmemoodul `706` (88540-GI200)? kliima `7B3`? | avastada |
+| Roolisoojendus | IBU/BCM `7A0` või `770`, rool `7D4`? | avastada |
+| Tagaklaasi ja peeglite soojendus, esiklaasi soojendus/defroster | IBU/BCM `7A0`/`770`, kliima `7B3` | avastada |
+| Akende asend (avatud/suletud) | IBU `770`/`7A0`, uksemoodulid | avastada, kui loetav |
+
+**Avastamise käik (diagnostika → arendajalogi):** süüde sees, auto paigal. Logi algab kõigi ülaltoodud
+ECU-de `22xxxx` lugemisega. Seejärel lülitatakse **ükshaaval** sisse ja välja: roolisoojendus,
+juhi istme soojendus (tasemed 1–3), kõrvalistuja iste, tagaistmed, istme ventilatsioon, tagaklaasi
+(ja peeglite) soojendus, esiklaasi defroster, A/C, ringlus, AUTO, temperatuuri muutmine 0,5 °C
+kaupa. Iga lülituse kohta pannakse arendajalogisse märge („rool ON”). Muutunud baidid leitakse
+märgete järgi samamoodi nagu päikesekatuse ja rehvide puhul.
+
+Rakendus ainult **loeb** soojenduste ja kliima olekut. Kliimat, soojendusi ega aknaid rakendusest
+juhtida ei saa (jaotis 9).
+
 ## 5. Ekraanid (loogiline grupeerimine)
 
 1. **Ühendus:** BLE-skaneerimine, LELinki valimine, olek (ühendatud / adapter OK / auto vastab), automaatne taasühendus viimase adapteriga.
@@ -252,7 +280,19 @@ võrdlus: vaja on pimedat mõõtmist ilma laadimiseta.
    Märkus: BMS-i `0101` „mootor 2” pöörded olid ~115 km/h juures 0, kuigi tagamootor tegi 8766 p/min.
    Kui see on esimootor, on see ühenduse katkestusega (eesmine mootor sõidab vabalt); kontrollida
    kiirendamisel, kui esimootor peab rakenduma.
-7. **Kliima ja soojushaldus:** sise- ja väliskliima, aku jahutusvedelik, soojuspump, aku küttekeha.
+7. **Kliima ja soojendused:**
+   - **temperatuurid:** salongi temperatuur, välistemperatuur (suurelt), seatud temperatuur juhil ja
+     kõrvalistujal, puhurite väljundtemperatuurid, aurusti temperatuur, salongi õhuniiskus;
+   - **kliima režiim:** AUTO / käsitsi, A/C sees/väljas, õhuringlus (värske/ringlus), puhuri kiirus,
+     õhu suund (nägu/jalad/klaas), soojuspump (küte/jahutus/väljas), eelkliima (kaugjuhtimine);
+   - **soojenduste olek salongi pealtvaate joonisel** (sama stiil nagu rehvide vaates): iga istme
+     soojendus ja ventilatsioon tasemega 0–3 (pikslitulbad, soojendus oranž ja ventilatsioon sinine),
+     roolisoojendus rooli ümber, esiklaasi ja tagaklaasi soojendus, külgpeeglite soojendus, akende
+     asend (kui loetav);
+   - **soojushaldus:** aku jahutusvedeliku ja sisendi temperatuur, aku küttekeha, mootorite jahutusvedelik;
+   - **graafik:** sise- ja välistemperatuur ajas (nt eelkliima või sõidu algusest).
+   Ülevaatesse lisatakse salongi ja välistemperatuur ning väikesed ikoonid sisselülitatud
+   soojenduste kohta.
 8. **Päikesekatus:** hetkevõimsus (W), tänane ja koguenergia, ajaloograafik (päev/nädal), hinnanguline lisaläbisõit (km).
 9. **Diagnostika (edasijõudnud):** toorpäringu konsool (ECU aadress + päring), ECU- ja DID-skanner, päringute ja vastuste logi. Ainult lugemisteenused, vt jaotis 9.
 10. **Logid:** salvestatud sõidud ja laadimised, graafikud, CSV eksport ja jagamine.
@@ -272,6 +312,8 @@ foreground service'is.
   - Laadimine: võimsus, SOC, hinnanguline lõpuaeg.
   - Rehvid ja sillad: sama pealtvaate joonis lihtsustatult (rehvirõhud, roolinurk, veojaotus, võimsus).
   - Päikesekatus: hetkevõimsus, tänane energia.
+  - Kliima: salongi ja välistemperatuur, kliima režiim ning soojenduste olek salongi pealtvaatel
+    (istmed, rool, klaasid, peeglid).
 - **Graafiline kuva (nõue):** auto ekraanil on päris graafilised näidikud, mitte tekstiloendid.
   Selleks kasutatakse Car App Library **navigatsioonikategooriat**, mis annab joonistuspinna
   (`SurfaceCallback`). Näidikud joonistatakse ise Canvasele, nupud ja menüü on `NavigationTemplate`
@@ -330,7 +372,7 @@ foreground service'is.
 | 0 | Projekti alus: Gradle, Compose, arhitektuuri skelett, CI (build + testid) | Käivituv tühi rakendus |
 | 1 | BLE + ELM327 kiht, diagnostikakonsool, ECU/DID-skanner, seansi salvestamine | Toorandmed autost; päikesekatuse ECU avastamine |
 | 2 | PID-konfiguratsioon, dekodeerimine, BMS ja ülevaade | SOC, võimsus, temperatuurid, elementide pinged |
-| 3 | Ülejäänud grupid: laadimine, sõit, **rehvid ja sillad**, kliima, päikesekatus (sh PID-ide avastamine TPMS-ist, mootoritest, pidurisüsteemist ja roolivõimendist) | Kõik ekraanid |
+| 3 | Ülejäänud grupid: laadimine, sõit, **rehvid ja sillad**, **kliima ja soojendused** (jaotis 4.4), päikesekatus (sh PID-ide avastamine TPMS-ist, mootoritest, pidurisüsteemist ja roolivõimendist) | Kõik ekraanid |
 | 4 | Logimine, graafikud, CSV eksport, foreground service | Sõidu- ja laadimislogid |
 | 5 | Android Auto (Car App Library, DHU testid) | Andmed auto ekraanil |
 | 6 | Viimistlus, lokaliseerimine, hoiatused, allkirjastatud APK | v1.0 |
@@ -360,3 +402,5 @@ foreground service'is.
 
 1. `7E5`/`22E011` toorvastused päikese käes, varjus ja öösel (jaotis 4.1).
 2. Logid muudes olukordades: sõit, AC-laadimine, seismine päikese käes (süüde sees, laadimata).
+3. Kliima ja soojendused: süüde sees arendajalogi, kus soojendused ja kliima režiimid lülitatakse
+   ükshaaval sisse ja välja, iga lülituse juures märge (jaotis 4.4). Kas `7B3` vastab süüte ajal?
