@@ -1,6 +1,6 @@
 # Lähteülesanne: Ioniq 5 CAN-andmete Android-rakendus
 
-Versioon 0.5 (mustand) · 2026-10-10
+Versioon 0.6 (mustand) · 2026-10-10
 
 ## 1. Eesmärk
 
@@ -67,27 +67,26 @@ parandada ja lisada ilma koodi muutmata.
 
 ### 4.1 Päikesekatuse andmed
 
-Car Scanner **loeb päikesekatuse andmeid**. Logis on kolm parameetrit:
+Car Scanneris on kasutaja **ise loodud** (kontrollimata) päikesekatuse PID-id:
 
-| Parameeter | Väärtus logis (DC-laadimine, 10.10 ~12:10) |
-|---|---|
-| Solar roof power | 150,07–150,08 W (peaaegu muutumatu: kahtlane, kontrollida) |
-| Solar roof voltage | 279–303 V |
-| Solar to High Voltage | 112 W |
+| Parameeter | ECU | PID | Car Scanneri valem | Väärtus logis (DC-laadimine, 10.10 ~12:10) |
+|---|---|---|---|---|
+| Solar roof power | `7E5` → `7ED` | `22E011` | `((K*256)+L)/100` W | 150,07–150,08 W (peaaegu muutumatu: valem tõenäoliselt vale) |
+| Solar to High Voltage | `7E5` | `22E011` | `Q*2` W | 112 W |
+| Solar roof voltage | `7E5` | `22E011` | `((M*256)+N)/10` V | 279–303 V |
 
-Car Scanner ei näita, millisest juhtplokist ja PID-ist need tulevad. Nende leidmise viisid,
-kiireimast aeglasemani:
+Car Scanneri tähed: `A` on esimene bait pärast vastuse SID-i ja DID-i (`62 E0 11`), seega
+`K` = 11. andmebait. Rakenduse `SignalDefinition` loeb baite vastuse algusest, st `K` → `startByte = 13`.
 
-1. **Bluetooth HCI snoop log:** Androidi arendajaseadetes lülitatakse sisse „Bluetooth HCI snoop log”,
-   Car Scanneris kuvatakse ainult päikesekatuse parameetrid, siis võetakse telefonist veaaruanne (bug report).
-   Logis on näha täpsed käsud (`ATSH…`, `22…`) ja auto vastused. Sama meetodiga saab kinnitada
-   ka kõik teised PID-id. See on Car Scanneri liikluse lugemine ühest telefonist ega muuda autos midagi.
-2. **ECU-skaneerimine:** saata `3E 00` või `22 F190` igale aadressile vahemikus `0x700–0x7FF`
-   ja koostada vastanud juhtplokkide nimekiri (sh `22 F187`/`F18C` osanumber).
-3. **DID-skaneerimine ja võrdlus:** käia läbi tundmatute juhtplokkide DID-vahemikud ning võrrelda
-   vastuseid päikese käes ja varjus. Leitud väärtused valideeritakse Car Scanneri näitudega.
+Kontrollimine:
 
-Rakendusse ehitatakse diagnostikakonsool ja skanner (jaotis 5.9), nii et 2. ja 3. viis käib sama rakendusega.
+1. **Toorvastus:** Car Scanneri terminalis `ATSH7E5` ja `22E011`; vastus salvestada (ekraanipilt
+   või tekst) päikese käes, varjus ja öösel. Võrrelda, millised baidid valgusega muutuvad.
+2. **Võrdlus auto enda näiduga:** infosüsteemis näidatav päikeselaadimise statistika.
+3. Kui `7E5`/`22E011` ei sobi: Bluetooth HCI snoop log, ECU-skaneerimine (`3E 00` / `22 F190`
+   aadressidele `0x700–0x7FF`) ja tundmatute ECU-de DID-skaneerimine koos valguse võrdlusega.
+
+Rakendusse ehitatakse diagnostikakonsool ja skanner (jaotis 5.9), nii et kontroll käib sama rakendusega.
 
 ## 5. Ekraanid (loogiline grupeerimine)
 
@@ -195,5 +194,5 @@ foreground service'is.
 
 ## 11. Avatud küsimused
 
-1. Kas saad teha Bluetooth HCI snoop logi Car Scanneri päikesekatuse lugemisest (jaotis 4.1)?
+1. `7E5`/`22E011` toorvastused päikese käes, varjus ja öösel (jaotis 4.1).
 2. Logid muudes olukordades: sõit, AC-laadimine, seismine päikese käes (süüde sees, laadimata).

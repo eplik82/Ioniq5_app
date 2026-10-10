@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Pikslimotiiv: 4x4 ruutu, osa esiletõstetud (laetuse näit). -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <path android:fillColor="#FF2FD1C5" android:pathData="M34,62h8v8h-8zM46,62h8v8h-8zM58,62h8v8h-8zM70,62h8v8h-8zM34,50h8v8h-8zM46,50h8v8h-8zM58,50h8v8h-8zM34,38h8v8h-8zM46,38h8v8h-8z" />
+    <path android:fillColor="#FF3A4148" android:pathData="M70,50h8v8h-8zM58,38h8v8h-8zM70,38h8v8h-8zM34,26h8v8h-8zM46,26h8v8h-8zM58,26h8v8h-8zM70,26h8v8h-8z" />
+</vector>

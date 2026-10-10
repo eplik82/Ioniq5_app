@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Ioniq 5 Monitor</string>
+
+    <string name="tab_overview">Ülevaade</string>
+    <string name="tab_battery">Aku</string>
+    <string name="tab_charging">Laadimine</string>
+    <string name="tab_solar">Päikesekatus</string>
+    <string name="tab_diagnostics">Diagnostika</string>
+    <string name="settings">Seaded</string>
+
+    <string name="connection_disconnected">Adapter pole ühendatud</string>
+    <string name="connect">Ühenda</string>
+    <string name="state_of_charge">Laetus</string>
+    <string name="no_value">—</string>
+    <string name="coming_in_stage">Andmed tulevad alates %1$d. etapist.</string>
+</resources>

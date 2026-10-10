@@ -3,7 +3,8 @@
 Allikas: Car Scanner PRO logi 2026-10-10 (DC-laadimine, ~29 min, auto seisab), profiil
 „Hyundai e-GMP: IONIQ 5 (2022-2025)”. Logi ilma GPS-veergudeta: `testdata/carscanner/2026-10-10_dc-charging.csv`.
 
-Car Scanner ei näita PID-e, ainult nimesid ja väärtusi. Need väärtused on võrdlusalus:
+Car Scanner ei näita sisseehitatud profiili PID-e, ainult nimesid ja väärtusi. Erand on päikesekatus:
+selle PID-id (`7E5`, `22E011`) on kasutaja ise loonud ja kontrollimata (vt lähteülesande jaotis 4.1). Need väärtused on võrdlusalus:
 rakenduse dekodeeritud väärtused peavad samas olukorras nendega klappima.
 
 Kokku 417 parameetrit, neist 192 elemendipinget.

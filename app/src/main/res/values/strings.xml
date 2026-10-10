@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Ioniq 5 Monitor</string>
+
+    <string name="tab_overview">Overview</string>
+    <string name="tab_battery">Battery</string>
+    <string name="tab_charging">Charging</string>
+    <string name="tab_solar">Solar roof</string>
+    <string name="tab_diagnostics">Diagnostics</string>
+    <string name="settings">Settings</string>
+
+    <string name="connection_disconnected">Adapter not connected</string>
+    <string name="connect">Connect</string>
+    <string name="state_of_charge">State of charge</string>
+    <string name="no_value">—</string>
+    <string name="coming_in_stage">Data will be shown from stage %1$d onwards.</string>
+</resources>
