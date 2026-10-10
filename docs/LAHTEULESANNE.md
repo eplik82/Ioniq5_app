@@ -289,6 +289,13 @@ foreground service'is.
 - **Paigaldus:** isiklikuks kasutuseks paigaldatakse APK ise ja Android Autos lülitatakse
   arendajarežiimis sisse „Unknown sources”.
 - **Testimine:** Desktop Head Unit (DHU) emulaatoriga arvutis, seejärel päris autos.
+- **Teostus (etapp 5):** `car/MonitorCarAppService` → `DashboardScreen` (NavigationTemplate) + `CarRenderer`
+  (SurfaceCallback, joonistab 2× sekundis, kui ekraan on nähtav) + `CarDrawing` (Canvas). Lehed: Ülevaade,
+  Aku (180 elemendi ruudustik pinge järgi värvitud), Rattad (pealtvaade, rõhud, temperatuurid, roolinurk,
+  mootorite pöörded), Laadimine (võimsus, SOC, aeg 80%-ni). Navigatsioonimalli tööriistaribal tohib olla
+  vaid üks tekstiga nupp, seega vahetab üks nupp lehti ringiratast. Päikesekatuse leht on veel lisamata
+  (päikesevõimsus on ülevaates). Auto ekraani avamisel ühendutakse viimase adapteriga, kui telefonis
+  ühendust pole.
 
 ## 6. Mittefunktsionaalsed nõuded
 
