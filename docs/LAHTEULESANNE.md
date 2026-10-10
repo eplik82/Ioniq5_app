@@ -1,6 +1,6 @@
 # Lähteülesanne: Ioniq 5 CAN-andmete Android-rakendus
 
-Versioon 0.14 (mustand) · 2026-10-10
+Versioon 0.15 (mustand) · 2026-10-10
 
 ## 1. Eesmärk
 
@@ -8,7 +8,7 @@ Teha Android-rakendus, mis ühendub Hyundai Ioniq 5 (E-GMP platvorm) diagnostika
 **LELink Bluetooth OBD-II adapteri** kaudu ning näitab auto parameetreid loogiliselt
 gruppidena, kaasa arvatud **päikesekatuse (solar roof)** andmeid.
 
-**Sõiduk:** Hyundai Ioniq 5 („Projekt 45”), mudeliaasta 2022 (VIN-i 10. märk `N`), päikesekatusega.
+**Sõiduk:** Hyundai Ioniq 5 („Projekt 45”), mudeliaasta 2022 (VIN-i 10. märk `N`), **nelikvedu (AWD, kaks mootorit)**, päikesekatusega.
 Aku on Car Scanneri logi järgi **72,6 kWh, 180 elementi**: elemendid 1–180 näitavad ~3,76 V,
 elemendid 181–192 ~0 V ning aku pinge 677–696 V ÷ 180 = 3,76–3,87 V elemendi kohta.
 (Esialgne eeldus oli 77,4 kWh, kuid sellel oleks 192 töötavat elementi.) Rakendus tuvastab aku
@@ -62,7 +62,7 @@ parandada ja lisada ilma koodi muutmata.
 | Näidikuplokk (cluster) | `7C6` → `7CE` | `22B002` | Läbisõit |
 | TPMS | `7A0` → `7A8` (vastas ECU-skaneeringus) | `22C00B` (kinnitada) | Nelja rehvi rõhk ja temperatuur, andurite patarei/olek |
 | Tagumine mootor (MCU) | `7E3` → `7EB` | kinnitada | Pöörded, pöördemoment, faasivool, mootori ja inverteri temperatuur |
-| Eesmine mootor (AWD korral) | kinnitada | kinnitada | Pöörded, pöördemoment, temperatuurid (RWD autol puudub) |
+| Eesmine mootor | kinnitada (kandidaadid `7E6`, `733`, `744`) | kinnitada | Pöörded, pöördemoment, temperatuurid |
 | Pidurisüsteem (IEB/ESC) | `7D1` → `7D9` | kinnitada | Rataste kiirused (4×), pidurirõhk |
 | Roolivõimendi (MDPS) / ADAS | `7D4` → `7DC` / `7C4`, `7D0` | kinnitada | Roolinurk, rooli pöördemoment, külg- ja pikikiirendus, pöördekiirus (yaw) |
 | Kliima (FATC) | `7B3` → `7BB` | `220100` | Sisetemperatuur, välistemperatuur, ventilaator, soojuspumba olek |
@@ -196,10 +196,13 @@ Rakendusse ehitatakse diagnostikakonsool ja skanner (jaotis 5.9), nii et kontrol
      on alla seatud piiri või rehvide vahe on liiga suur (värviline ratas);
    - esirattad pööratakse joonisel **roolinurga** järgi, roolinurk ka numbrina;
    - iga silla juures: mootori võimsus (kW), pöördemoment (Nm), pöörded, mootori ja inverteri temperatuur;
-   - **veojaotus** esi- ja tagasilla vahel (riba/protsent; RWD autol 0/100 %);
+   - **veojaotus** esi- ja tagasilla vahel (riba ja protsent), arvutatuna kahe mootori pöördemomendist;
    - auto keskel: külg- ja pikikiirendus (g-punkt) ja pöördekiirus;
    - kokku võimsus ja regeneratsioon (negatiivne võimsus teise värviga).
    Värskendus sõidu ajal vähemalt 2 Hz (rool, kiirendused, võimsus), rehvid 0,1 Hz.
+   Märkus: BMS-i `0101` „mootor 2” pöörded olid ~115 km/h juures 0, kuigi tagamootor tegi 8766 p/min.
+   Kui see on esimootor, on see ühenduse katkestusega (eesmine mootor sõidab vabalt); kontrollida
+   kiirendamisel, kui esimootor peab rakenduma.
 7. **Kliima ja soojushaldus:** sise- ja väliskliima, aku jahutusvedelik, soojuspump, aku küttekeha.
 8. **Päikesekatus:** hetkevõimsus (W), tänane ja koguenergia, ajaloograafik (päev/nädal), hinnanguline lisaläbisõit (km).
 9. **Diagnostika (edasijõudnud):** toorpäringu konsool (ECU aadress + päring), ECU- ja DID-skanner, päringute ja vastuste logi. Ainult lugemisteenused, vt jaotis 9.
@@ -292,12 +295,12 @@ foreground service'is.
 | Levitamine | Isiklik kasutus, APK; Play pood pole praegu eesmärk |
 | Android Auto | Jah, graafiline (navigatsioonikategooria, Surface), Ioniq 5 stiilis (jaotis 5.1) |
 | Aku | 72,6 kWh, 180 elementi (Car Scanneri logi järgi); rakendus tuvastab automaatselt |
+| Vedu | Nelikvedu (AWD), kaks mootorit |
 | Välisteenused | Praegu ei ole vaja (ABRP, MQTT jms) |
 | Lähteandmed | Car Scanner PRO logid (sisseehitatud e-GMP profiil) |
 | Kasutajaliidese keel | Eesti ja inglise |
 
 ## 11. Avatud küsimused
 
-1. Kas auto on tagaveoline (RWD, üks mootor) või nelikvedu (AWD, kaks mootorit)? Logi järgi töötas sõidul ainult üks mootor.
-2. `7E5`/`22E011` toorvastused päikese käes, varjus ja öösel (jaotis 4.1).
-3. Logid muudes olukordades: sõit, AC-laadimine, seismine päikese käes (süüde sees, laadimata).
+1. `7E5`/`22E011` toorvastused päikese käes, varjus ja öösel (jaotis 4.1).
+2. Logid muudes olukordades: sõit, AC-laadimine, seismine päikese käes (süüde sees, laadimata).
