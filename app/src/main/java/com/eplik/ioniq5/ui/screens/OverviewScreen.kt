@@ -2,6 +2,7 @@ package com.eplik.ioniq5.ui.screens
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -36,6 +37,7 @@ fun OverviewScreen(
     sleeping: Boolean,
     onWake: () -> Unit,
     onConnectionClick: () -> Unit,
+    onSettingsClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val now by rememberNow()
@@ -129,8 +131,11 @@ fun OverviewScreen(
                     style = MaterialTheme.typography.titleMedium,
                     color = if (status is ConnectionStatus.Failed) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant,
                 )
-                OutlinedButton(onClick = onConnectionClick) {
-                    Text(stringResource(if (status is ConnectionStatus.Connected) R.string.connection_title else R.string.connect))
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    OutlinedButton(onClick = onConnectionClick) {
+                        Text(stringResource(if (status is ConnectionStatus.Connected) R.string.connection_title else R.string.connect))
+                    }
+                    OutlinedButton(onClick = onSettingsClick) { Text(stringResource(R.string.settings)) }
                 }
             }
         }

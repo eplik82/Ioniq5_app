@@ -102,4 +102,13 @@
     <string name="connection_reconnecting">Ühendus %1$s-ga katkes, uus katse %2$d s pärast</string>
     <string name="sleep_banner">Auto on välja lülitatud: lugemine iga 5 min järel, et säästa 12 V akut</string>
     <string name="wake_now">Loe kohe</string>
+    <string name="setting_pressure_unit">Rehvirõhu ühik</string>
+    <string name="setting_low_pressure">Madala rehvirõhu hoiatus</string>
+    <string name="setting_theme">Teema</string>
+    <string name="theme_system">Süsteem</string>
+    <string name="theme_light">Hele</string>
+    <string name="theme_dark">Tume</string>
+    <string name="setting_capacity">Aku mahutavus</string>
+    <string name="capacity_auto">Automaatne (%1$s kWh)</string>
+    <string name="setting_auto_connect">Ühenda käivitamisel automaatselt</string>
 </resources>

@@ -102,4 +102,13 @@
     <string name="connection_reconnecting">Connection lost to %1$s, retrying in %2$d s</string>
     <string name="sleep_banner">Car is off: reading every 5 min to spare the 12 V battery</string>
     <string name="wake_now">Read now</string>
+    <string name="setting_pressure_unit">Tire pressure unit</string>
+    <string name="setting_low_pressure">Low tire pressure warning</string>
+    <string name="setting_theme">Theme</string>
+    <string name="theme_system">System</string>
+    <string name="theme_light">Light</string>
+    <string name="theme_dark">Dark</string>
+    <string name="setting_capacity">Battery capacity</string>
+    <string name="capacity_auto">Auto (%1$s kWh)</string>
+    <string name="setting_auto_connect">Connect automatically on start</string>
 </resources>

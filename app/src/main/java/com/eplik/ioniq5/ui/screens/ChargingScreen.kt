@@ -34,7 +34,7 @@ import java.text.DateFormat
 import java.util.Date
 
 @Composable
-fun ChargingScreen(readings: Readings, session: ChargeSession?, modifier: Modifier = Modifier) {
+fun ChargingScreen(readings: Readings, session: ChargeSession?, capacityKwh: Double, modifier: Modifier = Modifier) {
     val now by rememberNow()
     val power = readings.batteryPowerKw()
     val fresh = readings[P.BATTERY_CURRENT].isFresh(now)
@@ -74,8 +74,8 @@ fun ChargingScreen(readings: Readings, session: ChargeSession?, modifier: Modifi
             }
         }
         item { ValueTile(stringResource(R.string.state_of_charge), formatValue(soc, 1), "%", fresh) }
-        item { ValueTile(stringResource(R.string.time_to_80), minutes(readings.minutesToSoc(80.0)), "h:min", charging) }
-        item { ValueTile(stringResource(R.string.time_to_100), minutes(readings.minutesToSoc(100.0)), "h:min", charging) }
+        item { ValueTile(stringResource(R.string.time_to_80), minutes(readings.minutesToSoc(80.0, capacityKwh)), "h:min", charging) }
+        item { ValueTile(stringResource(R.string.time_to_100), minutes(readings.minutesToSoc(100.0, capacityKwh)), "h:min", charging) }
         item { ValueTile(stringResource(R.string.battery_voltage), formatValue(readings[P.BATTERY_VOLTAGE]?.value, 1), "V", fresh) }
         item { ValueTile(stringResource(R.string.battery_current), formatValue(readings[P.BATTERY_CURRENT]?.value, 1), "A", fresh) }
         item {

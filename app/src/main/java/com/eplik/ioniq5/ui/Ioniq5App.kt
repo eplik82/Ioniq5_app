@@ -32,7 +32,10 @@ import com.eplik.ioniq5.ui.screens.AxlesScreen
 import com.eplik.ioniq5.ui.screens.BatteryScreen
 import com.eplik.ioniq5.ui.screens.ChargingScreen
 import com.eplik.ioniq5.ui.screens.ConnectionScreen
+import com.eplik.ioniq5.ui.screens.SettingsScreen
 import com.eplik.ioniq5.ui.screens.SolarScreen
+import com.eplik.ioniq5.core.poll.cellVoltages
+import com.eplik.ioniq5.settings.capacityKwh
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import com.eplik.ioniq5.R
@@ -50,7 +53,10 @@ private enum class Tab(@StringRes val label: Int, val icon: ImageVector, val sta
 
 @Composable
 fun Ioniq5App() {
-    val connection = (LocalContext.current.applicationContext as Ioniq5Application).connection
+    val app = LocalContext.current.applicationContext as Ioniq5Application
+    val connection = app.connection
+    val settings by app.settings.settings.collectAsStateWithLifecycle()
+    var showSettings by rememberSaveable { mutableStateOf(false) }
     val status by connection.status.collectAsStateWithLifecycle()
     val readings by connection.readings.collectAsStateWithLifecycle()
     val chargeSession by connection.chargeSession.collectAsStateWithLifecycle()
@@ -59,7 +65,8 @@ fun Ioniq5App() {
     var showConnection by rememberSaveable { mutableStateOf(false) }
     val sleeping by connection.sleeping.collectAsStateWithLifecycle()
     // Käivitamisel ühendu viimati kasutatud adapteriga
-    LaunchedEffect(Unit) { connection.connectToLast() }
+    LaunchedEffect(Unit) { if (settings.autoConnect) connection.connectToLast() }
+    val capacityKwh = settings.capacityKwh(readings.cellVoltages().size)
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
         bottomBar = {
@@ -70,6 +77,7 @@ fun Ioniq5App() {
                         onClick = {
                             selected = tab
                             showConnection = false
+                            showSettings = false
                         },
                         icon = { Icon(tab.icon, contentDescription = null) },
                         label = {
@@ -94,17 +102,25 @@ fun Ioniq5App() {
         val modifier = Modifier.padding(padding)
         when {
             showConnection -> ConnectionScreen(connection, onBack = { showConnection = false }, modifier = modifier)
+            showSettings -> SettingsScreen(
+                settings,
+                detectedCapacityKwh = settings.copy(batteryCapacityKwh = null).capacityKwh(readings.cellVoltages().size),
+                onChange = { app.settings.update(it) },
+                onBack = { showSettings = false },
+                modifier = modifier,
+            )
             selected == Tab.OVERVIEW -> OverviewScreen(
                 status,
                 readings,
                 sleeping = sleeping,
                 onWake = { connection.wakePolling() },
                 onConnectionClick = { showConnection = true },
+                onSettingsClick = { showSettings = true },
                 modifier = modifier,
             )
             selected == Tab.BATTERY -> BatteryScreen(readings, modifier)
-            selected == Tab.AXLES -> AxlesScreen(readings, modifier)
-            selected == Tab.CHARGING -> ChargingScreen(readings, chargeSession, modifier)
+            selected == Tab.AXLES -> AxlesScreen(readings, settings.pressureUnit, settings.lowPressureBar, modifier)
+            selected == Tab.CHARGING -> ChargingScreen(readings, chargeSession, capacityKwh, modifier)
             selected == Tab.SOLAR -> SolarScreen(readings, solarEnergyWh, modifier)
             selected == Tab.DIAGNOSTICS -> DiagnosticsScreen(onConnectionClick = { showConnection = true }, modifier = modifier)
             else -> PlaceholderScreen(stringResource(selected.label), selected.stage, modifier)

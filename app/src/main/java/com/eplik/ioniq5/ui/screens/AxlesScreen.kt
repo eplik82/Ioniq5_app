@@ -32,6 +32,7 @@ import com.eplik.ioniq5.R
 import com.eplik.ioniq5.core.pid.Ioniq5Pids as P
 import com.eplik.ioniq5.core.poll.Readings
 import com.eplik.ioniq5.core.poll.speedKmh
+import com.eplik.ioniq5.settings.PressureUnit
 import com.eplik.ioniq5.ui.components.formatValue
 import com.eplik.ioniq5.ui.components.isFresh
 import com.eplik.ioniq5.ui.components.rememberNow
@@ -43,15 +44,17 @@ import kotlin.math.abs
 /** Rooliratta ja esirataste nurga suhe (ligikaudne). */
 private const val STEERING_RATIO = 14f
 
-/** Rehvirõhu hoiatuse piir, bar. */
-private const val LOW_PRESSURE_BAR = 2.2
-
 /**
  * Rehvid ja sillad: auto pealtvaade (esiots üleval). Ratastel rõhk ja temperatuur, esirattad
  * pööratud roolinurga järgi, sildade juures mootorite andmed, keskel kiirendus.
  */
 @Composable
-fun AxlesScreen(readings: Readings, modifier: Modifier = Modifier) {
+fun AxlesScreen(
+    readings: Readings,
+    pressureUnit: PressureUnit,
+    lowPressureBar: Double,
+    modifier: Modifier = Modifier,
+) {
     val now by rememberNow()
     val measurer = rememberTextMeasurer()
     fun v(id: String) = readings[id]?.takeIf { it.isFresh(now) }?.value
@@ -85,6 +88,8 @@ fun AxlesScreen(readings: Readings, modifier: Modifier = Modifier) {
             drawCar(
                 measurer = measurer,
                 colors = colors,
+                pressureUnit = pressureUnit,
+                lowPressureBar = lowPressureBar,
                 steeringDeg = steering?.toFloat() ?: 0f,
                 wheels = listOf(
                     Wheel(v(P.TIRE_PRESSURE_FL), v(P.TIRE_TEMP_FL), front = true, left = true),
@@ -135,6 +140,8 @@ private data class Motor(val label: String, val torqueNm: Double?, val rpm: Doub
 private fun DrawScope.drawCar(
     measurer: TextMeasurer,
     colors: CarColors,
+    pressureUnit: PressureUnit,
+    lowPressureBar: Double,
     steeringDeg: Float,
     wheels: List<Wheel>,
     front: Motor,
@@ -185,7 +192,7 @@ private fun DrawScope.drawCar(
     wheels.forEach { wheel ->
         val cx = if (wheel.left) bodyLeft else bodyLeft + bodyW
         val cy = if (wheel.front) frontY else rearY
-        val low = wheel.pressureBar != null && wheel.pressureBar < LOW_PRESSURE_BAR
+        val low = wheel.pressureBar != null && wheel.pressureBar < lowPressureBar
         val color = when {
             wheel.pressureBar == null -> colors.outline
             low -> Warning
@@ -196,7 +203,7 @@ private fun DrawScope.drawCar(
         rotate(angle, pivot = Offset(cx, cy)) {
             drawRoundRect(color, Offset(cx - wheelW / 2, cy - wheelH / 2), Size(wheelW, wheelH), CornerRadius(wheelW * 0.3f))
         }
-        val label = "${formatValue(wheel.pressureBar, 2)} bar\n${formatValue(wheel.tempC, 0)} °C"
+        val label = "${formatValue(wheel.pressureBar?.times(pressureUnit.fromBar), pressureUnit.decimals)} ${pressureUnit.label}\n${formatValue(wheel.tempC, 0)} °C"
         val labelX = if (wheel.left) (cx - wheelW / 2) / 2 else (cx + wheelW / 2 + w) / 2
         drawCentered(measurer, label, Offset(labelX, cy), TextStyle(color = colors.text, fontSize = (h * 0.028f).toSp(), textAlign = TextAlign.Center))
     }

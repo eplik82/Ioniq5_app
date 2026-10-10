@@ -45,12 +45,12 @@ fun Readings.usableCapacityKwh(nominalKwh: Double = 72.6): Double =
     nominalKwh * (value(Ioniq5Pids.SOH) ?: 100.0) / 100
 
 /** Hinnanguline laadimisaeg minutites sihtlaetuseni praeguse võimsusega; null, kui ei lae. */
-fun Readings.minutesToSoc(targetPercent: Double): Double? {
+fun Readings.minutesToSoc(targetPercent: Double, nominalKwh: Double = 72.6): Double? {
     val power = batteryPowerKw() ?: return null
     if (power > -0.5) return null
     val soc = value(Ioniq5Pids.SOC_DISPLAY) ?: value(Ioniq5Pids.SOC_BMS) ?: return null
     if (soc >= targetPercent) return 0.0
-    val energyKwh = (targetPercent - soc) / 100 * usableCapacityKwh()
+    val energyKwh = (targetPercent - soc) / 100 * usableCapacityKwh(nominalKwh)
     return energyKwh / -power * 60
 }
 
