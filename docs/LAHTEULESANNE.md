@@ -1,6 +1,6 @@
 # Lähteülesanne: Ioniq 5 CAN-andmete Android-rakendus
 
-Versioon 0.3 (mustand) · 2026-10-10
+Versioon 0.4 (mustand) · 2026-10-10
 
 ## 1. Eesmärk
 
@@ -31,7 +31,7 @@ veakoode ega muuda seadeid (vt jaotis 9).
 
 | Teema | Nõue / eeldus |
 |---|---|
-| Adapter | LELink (esimene põlvkond, BLE, ELM327-ühilduv). GATT-teenus `FFE0`, karakteristik `FFE1` (notify + write). UUID-d kinnitatakse 1. etapis. |
+| Adapter | LELink (esimene põlvkond, BLE 4.0, ELM327-ühilduv). Bluetoothi nimi on **`OBDBLE`**; rakendus otsib vaikimisi seda nime, kuid lubab valida ka mõne muu seadme. GATT-teenus `FFE0`, karakteristik `FFE1` (notify + write). UUID-d kinnitatakse 1. etapis. |
 | Ühendus | Bluetooth Low Energy. Klassikalist Bluetoothi (SPP) toetada arhitektuuris, aga v1-s pole see kohustuslik. |
 | CAN | ISO 15765-4, 11-bit ID, 500 kbit/s (`ATSP6`). |
 | Protokoll | UDS teenus `0x22` (ReadDataByIdentifier). ISO-TP mitmekaadrilised vastused koostab ELM327. |
@@ -135,7 +135,10 @@ foreground service'is.
 
 ## 7. Testimine
 
-- **Car Scanner PRO logid:** kasutaja ekspordib logid (CSV) ja võimalusel ka kasutatud PID-profiili.
+- **Car Scanner PRO logid:** kasutaja ekspordib logid (CSV). Car Scanneris on kasutusel sisseehitatud
+  ühendusprofiil „Hyundai e-GMP: IONIQ 5 (2022-2025) / IONIQ 6 / EV6 / …” ilma kohandatud PID-ideta.
+  Sisseehitatud profiili PID-e Car Scanner ei ekspordi, seega võetakse logidest parameetrite
+  nimed ja väärtused ning PID-id ja valemid sobitatakse nende järgi.
   Need pannakse repo kausta `testdata/carscanner/`. Nende järgi
   - kontrollitakse, et rakenduse dekodeeritud väärtused on samad mis Car Scanneris;
   - koostatakse PID-konfiguratsiooni algversioon;
@@ -173,9 +176,10 @@ foreground service'is.
 | Android Auto | Jah, graafiline (navigatsioonikategooria, Surface), Ioniq 5 stiilis (jaotis 5.1) |
 | Aku | 77,4 kWh, 192 elementi (mudeliaasta 2022); rakendus kontrollib automaatselt |
 | Välisteenused | Praegu ei ole vaja (ABRP, MQTT jms) |
-| Lähteandmed | Car Scanner PRO logid |
+| Lähteandmed | Car Scanner PRO logid (sisseehitatud e-GMP profiil) |
 | Kasutajaliidese keel | Eesti ja inglise |
 
 ## 11. Avatud küsimused
 
-1. Kas Car Scanner PRO-s on kasutusel mõni konkreetne Ioniq 5 profiil või kohandatud PID-id? Kui jah, siis selle eksport.
+1. Kas Car Scanneri andurite nimekirjas on päikesekatuse parameetreid? Kui on, siis on päikesekatuse ECU juba teada ja avastusetapp (4.1) läheb kiiremini.
+2. Car Scanneri „ECU identifiers” vaate ekraanipildid: need näitavad, millised juhtplokid autos vastavad.
