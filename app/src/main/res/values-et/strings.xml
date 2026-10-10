@@ -86,4 +86,10 @@
     <string name="to_right">paremale</string>
     <string name="copy">Kopeeri</string>
     <string name="copied">Logi kopeeritud</string>
+    <string name="ac_charger">AC-laadija (pardalaadija)</string>
+    <string name="ac_input_power">AC sisendvõimsus</string>
+    <string name="ac_voltage">AC pinge</string>
+    <string name="ac_phase_currents">Faasivoolud L1/L2/L3</string>
+    <string name="obc_output_power">Laadija väljund</string>
+    <string name="obc_efficiency">Laadija kasutegur</string>
 </resources>

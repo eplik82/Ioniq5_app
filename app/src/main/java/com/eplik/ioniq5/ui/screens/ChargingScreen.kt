@@ -21,7 +21,9 @@ import com.eplik.ioniq5.R
 import com.eplik.ioniq5.core.pid.Ioniq5Pids as P
 import com.eplik.ioniq5.core.poll.ChargeSession
 import com.eplik.ioniq5.core.poll.Readings
+import com.eplik.ioniq5.core.poll.acInputPowerKw
 import com.eplik.ioniq5.core.poll.batteryPowerKw
+import com.eplik.ioniq5.core.poll.obcOutputPowerKw
 import com.eplik.ioniq5.core.poll.minutesToSoc
 import com.eplik.ioniq5.ui.components.PixelGauge
 import com.eplik.ioniq5.ui.components.ValueTile
@@ -38,6 +40,9 @@ fun ChargingScreen(readings: Readings, session: ChargeSession?, modifier: Modifi
     val fresh = readings[P.BATTERY_CURRENT].isFresh(now)
     val charging = fresh && power != null && power < -0.5
     val soc = readings[P.SOC_DISPLAY]?.value ?: readings[P.SOC_BMS]?.value
+    val obcFresh = readings[P.OBC_AC_VOLTAGE].isFresh(now)
+    val acIn = readings.acInputPowerKw()?.takeIf { obcFresh }
+    val obcOut = readings.obcOutputPowerKw()?.takeIf { obcFresh }
 
     fun minutes(m: Double?) = m?.let { "%d:%02d".format(it.toInt() / 60, it.toInt() % 60) } ?: "—"
 
@@ -54,7 +59,10 @@ fun ChargingScreen(readings: Readings, session: ChargeSession?, modifier: Modifi
                 verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 Text(
-                    stringResource(if (charging) R.string.charging_now else R.string.not_charging).uppercase(),
+                    (
+                        stringResource(if (charging) R.string.charging_now else R.string.not_charging) +
+                            if (charging) (if (acIn != null) " · AC" else " · DC") else ""
+                        ).uppercase(),
                     style = MaterialTheme.typography.labelMedium,
                     color = if (charging) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -77,6 +85,31 @@ fun ChargingScreen(readings: Readings, session: ChargeSession?, modifier: Modifi
                 "°C",
                 fresh,
             )
+        }
+        if (acIn != null) {
+            item(span = { GridItemSpan(maxLineSpan) }) {
+                Text(stringResource(R.string.ac_charger), style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(top = 8.dp))
+            }
+            item { ValueTile(stringResource(R.string.ac_input_power), formatValue(acIn, 2), "kW", true) }
+            item { ValueTile(stringResource(R.string.ac_voltage), formatValue(readings[P.OBC_AC_VOLTAGE]?.value, 1), "V", true) }
+            item {
+                ValueTile(
+                    stringResource(R.string.ac_phase_currents),
+                    listOf(P.OBC_AC_CURRENT_1, P.OBC_AC_CURRENT_2, P.OBC_AC_CURRENT_3)
+                        .joinToString(" / ") { formatValue(readings[it]?.value, 1) },
+                    "A",
+                    true,
+                )
+            }
+            item { ValueTile(stringResource(R.string.obc_output_power), formatValue(obcOut, 2), "kW", obcOut != null) }
+            item {
+                ValueTile(
+                    stringResource(R.string.obc_efficiency),
+                    formatValue(if (obcOut != null && acIn > 0) obcOut / acIn * 100 else null, 0),
+                    "%",
+                    obcOut != null,
+                )
+            }
         }
         if (session != null) {
             item(span = { GridItemSpan(maxLineSpan) }) {

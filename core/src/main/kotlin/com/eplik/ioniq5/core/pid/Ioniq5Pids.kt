@@ -51,6 +51,12 @@ object Ioniq5Pids {
     const val ODOMETER = "odometer"
     const val ICCU_HV_VOLTAGE = "iccu_hv_voltage"
     const val SOLAR_PANEL_VOLTAGE = "solar_panel_voltage"
+    const val OBC_AC_VOLTAGE = "obc_ac_voltage"
+    const val OBC_AC_CURRENT_1 = "obc_ac_current_1"
+    const val OBC_AC_CURRENT_2 = "obc_ac_current_2"
+    const val OBC_AC_CURRENT_3 = "obc_ac_current_3"
+    const val OBC_DC_VOLTAGE = "obc_dc_voltage"
+    const val OBC_DC_CURRENT = "obc_dc_current"
 
     const val CELL_COUNT_MAX = 192
     const val MODULE_TEMP_COUNT = 16
@@ -182,5 +188,24 @@ object Ioniq5Pids {
         ),
     )
 
-    val ALL: List<PidDefinition> = listOf(bmsMain, bmsHealth) + cellPids + listOf(odometer, iccuSolar, tires, steering)
+    /**
+     * Pardalaadija (OBC, ICCU sees) AC-laadimisel. Kontrollitud 10.10 AC-laadimisega: DC pinge ja vool
+     * klapivad BMS-iga, faasivoolud ~15,8 A, AC pinge 228,6 V. Ilma laadimiseta on väljad nullid.
+     */
+    private val obc = PidDefinition(
+        id = "iccu_e002",
+        ecu = ICCU,
+        request = "22E002",
+        pollIntervalMs = 5_000,
+        signals = listOf(
+            s(OBC_AC_CURRENT_1, "AC vool L1", "AC current L1", "A", ParameterGroup.CHARGING, 14, 2, scale = 0.01),
+            s(OBC_AC_CURRENT_2, "AC vool L2", "AC current L2", "A", ParameterGroup.CHARGING, 16, 2, scale = 0.01),
+            s(OBC_AC_CURRENT_3, "AC vool L3", "AC current L3", "A", ParameterGroup.CHARGING, 18, 2, scale = 0.01),
+            s(OBC_DC_VOLTAGE, "OBC DC pinge", "OBC DC voltage", "V", ParameterGroup.CHARGING, 22, 2, scale = 0.1),
+            s(OBC_DC_CURRENT, "OBC DC vool", "OBC DC current", "A", ParameterGroup.CHARGING, 24, 2, scale = 0.01),
+            s(OBC_AC_VOLTAGE, "AC pinge", "AC voltage", "V", ParameterGroup.CHARGING, 30, 2, scale = 0.01),
+        ),
+    )
+
+    val ALL: List<PidDefinition> = listOf(bmsMain, bmsHealth) + cellPids + listOf(odometer, iccuSolar, obc, tires, steering)
 }

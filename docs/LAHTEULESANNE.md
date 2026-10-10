@@ -1,6 +1,6 @@
 # Lähteülesanne: Ioniq 5 CAN-andmete Android-rakendus
 
-Versioon 0.16 (mustand) · 2026-10-10
+Versioon 0.17 (mustand) · 2026-10-10
 
 ## 1. Eesmärk
 
@@ -199,6 +199,23 @@ seistes kõik nullid (võib olla esimootor). `733` ja `744` ei vasta. Järgmine 
 „Avasta (3. etapp)”) otsib `7E3`/`7E6` vahemikest `E000–E0FF` ja `2000–20FF`, VCU-st, pidurisüsteemist,
 roolivõimendist, esikaamerast ja radarist. Rataste kiirused ja kiirendused tuleb leida sõidu ajal
 (kaasreisija käivitab skaneeringu).
+
+### 4.3 Pardalaadija (OBC) AC-laadimisel (10.10 20:32, pime, auto lukus)
+
+Fail: `testdata/raw/iccu_night_ac-charging_2026-10-10_2032.txt`. Auto laadis AC-ga ~10 kW (BMS −13,3 A, 734,8 V, SOC 85,5 %).
+
+| Andmed | ECU | PID | Baidid ja valem | Kontroll |
+|---|---|---|---|---|
+| AC faasivoolud L1, L2, L3 | `7E5` | `22E002` | 14–15, 16–17, 18–19 × 0,01 A | 15,82 / 15,82 / 15,58 A |
+| AC pinge | `7E5` | `22E002` | 30–31 × 0,01 V | 228,6 V |
+| OBC DC pinge | `7E5` | `22E002` | 22–23 × 0,1 V | 734,4 V = BMS ✓ |
+| OBC DC vool | `7E5` | `22E002` | 24–25 × 0,01 A | 13,35 A = BMS ✓ |
+
+AC sisend ~10,8 kW, DC väljund 9,8 kW, kasutegur ~91 %.
+
+Päikesekatus pimedas (sama mõõtmine): `E011` M–N = 95,5 V (päeval 164–197 V), R 36 (päeval 123–132),
+W 38 (päeval 74–81); O–P = 733,4 V = aku pinge ✓. Kuna ICCU samal ajal laadis, ei ole see puhas
+võrdlus: vaja on pimedat mõõtmist ilma laadimiseta.
 
 ## 5. Ekraanid (loogiline grupeerimine)
 

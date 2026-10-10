@@ -86,4 +86,10 @@
     <string name="to_right">right</string>
     <string name="copy">Copy</string>
     <string name="copied">Log copied</string>
+    <string name="ac_charger">AC charger (on-board)</string>
+    <string name="ac_input_power">AC input power</string>
+    <string name="ac_voltage">AC voltage</string>
+    <string name="ac_phase_currents">Phase currents L1/L2/L3</string>
+    <string name="obc_output_power">Charger output</string>
+    <string name="obc_efficiency">Charger efficiency</string>
 </resources>

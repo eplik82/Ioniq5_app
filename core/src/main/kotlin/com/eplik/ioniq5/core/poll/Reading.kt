@@ -53,3 +53,20 @@ fun Readings.minutesToSoc(targetPercent: Double): Double? {
     val energyKwh = (targetPercent - soc) / 100 * usableCapacityKwh()
     return energyKwh / -power * 60
 }
+
+/** AC sisendvõimsus kW (pinge × faasivoolude summa); null, kui AC-laadimist pole. */
+fun Readings.acInputPowerKw(): Double? {
+    val v = value(Ioniq5Pids.OBC_AC_VOLTAGE) ?: return null
+    val currents = listOf(Ioniq5Pids.OBC_AC_CURRENT_1, Ioniq5Pids.OBC_AC_CURRENT_2, Ioniq5Pids.OBC_AC_CURRENT_3)
+        .mapNotNull { value(it) }
+    if (v < 50 || currents.sum() < 0.5) return null
+    return v * currents.sum() / 1000
+}
+
+/** Pardalaadija DC väljundvõimsus kW. */
+fun Readings.obcOutputPowerKw(): Double? {
+    val v = value(Ioniq5Pids.OBC_DC_VOLTAGE) ?: return null
+    val i = value(Ioniq5Pids.OBC_DC_CURRENT) ?: return null
+    if (i < 0.1) return null
+    return v * i / 1000
+}
