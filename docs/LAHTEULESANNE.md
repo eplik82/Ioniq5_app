@@ -1,6 +1,6 @@
 # Lähteülesanne: Ioniq 5 CAN-andmete Android-rakendus
 
-Versioon 0.13 (mustand) · 2026-10-10
+Versioon 0.14 (mustand) · 2026-10-10
 
 ## 1. Eesmärk
 
@@ -60,7 +60,11 @@ parandada ja lisada ilma koodi muutmata.
 | VCU / VMCU | `7E2` → `7EA` | `2101`, `2102` | Kiirus, käik (P/R/N/D), gaasipedaal, piduripedaal, mootori pöörded |
 | Mootorikontrollerid (taga/ees) | kinnitada | kinnitada | Mootori ja inverteri temperatuurid, pöördemoment |
 | Näidikuplokk (cluster) | `7C6` → `7CE` | `22B002` | Läbisõit |
-| TPMS | `7A0` → `7A8` | `22C00B` | Nelja rehvi rõhk ja temperatuur |
+| TPMS | `7A0` → `7A8` (vastas ECU-skaneeringus) | `22C00B` (kinnitada) | Nelja rehvi rõhk ja temperatuur, andurite patarei/olek |
+| Tagumine mootor (MCU) | `7E3` → `7EB` | kinnitada | Pöörded, pöördemoment, faasivool, mootori ja inverteri temperatuur |
+| Eesmine mootor (AWD korral) | kinnitada | kinnitada | Pöörded, pöördemoment, temperatuurid (RWD autol puudub) |
+| Pidurisüsteem (IEB/ESC) | `7D1` → `7D9` | kinnitada | Rataste kiirused (4×), pidurirõhk |
+| Roolivõimendi (MDPS) / ADAS | `7D4` → `7DC` / `7C4`, `7D0` | kinnitada | Roolinurk, rooli pöördemoment, külg- ja pikikiirendus, pöördekiirus (yaw) |
 | Kliima (FATC) | `7B3` → `7BB` | `220100` | Sisetemperatuur, välistemperatuur, ventilaator, soojuspumba olek |
 | ICCU (OBC + 12 V muundur + **päikesekatus**) | `7E5` → `7ED` (kinnitada) | kinnitada, päikesekatus `22E011` | AC laadimise pinge ja vool, OBC temperatuur, LDC (12 V) vool, 12 V aku olek, päikesekatuse võimsus ja pinge |
 
@@ -186,7 +190,16 @@ Rakendusse ehitatakse diagnostikakonsool ja skanner (jaotis 5.9), nii et kontrol
 3. **Kõrgepinge aku:** SOC, SOH, pinge, vool, võimsus, max laadimis- ja tühjendusvõimsus, temperatuurid moodulite kaupa, elementide pinged soojuskaardina (min/max/erinevus esile tõstetud), kumulatiivsed Ah/kWh.
 4. **Laadimine:** AC/DC olek, laadimisvõimsus, OBC andmed, laadimiskõver (kW vs SOC) laadimise ajal, laadimisseansi energia ja kestus.
 5. **Sõit ja jõuülekanne:** kiirus, käik, pedaalid, mootori pöörded ja temperatuurid, hetkekulu (kWh/100 km), regeneratsioon.
-6. **Rehvid:** auto skeem nelja rehvi rõhu ja temperatuuriga, hoiatus alla seatud piiri.
+6. **Rehvid ja sillad:** auto **pealtvaade** (kere kontuur, esi- ja tagasild, neli ratast), kõik sildadega
+   seotud andmed joonise peal oma kohal:
+   - iga ratta juures: rehvirõhk (bar / kPa / psi), rehvi temperatuur, ratta kiirus; hoiatus, kui rõhk
+     on alla seatud piiri või rehvide vahe on liiga suur (värviline ratas);
+   - esirattad pööratakse joonisel **roolinurga** järgi, roolinurk ka numbrina;
+   - iga silla juures: mootori võimsus (kW), pöördemoment (Nm), pöörded, mootori ja inverteri temperatuur;
+   - **veojaotus** esi- ja tagasilla vahel (riba/protsent; RWD autol 0/100 %);
+   - auto keskel: külg- ja pikikiirendus (g-punkt) ja pöördekiirus;
+   - kokku võimsus ja regeneratsioon (negatiivne võimsus teise värviga).
+   Värskendus sõidu ajal vähemalt 2 Hz (rool, kiirendused, võimsus), rehvid 0,1 Hz.
 7. **Kliima ja soojushaldus:** sise- ja väliskliima, aku jahutusvedelik, soojuspump, aku küttekeha.
 8. **Päikesekatus:** hetkevõimsus (W), tänane ja koguenergia, ajaloograafik (päev/nädal), hinnanguline lisaläbisõit (km).
 9. **Diagnostika (edasijõudnud):** toorpäringu konsool (ECU aadress + päring), ECU- ja DID-skanner, päringute ja vastuste logi. Ainult lugemisteenused, vt jaotis 9.
@@ -205,7 +218,7 @@ foreground service'is.
   - Ülevaade: SOC, aku võimsus (kW), aku temperatuur, päikesekatuse hetkevõimsus, 12 V pinge.
   - Aku: SOC, SOH, min/max elemendipinge, temperatuurid.
   - Laadimine: võimsus, SOC, hinnanguline lõpuaeg.
-  - Rehvid: nelja rehvi rõhk.
+  - Rehvid ja sillad: sama pealtvaate joonis lihtsustatult (rehvirõhud, roolinurk, veojaotus, võimsus).
   - Päikesekatus: hetkevõimsus, tänane energia.
 - **Graafiline kuva (nõue):** auto ekraanil on päris graafilised näidikud, mitte tekstiloendid.
   Selleks kasutatakse Car App Library **navigatsioonikategooriat**, mis annab joonistuspinna
@@ -258,7 +271,7 @@ foreground service'is.
 | 0 | Projekti alus: Gradle, Compose, arhitektuuri skelett, CI (build + testid) | Käivituv tühi rakendus |
 | 1 | BLE + ELM327 kiht, diagnostikakonsool, ECU/DID-skanner, seansi salvestamine | Toorandmed autost; päikesekatuse ECU avastamine |
 | 2 | PID-konfiguratsioon, dekodeerimine, BMS ja ülevaade | SOC, võimsus, temperatuurid, elementide pinged |
-| 3 | Ülejäänud grupid: laadimine, sõit, rehvid, kliima, päikesekatus | Kõik ekraanid |
+| 3 | Ülejäänud grupid: laadimine, sõit, **rehvid ja sillad**, kliima, päikesekatus (sh PID-ide avastamine TPMS-ist, mootoritest, pidurisüsteemist ja roolivõimendist) | Kõik ekraanid |
 | 4 | Logimine, graafikud, CSV eksport, foreground service | Sõidu- ja laadimislogid |
 | 5 | Android Auto (Car App Library, DHU testid) | Andmed auto ekraanil |
 | 6 | Viimistlus, lokaliseerimine, hoiatused, allkirjastatud APK | v1.0 |
@@ -285,5 +298,6 @@ foreground service'is.
 
 ## 11. Avatud küsimused
 
-1. `7E5`/`22E011` toorvastused päikese käes, varjus ja öösel (jaotis 4.1).
-2. Logid muudes olukordades: sõit, AC-laadimine, seismine päikese käes (süüde sees, laadimata).
+1. Kas auto on tagaveoline (RWD, üks mootor) või nelikvedu (AWD, kaks mootorit)? Logi järgi töötas sõidul ainult üks mootor.
+2. `7E5`/`22E011` toorvastused päikese käes, varjus ja öösel (jaotis 4.1).
+3. Logid muudes olukordades: sõit, AC-laadimine, seismine päikese käes (süüde sees, laadimata).
