@@ -14,8 +14,21 @@ android {
         applicationId = "com.eplik.ioniq5"
         minSdk = 26
         targetSdk = 35
-        versionCode = 1
-        versionName = "0.1.0"
+        // CI annab igale ehitusele kasvava numbri, et uus APK paigalduks vana peale
+        val build = System.getenv("GITHUB_RUN_NUMBER")?.toIntOrNull() ?: 1
+        versionCode = build
+        versionName = "0.3.$build"
+    }
+
+    signingConfigs {
+        // Repos olev debug-võti (avalik, parool "android"): kõik ehitused on sama allkirjaga,
+        // nii saab uue APK paigaldada vana peale ilma desinstallimata.
+        getByName("debug") {
+            storeFile = file("debug.keystore")
+            storePassword = "android"
+            keyAlias = "androiddebugkey"
+            keyPassword = "android"
+        }
     }
 
     buildTypes {
