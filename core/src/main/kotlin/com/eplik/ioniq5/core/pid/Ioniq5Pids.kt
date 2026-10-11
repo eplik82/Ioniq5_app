@@ -12,6 +12,7 @@ object Ioniq5Pids {
     val TPMS = EcuAddress(0x7A0)
     val MDPS = EcuAddress(0x7D4)
     val HVAC = EcuAddress(0x7B3)
+    val ESC = EcuAddress(0x7D1)
 
     /** TPMS rõhk: bait × 0,2 psi, teisendatud baarideks. */
     private const val PSI_02_TO_BAR = 0.2 * 0.0689476
@@ -63,6 +64,11 @@ object Ioniq5Pids {
     const val OUTDOOR_TEMP = "outdoor_temp"
     const val EVAPORATOR_TEMP = "evaporator_temp"
     const val HVAC_VEHICLE_SPEED = "hvac_vehicle_speed"
+    const val VEHICLE_SPEED = "vehicle_speed"
+    const val WHEEL_SPEED_FL = "wheel_speed_fl"
+    const val WHEEL_SPEED_FR = "wheel_speed_fr"
+    const val WHEEL_SPEED_RL = "wheel_speed_rl"
+    const val WHEEL_SPEED_RR = "wheel_speed_rr"
 
     const val CELL_COUNT_MAX = 192
     const val MODULE_TEMP_COUNT = 16
@@ -233,5 +239,24 @@ object Ioniq5Pids {
         ),
     )
 
-    val ALL: List<PidDefinition> = listOf(bmsMain, bmsHealth) + cellPids + listOf(odometer, iccuSolar, obc, tires, steering, hvac)
+    /**
+     * Pidurisüsteem (IEB/ESC). Sõidulogid 2026-10-11: baidid 13–16 on rataste kiirused km/h
+     * (pöördes on välimised rattad kiiremad), baidid 9–10 / 256 on sõiduki kiirus km/h
+     * (võrdne rataste ja kliimamooduli kiirusega).
+     */
+    private val esc = PidDefinition(
+        id = "esc_0104",
+        ecu = ESC,
+        request = "220104",
+        pollIntervalMs = 1_000,
+        signals = listOf(
+            s(VEHICLE_SPEED, "Kiirus", "Speed", "km/h", ParameterGroup.DRIVE, 9, 2, scale = 1.0 / 256),
+            s(WHEEL_SPEED_FL, "Ratta kiirus VE", "Wheel speed FL", "km/h", ParameterGroup.TIRES, 13),
+            s(WHEEL_SPEED_FR, "Ratta kiirus PE", "Wheel speed FR", "km/h", ParameterGroup.TIRES, 14),
+            s(WHEEL_SPEED_RL, "Ratta kiirus VT", "Wheel speed RL", "km/h", ParameterGroup.TIRES, 15),
+            s(WHEEL_SPEED_RR, "Ratta kiirus PT", "Wheel speed RR", "km/h", ParameterGroup.TIRES, 16),
+        ),
+    )
+
+    val ALL: List<PidDefinition> = listOf(bmsMain, bmsHealth) + cellPids + listOf(odometer, iccuSolar, obc, tires, steering, esc, hvac)
 }

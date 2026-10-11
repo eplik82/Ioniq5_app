@@ -102,7 +102,7 @@ class CarDrawing(private val context: Context, dark: Boolean) {
                 fresh(P.BATTERY_CURRENT),
                 if (power != null && power < -0.5) regen else null,
             ),
-            Tile(str(R.string.speed_calc), formatValue(r.speedKmh(), 0), "km/h", fresh(P.MOTOR_RPM)),
+            Tile(str(R.string.speed_calc), formatValue(r.speedKmh(), 0), "km/h", fresh(P.VEHICLE_SPEED) || fresh(P.MOTOR_RPM)),
             Tile(
                 str(R.string.battery_temp),
                 "${formatValue(v(P.BATTERY_TEMP_MIN), 0)}…${formatValue(v(P.BATTERY_TEMP_MAX), 0)}",
@@ -223,7 +223,7 @@ class CarDrawing(private val context: Context, dark: Boolean) {
                     "",
                     fresh(P.STEERING_ANGLE),
                 ),
-                Tile(str(R.string.speed_calc), formatValue(r.speedKmh(), 0), "km/h", fresh(P.MOTOR_RPM)),
+                Tile(str(R.string.speed_calc), formatValue(r.speedKmh(), 0), "km/h", fresh(P.VEHICLE_SPEED) || fresh(P.MOTOR_RPM)),
                 Tile(str(R.string.front_axle) + " rpm", formatValue(v(P.MOTOR2_RPM), 0), "", fresh(P.MOTOR2_RPM)),
                 Tile(str(R.string.rear_axle) + " rpm", formatValue(v(P.MOTOR_RPM), 0), "", fresh(P.MOTOR_RPM)),
             ),

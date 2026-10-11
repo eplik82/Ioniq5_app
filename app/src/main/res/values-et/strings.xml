@@ -59,7 +59,7 @@
     <string name="rear_axle">Taga</string>
     <string name="steering_angle">Roolinurk</string>
     <string name="torque_split">Veojaotus ees / taga</string>
-    <string name="axles_data_note">Rehvide, rooli ja pöördemomendi andmed tulevad pärast avastusskaneeringut (Diagnostika → Avasta).</string>
+    <string name="axles_data_note">Mootorite pöördemoment ja kiirendused on veel avastamata. Esimootor on püsikiirusel lahti ühendatud (0 p/min), seega sõidab auto siis tagaveoga.</string>
     <string name="mode_voltage">Pinge</string>
     <string name="mode_deviation">Erinevus, mV</string>
     <string name="tap_cell_hint">Puuduta elementi detailide nägemiseks</string>
@@ -82,7 +82,7 @@
     <string name="solar_energy_total">Toodetud kokku</string>
     <string name="not_found_yet">veel leidmata</string>
     <string name="solar_note">Päikesekatuse andmed tulevad ICCU-st (7E5, 22E011). Võimsus = bait 25 × 0,5 W: pilvisel päeval ~40 W, mis klapib auto kogutoodangu kasvuga, ja pimedas ~3 W. Energiat loetakse ainult siis, kui rakendus on ühendatud; auto enda kogusummat diagnostika kaudu lugeda ei saa.</string>
-    <string name="speed_calc">Kiirus (mootori pööretest)</string>
+    <string name="speed_calc">Kiirus</string>
     <string name="to_left">vasakule</string>
     <string name="to_right">paremale</string>
     <string name="copy">Kopeeri</string>

@@ -1,6 +1,6 @@
 # Lähteülesanne: Ioniq 5 CAN-andmete Android-rakendus
 
-Versioon 0.21 · 2026-10-11
+Versioon 0.22 · 2026-10-11
 
 ## 1. Eesmärk
 
@@ -199,6 +199,23 @@ seistes kõik nullid (võib olla esimootor). `733` ja `744` ei vasta. Järgmine 
 „Avasta (3. etapp)”) otsib `7E3`/`7E6` vahemikest `E000–E0FF` ja `2000–20FF`, VCU-st, pidurisüsteemist,
 roolivõimendist, esikaamerast ja radarist. Rataste kiirused ja kiirendused tuleb leida sõidu ajal
 (kaasreisija käivitab skaneeringu).
+
+### 4.2a Pidurisüsteem (ESC `7D1` `220104`), sõidulogid 2026-10-11
+
+Kaks sõidulogi (`testdata/raw/drive-log_2026-10-11_1648.txt`, `drive-log_2026-10-11_1703.txt`)
+sõidu, pöörete ja foori taga seismisega. Baidid loetakse 0x62 baidist:
+
+| Baidid | Väärtus | Tähendus | Olek |
+|---|---|---|---|
+| 9–10 | / 256 km/h | sõiduki kiirus (71,26 km/h; võrdne rataste ja kliimamooduli kiirusega) | kasutusel |
+| 13, 14, 15, 16 | km/h | rataste kiirused VE, PE, VT, PT (pöördes välimised kiiremad, nt 51/50/50/49 paremale) | kasutusel |
+| 7–8 | ~315 × km/h | kiirusega võrdeline, ühik teadmata | kandidaat |
+| 41–42 | 0 sõidus, 1420…3710 seistes | piduri rõhk × 0,01 bar? (regeneratsioonil −24 kW oli 0: pidurdus ainult mootoriga) | kandidaat |
+| 44–45 | +42 kiirendusel, −32…−38 aeglustusel | pikikiirendus | kandidaat, kalibreerida GPS-iga |
+| 37–38, 39–40 | märk sama mis roolinurgal (+43/+45 vasakpöördes) | pöörlemiskiirus ja külgkiirendus | kandidaat, kalibreerida GPS-iga |
+
+Tagamootori pööretest arvutatud kiirus oli ~3 % suurem kui rataste kiirus (73,6 vs 71 km/h).
+Rakendus kasutab nüüd ESC kiirust ja arvutab pööretest ainult siis, kui ESC ei vasta.
 
 ### 4.2b Päikesekatuse võimsus (pime mõõtmine ilma laadimiseta, 10.10 20:41)
 

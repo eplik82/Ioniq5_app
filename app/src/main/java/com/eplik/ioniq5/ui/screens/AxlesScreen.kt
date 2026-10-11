@@ -92,10 +92,10 @@ fun AxlesScreen(
                 lowPressureBar = lowPressureBar,
                 steeringDeg = steering?.toFloat() ?: 0f,
                 wheels = listOf(
-                    Wheel(v(P.TIRE_PRESSURE_FL), v(P.TIRE_TEMP_FL), front = true, left = true),
-                    Wheel(v(P.TIRE_PRESSURE_FR), v(P.TIRE_TEMP_FR), front = true, left = false),
-                    Wheel(v(P.TIRE_PRESSURE_RL), v(P.TIRE_TEMP_RL), front = false, left = true),
-                    Wheel(v(P.TIRE_PRESSURE_RR), v(P.TIRE_TEMP_RR), front = false, left = false),
+                    Wheel(v(P.TIRE_PRESSURE_FL), v(P.TIRE_TEMP_FL), v(P.WHEEL_SPEED_FL), front = true, left = true),
+                    Wheel(v(P.TIRE_PRESSURE_FR), v(P.TIRE_TEMP_FR), v(P.WHEEL_SPEED_FR), front = true, left = false),
+                    Wheel(v(P.TIRE_PRESSURE_RL), v(P.TIRE_TEMP_RL), v(P.WHEEL_SPEED_RL), front = false, left = true),
+                    Wheel(v(P.TIRE_PRESSURE_RR), v(P.TIRE_TEMP_RR), v(P.WHEEL_SPEED_RR), front = false, left = false),
                 ),
                 front = Motor(labels.front, frontTorque, v(P.MOTOR2_RPM)),
                 rear = Motor(labels.rear, rearTorque, v(P.MOTOR_RPM)),
@@ -104,7 +104,7 @@ fun AxlesScreen(
             )
         }
         Text(
-            stringResource(R.string.speed_calc) + ": " + formatValue(readings.takeIf { v(P.MOTOR_RPM) != null }?.speedKmh(), 0) + " km/h",
+            stringResource(R.string.speed_calc) + ": " + formatValue(readings.takeIf { v(P.VEHICLE_SPEED) != null || v(P.MOTOR_RPM) != null }?.speedKmh(), 0) + " km/h",
             style = MaterialTheme.typography.titleMedium,
         )
         Text(
@@ -133,7 +133,7 @@ private data class CarColors(val outline: Color, val inactive: Color, val text: 
 
 private data class AxleLabels(val front: String, val rear: String)
 
-private data class Wheel(val pressureBar: Double?, val tempC: Double?, val front: Boolean, val left: Boolean)
+private data class Wheel(val pressureBar: Double?, val tempC: Double?, val speedKmh: Double?, val front: Boolean, val left: Boolean)
 
 private data class Motor(val label: String, val torqueNm: Double?, val rpm: Double?)
 
@@ -203,7 +203,8 @@ private fun DrawScope.drawCar(
         rotate(angle, pivot = Offset(cx, cy)) {
             drawRoundRect(color, Offset(cx - wheelW / 2, cy - wheelH / 2), Size(wheelW, wheelH), CornerRadius(wheelW * 0.3f))
         }
-        val label = "${formatValue(wheel.pressureBar?.times(pressureUnit.fromBar), pressureUnit.decimals)} ${pressureUnit.label}\n${formatValue(wheel.tempC, 0)} °C"
+        val label = "${formatValue(wheel.pressureBar?.times(pressureUnit.fromBar), pressureUnit.decimals)} ${pressureUnit.label}\n${formatValue(wheel.tempC, 0)} °C" +
+            (wheel.speedKmh?.let { "\n${formatValue(it, 0)} km/h" } ?: "")
         val labelX = if (wheel.left) (cx - wheelW / 2) / 2 else (cx + wheelW / 2 + w) / 2
         drawCentered(measurer, label, Offset(labelX, cy), TextStyle(color = colors.text, fontSize = (h * 0.028f).toSp(), textAlign = TextAlign.Center))
     }

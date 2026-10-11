@@ -35,10 +35,12 @@ private const val REAR_GEAR_RATIO = 10.65
 private const val TIRE_CIRCUMFERENCE_M = 2.316
 
 /**
- * Kiirus km/h tagamootori pööretest. Kontrollitud: 8766 p/min ≈ 114 km/h (auto näit ~115 km/h).
+ * Kiirus km/h: pidurisüsteemi (ESC) kiirus, selle puudumisel tagamootori pööretest. Pööretest arvutatud
+ * kiirus on ~3 % suurem kui rataste kiirus (73,6 vs 71 km/h); esimootor võib olla lahti ühendatud,
+ * seega tagamootor on õige allikas.
  */
-fun Readings.speedKmh(): Double? =
-    value(Ioniq5Pids.MOTOR_RPM)?.let { kotlin.math.abs(it) / REAR_GEAR_RATIO * TIRE_CIRCUMFERENCE_M * 60 / 1000 }
+fun Readings.speedKmh(): Double? = value(Ioniq5Pids.VEHICLE_SPEED)
+    ?: value(Ioniq5Pids.MOTOR_RPM)?.let { kotlin.math.abs(it) / REAR_GEAR_RATIO * TIRE_CIRCUMFERENCE_M * 60 / 1000 }
 
 /** Aku kasutatav mahutavus kWh (72,6 kWh × SOH). */
 fun Readings.usableCapacityKwh(nominalKwh: Double = 72.6): Double =
