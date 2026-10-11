@@ -1,6 +1,6 @@
 # Lähteülesanne: Ioniq 5 CAN-andmete Android-rakendus
 
-Versioon 0.20 · 2026-10-10
+Versioon 0.21 · 2026-10-11
 
 ## 1. Eesmärk
 
@@ -250,6 +250,24 @@ siis, kui süüde on sees.
 | Tagaklaasi ja peeglite soojendus, esiklaasi soojendus/defroster | IBU/BCM `7A0`/`770`, kliima `7B3` | avastada |
 | Akende asend (avatud/suletud) | IBU `770`/`7A0`, uksemoodulid | avastada, kui loetav |
 
+**Sõidulogi 2026-10-11 16:48 (süüde sees, ~2 min sõitu 12–74 km/h):** `7B3` vastab süüte ajal
+nii `220100` kui ka `220102` päringule (`testdata/raw/drive-log_2026-10-11_1648.txt`).
+`220100` baidid (loendus 0x62 baidist):
+
+| Bait | Toores | Väärtus | Tähendus | Olek |
+|---|---|---|---|---|
+| 8 | `7F` | / 2 − 40 = 23,5 °C | salongi temperatuur | kasutusel |
+| 9 | `69` | 12,5 °C | välistemperatuur | kasutusel, võrrelda auto näiduga |
+| 10 | `5A`/`5B` | 5…5,5 °C | aurusti temperatuur (Car Scanner 3…6,5) | kasutusel |
+| 4, 30, 31 | `94`, `93`, `96` | 34; 33,5; 35 °C | puhurite temperatuurid (juht, jalad) | kandidaat |
+| 29 | `7E` | 23 °C | salong ees | kandidaat |
+| 28 | `36`→`35` | 54→53 | õhuniiskus %? | kandidaat |
+| 32 | `47`…`00` | 71…0 km/h | sõidukiirus (järgis mootori pöörete kiirust) | kasutusel |
+
+`220102` bait 7 (`9E`→`9A`) ja bait 15 (`2D`→`2A`) langesid sõidu ajal aeglaselt. Tähendus on veel
+teadmata. Istmete, rooli, klaaside ja peeglite soojenduse andmeid selles logis polnud, sest
+lülitusi ja märkeid ei tehtud.
+
 **Avastamise käik (diagnostika → arendajalogi):** süüde sees, auto paigal. Logi algab kõigi ülaltoodud
 ECU-de `22xxxx` lugemisega. Seejärel lülitatakse **ükshaaval** sisse ja välja: roolisoojendus,
 juhi istme soojendus (tasemed 1–3), kõrvalistuja iste, tagaistmed, istme ventilatsioon, tagaklaasi
@@ -280,6 +298,9 @@ juhtida ei saa (jaotis 9).
    Märkus: BMS-i `0101` „mootor 2” pöörded olid ~115 km/h juures 0, kuigi tagamootor tegi 8766 p/min.
    Kui see on esimootor, on see ühenduse katkestusega (eesmine mootor sõidab vabalt); kontrollida
    kiirendamisel, kui esimootor peab rakenduma.
+   **Kinnitatud 2026-10-11:** 25–74 km/h sõidul (ka 44 kW kiirendusel ja −24 kW regeneratsioonil) oli
+   „mootor 2” 0 p/min. 12 km/h juures oli see 911 ja tagamootor 910 p/min. Esimootor (vedav sild
+   ees) on püsikiirusel lahti ühendatud (EV disconnector) ja ühendub aeglaselt sõites.
 7. **Kliima ja soojendused:**
    - **temperatuurid:** salongi temperatuur, välistemperatuur (suurelt), seatud temperatuur juhil ja
      kõrvalistujal, puhurite väljundtemperatuurid, aurusti temperatuur, salongi õhuniiskus;

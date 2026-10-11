@@ -110,6 +110,16 @@ fun OverviewScreen(
                 fresh(P.BATTERY_TEMP_MAX),
             )
         }
+        item { ValueTile(stringResource(R.string.cabin_temp), formatValue(readings[P.CABIN_TEMP]?.value, 1), "°C", fresh(P.CABIN_TEMP)) }
+        item {
+            ValueTile(
+                stringResource(R.string.outdoor_temp),
+                formatValue(readings[P.OUTDOOR_TEMP]?.value, 1),
+                "°C",
+                fresh(P.OUTDOOR_TEMP),
+                detail = stringResource(R.string.candidate),
+            )
+        }
         item { ValueTile(stringResource(R.string.aux_battery), formatValue(readings[P.AUX_VOLTAGE]?.value, 1), "V", fresh(P.AUX_VOLTAGE)) }
         item { ValueTile(stringResource(R.string.odometer), formatValue(readings[P.ODOMETER]?.value, 0), "km", readings[P.ODOMETER].isFresh(now - 60_000)) }
         item {

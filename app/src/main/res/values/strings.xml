@@ -146,4 +146,6 @@
     <string name="error_not_connected">Not connected</string>
     <string name="error_write_failed">Write failed</string>
     <string name="error_bluetooth_off">Bluetooth is off</string>
+    <string name="cabin_temp">Cabin</string>
+    <string name="outdoor_temp">Outside</string>
 </resources>

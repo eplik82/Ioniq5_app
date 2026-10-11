@@ -11,6 +11,7 @@ object Ioniq5Pids {
     val CLUSTER = EcuAddress(0x7C6)
     val TPMS = EcuAddress(0x7A0)
     val MDPS = EcuAddress(0x7D4)
+    val HVAC = EcuAddress(0x7B3)
 
     /** TPMS rõhk: bait × 0,2 psi, teisendatud baarideks. */
     private const val PSI_02_TO_BAR = 0.2 * 0.0689476
@@ -58,6 +59,10 @@ object Ioniq5Pids {
     const val OBC_AC_CURRENT_3 = "obc_ac_current_3"
     const val OBC_DC_VOLTAGE = "obc_dc_voltage"
     const val OBC_DC_CURRENT = "obc_dc_current"
+    const val CABIN_TEMP = "cabin_temp"
+    const val OUTDOOR_TEMP = "outdoor_temp"
+    const val EVAPORATOR_TEMP = "evaporator_temp"
+    const val HVAC_VEHICLE_SPEED = "hvac_vehicle_speed"
 
     const val CELL_COUNT_MAX = 192
     const val MODULE_TEMP_COUNT = 16
@@ -211,5 +216,22 @@ object Ioniq5Pids {
         ),
     )
 
-    val ALL: List<PidDefinition> = listOf(bmsMain, bmsHealth) + cellPids + listOf(odometer, iccuSolar, obc, tires, steering)
+    /**
+     * Kliima (7B3, vastab ainult süüte ajal). Temperatuurid: bait / 2 − 40 °C. Sõidulogis 2026-10-11
+     * oli salong 23,5 °C, väljas 12,5 °C, aurusti 5 °C; bait 32 järgis täpselt sõidukiirust.
+     */
+    private val hvac = PidDefinition(
+        id = "hvac_0100",
+        ecu = HVAC,
+        request = "220100",
+        pollIntervalMs = 5_000,
+        signals = listOf(
+            SignalDefinition(CABIN_TEMP, "Salongi temperatuur", "Cabin temperature", "°C", ParameterGroup.CLIMATE, 8, scale = 0.5, offset = -40.0),
+            SignalDefinition(OUTDOOR_TEMP, "Välistemperatuur", "Outdoor temperature", "°C", ParameterGroup.CLIMATE, 9, scale = 0.5, offset = -40.0),
+            SignalDefinition(EVAPORATOR_TEMP, "Aurusti temperatuur", "Evaporator temperature", "°C", ParameterGroup.CLIMATE, 10, scale = 0.5, offset = -40.0),
+            s(HVAC_VEHICLE_SPEED, "Kiirus (kliimamoodul)", "Speed (climate module)", "km/h", ParameterGroup.DRIVE, 32),
+        ),
+    )
+
+    val ALL: List<PidDefinition> = listOf(bmsMain, bmsHealth) + cellPids + listOf(odometer, iccuSolar, obc, tires, steering, hvac)
 }
