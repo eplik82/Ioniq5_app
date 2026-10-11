@@ -257,7 +257,7 @@ nii `220100` kui ka `220102` päringule (`testdata/raw/drive-log_2026-10-11_1648
 | Bait | Toores | Väärtus | Tähendus | Olek |
 |---|---|---|---|---|
 | 8 | `7F` | / 2 − 40 = 23,5 °C | salongi temperatuur | kasutusel |
-| 9 | `69` | 12,5 °C | välistemperatuur | kasutusel, võrrelda auto näiduga |
+| 9 | `69` | 12,5 °C | välistemperatuur | kinnitatud (kasutaja võrdles auto näiduga 2026-10-11) |
 | 10 | `5A`/`5B` | 5…5,5 °C | aurusti temperatuur (Car Scanner 3…6,5) | kasutusel |
 | 4, 30, 31 | `94`, `93`, `96` | 34; 33,5; 35 °C | puhurite temperatuurid (juht, jalad) | kandidaat |
 | 29 | `7E` | 23 °C | salong ees | kandidaat |

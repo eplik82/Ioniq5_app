@@ -218,7 +218,7 @@ object Ioniq5Pids {
 
     /**
      * Kliima (7B3, vastab ainult süüte ajal). Temperatuurid: bait / 2 − 40 °C. Sõidulogis 2026-10-11
-     * oli salong 23,5 °C, väljas 12,5 °C, aurusti 5 °C; bait 32 järgis täpselt sõidukiirust.
+     * oli salong 23,5 °C, väljas 12,5 °C (kinnitatud auto näiduga), aurusti 5 °C; bait 32 järgis täpselt sõidukiirust.
      */
     private val hvac = PidDefinition(
         id = "hvac_0100",
