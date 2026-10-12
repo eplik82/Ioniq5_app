@@ -19,6 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.nativeCanvas
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.eplik.ioniq5.R
@@ -41,6 +42,7 @@ fun ClimateScreen(readings: Readings, modifier: Modifier = Modifier) {
     fun v(id: String) = readings[id]?.takeIf { it.isFresh(now) }?.value
     fun level(id: String) = v(id)?.toInt()
     val dark = MaterialTheme.colorScheme.background.luminance() < 0.5f
+    val photo = CabinDrawing.photo(LocalContext.current.getExternalFilesDir(null))
     val heaters = CabinState(
         driverSeat = level(P.SEAT_HEAT_DRIVER),
         passengerSeat = level(P.SEAT_HEAT_PASSENGER),
@@ -63,7 +65,7 @@ fun ClimateScreen(readings: Readings, modifier: Modifier = Modifier) {
         Text(stringResource(R.string.climate_title), style = MaterialTheme.typography.displayMedium)
         Canvas(Modifier.fillMaxWidth().aspectRatio(2f)) {
             drawIntoCanvas { canvas ->
-                CabinDrawing(dark).draw(canvas.nativeCanvas, RectF(0f, 0f, size.width, size.height), heaters)
+                CabinDrawing(dark).draw(canvas.nativeCanvas, RectF(0f, 0f, size.width, size.height), heaters, photo)
             }
         }
         Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {

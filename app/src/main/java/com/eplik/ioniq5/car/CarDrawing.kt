@@ -315,6 +315,7 @@ class CarDrawing(private val context: Context, private val dark: Boolean) {
                 rearWindow = level(P.REAR_WINDOW_HEAT),
                 mirrors = level(P.MIRROR_HEAT),
             ),
+            CabinDrawing.photo(context.getExternalFilesDir(null)),
         )
         tileGrid(
             c,

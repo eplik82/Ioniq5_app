@@ -1,10 +1,13 @@
 package com.eplik.ioniq5.car
 
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Path
 import android.graphics.RectF
+import java.io.File
 import kotlin.math.min
 
 /** Soojenduste olek: null = teadmata (baiti pole veel leitud), 0 = väljas, 1…3 = tase. */
@@ -48,7 +51,11 @@ class CabinDrawing(dark: Boolean) {
     }
 
     /** Joonistab auto [area] keskele, külgede suhtega 2 : 1. */
-    fun draw(c: Canvas, area: RectF, s: CabinState) {
+    fun draw(c: Canvas, area: RectF, s: CabinState, photo: Bitmap? = null) {
+        if (photo != null) {
+            drawOnPhoto(c, area, s, photo)
+            return
+        }
         val k = min(area.width() / W, area.height() / H)
         c.save()
         c.translate(area.centerX() - W * k / 2, area.centerY() - H * k / 2)
@@ -133,6 +140,93 @@ class CabinDrawing(dark: Boolean) {
         if ((s.rearWindow ?: 0) > 0) heatWaves(c, 848f, 250f, 70f, warning, 3)
 
         c.restore()
+    }
+
+    /**
+     * Kasutaja enda foto (994 × 496, esiots vasakul, juht all) ja soojendused selle peal. Koordinaadid on
+     * foto pikslites: istmed, rool, klaasid ja peeglid on mõõdetud Ioniq 5 pealtvaate pildilt.
+     */
+    private fun drawOnPhoto(c: Canvas, area: RectF, s: CabinState, photo: Bitmap) {
+        val k = min(area.width() / PW, area.height() / PH)
+        c.save()
+        c.translate(area.centerX() - PW * k / 2, area.centerY() - PH * k / 2)
+        c.scale(k, k)
+        fill.isFilterBitmap = true
+        c.drawBitmap(photo, null, RectF(0f, 0f, PW, PH), fill)
+
+        // Peeglid
+        listOf(
+            Path().apply { moveTo(324f, 74f); lineTo(350f, 40f); quadTo(370f, 31f, 375f, 40f); lineTo(362f, 74f); close() },
+            Path().apply { moveTo(324f, 422f); lineTo(350f, 456f); quadTo(370f, 465f, 375f, 456f); lineTo(362f, 422f); close() },
+        ).forEach { overlayPath(c, it, s.mirrors) }
+        if ((s.mirrors ?: 0) > 0) {
+            heatWaves(c, 392f, 30f, 26f, warning, 2)
+            heatWaves(c, 392f, 466f, 26f, warning, 2)
+        }
+
+        // Esiklaas ja tagaklaas
+        val windshield = Path().apply {
+            moveTo(345f, 108f); lineTo(345f, 390f); lineTo(262f, 370f); quadTo(222f, 248f, 262f, 126f); close()
+        }
+        overlayGlass(c, windshield, s.windshield)
+        if ((s.windshield ?: 0) > 0) heatWaves(c, 290f, 248f, 60f, warning, 3)
+        val rear = Path().apply { addRoundRect(RectF(800f, 108f, 890f, 388f), 40f, 40f, Path.Direction.CW) }
+        overlayGlass(c, rear, s.rearWindow)
+        if ((s.rearWindow ?: 0) > 0) heatWaves(c, 845f, 248f, 70f, warning, 3)
+
+        // Istmed: kõrvalistuja üleval, juht all; tagapink paremal
+        photoSeat(c, RectF(392f, 124f, 490f, 214f), RectF(484f, 122f, 555f, 216f), s.passengerSeat, s.passengerVent)
+        photoSeat(c, RectF(392f, 262f, 490f, 356f), RectF(484f, 260f, 555f, 358f), s.driverSeat, s.driverVent)
+        photoSeat(c, RectF(572f, 128f, 662f, 212f), RectF(656f, 126f, 735f, 214f), s.rearRightSeat, null)
+        photoSeat(c, RectF(572f, 264f, 662f, 350f), RectF(656f, 262f, 735f, 352f), s.rearLeftSeat, null)
+
+        // Rool
+        val level = s.steering
+        if (level != null) {
+            stroke.color = if (level > 0) warning else accent
+            stroke.alpha = if (level > 0) 255 else 170
+            stroke.strokeWidth = 7f
+            c.drawOval(RectF(353f, 270f, 405f, 346f), stroke)
+            stroke.alpha = 255
+            if (level > 0) heatWaves(c, 330f, 308f, 34f, warning, 2)
+        }
+        c.restore()
+    }
+
+    private fun photoSeat(c: Canvas, cushion: RectF, back: RectF, heat: Int?, vent: Int?) {
+        if (heat != null) {
+            fill.color = if (heat > 0) warning else accent
+            fill.alpha = if (heat > 0) 150 else 70
+            c.drawRoundRect(cushion, 22f, 22f, fill)
+            c.drawRoundRect(back, 24f, 24f, fill)
+            fill.alpha = 255
+            if (heat > 0) heatWaves(c, cushion.centerX(), cushion.centerY(), 56f, waveDark, heat.coerceIn(1, 3))
+        }
+        if ((vent ?: 0) > 0) {
+            fill.color = ventBlue
+            repeat(vent!!.coerceIn(1, 3)) { i -> c.drawCircle(back.left + 14f + 16f * i, back.centerY(), 6f, fill) }
+        }
+    }
+
+    private fun overlayPath(c: Canvas, path: Path, level: Int?) {
+        if (level == null) return
+        fill.color = if (level > 0) warning else accent
+        fill.alpha = if (level > 0) 200 else 90
+        c.drawPath(path, fill)
+        fill.alpha = 255
+    }
+
+    private fun overlayGlass(c: Canvas, path: Path, level: Int?) {
+        if (level == null) return
+        if (level > 0) {
+            fill.color = warning
+            fill.alpha = 70
+            c.drawPath(path, fill)
+            fill.alpha = 255
+        }
+        stroke.color = if (level > 0) warning else accent
+        stroke.strokeWidth = if (level > 0) 5f else 3f
+        c.drawPath(path, stroke)
     }
 
     private fun mirrors(c: Canvas, level: Int?) {
@@ -239,8 +333,34 @@ class CabinDrawing(dark: Boolean) {
         (Color.blue(a) + (Color.blue(b) - Color.blue(a)) * t).toInt(),
     )
 
-    private companion object {
-        const val W = 1000f
-        const val H = 500f
+    companion object {
+        private const val W = 1000f
+        private const val H = 500f
+        private const val PW = 994f
+        private const val PH = 496f
+
+        /** Foto asukoht telefonis (adb push … /sdcard/Android/data/com.eplik.ioniq5/files/cabin.png). */
+        const val PHOTO_NAME = "cabin.png"
+
+        private var cached: Bitmap? = null
+        private var cachedStamp = 0L
+
+        /**
+         * Salongi foto rakenduse failikaustast, kui kasutaja on selle sinna pannud. Fotot ei ole repos ega
+         * APK-s (Hyundai pilt, repo on avalik). Laaditakse uuesti ainult siis, kui fail muutub.
+         */
+        fun photo(filesDir: File?): Bitmap? {
+            val file = filesDir?.let { File(it, PHOTO_NAME) } ?: return null
+            if (!file.isFile) {
+                cached = null
+                return null
+            }
+            val stamp = file.lastModified() xor file.length()
+            if (cached == null || stamp != cachedStamp) {
+                cached = BitmapFactory.decodeFile(file.path)
+                cachedStamp = stamp
+            }
+            return cached
+        }
     }
 }
