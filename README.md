@@ -25,7 +25,10 @@ Vaja on JDK 17 ja Android SDK-d (API 35).
 
 GitHub Actions ehitab iga push'i peale testid ja debug-APK.
 
-**Uusim APK (püsiv link):** https://github.com/eplik82/Ioniq5_app/releases/download/apk/ioniq5-monitor.apk
+**Android Auto vajab Play kaudu paigaldust:** vt [docs/PLAY.md](docs/PLAY.md). Play jaoks allkirjastatud AAB:
+https://github.com/eplik82/Ioniq5_app/releases/download/apk/ioniq5-monitor.aab
+
+**Uusim APK (püsiv link, arendamiseks):** https://github.com/eplik82/Ioniq5_app/releases/download/apk/ioniq5-monitor.apk
 
 Kõik ehitused on allkirjastatud sama debug-võtmega (`app/debug.keystore`), nii et uue versiooni saab
 paigaldada vana peale.

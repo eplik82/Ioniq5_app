@@ -31,6 +31,25 @@ jobs:
           name: ioniq5-debug-apk
           path: app/build/outputs/apk/debug/*.apk
 
+      # Play jaoks allkirjastatud AAB (üleslaadimisvõti on GitHubi saladustes)
+      - name: Play AAB
+        if: github.event_name == 'push'
+        env:
+          UPLOAD_KEYSTORE_BASE64: ${{ secrets.UPLOAD_KEYSTORE_BASE64 }}
+          UPLOAD_KEYSTORE_PASSWORD: ${{ secrets.UPLOAD_KEYSTORE_PASSWORD }}
+        run: |
+          echo "$UPLOAD_KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/upload.jks"
+          export UPLOAD_KEYSTORE_FILE="$RUNNER_TEMP/upload.jks"
+          ./gradlew :app:bundleRelease
+          rm "$RUNNER_TEMP/upload.jks"
+          cp app/build/outputs/bundle/release/app-release.aab ioniq5-monitor.aab
+
+      - uses: actions/upload-artifact@v4
+        if: github.event_name == 'push'
+        with:
+          name: ioniq5-play-aab
+          path: ioniq5-monitor.aab
+
       - uses: actions/upload-artifact@v4
         if: failure()
         with:
@@ -47,8 +66,8 @@ jobs:
           cp app/build/outputs/apk/debug/app-debug.apk ioniq5-monitor.apk
           NOTES="Ehitus #${GITHUB_RUN_NUMBER}, commit ${GITHUB_SHA::7} (${GITHUB_REF_NAME})"
           if gh release view apk >/dev/null 2>&1; then
-            gh release upload apk ioniq5-monitor.apk --clobber
+            gh release upload apk ioniq5-monitor.apk ioniq5-monitor.aab --clobber
             gh release edit apk --notes "$NOTES"
           else
-            gh release create apk ioniq5-monitor.apk --title "Uusim APK" --notes "$NOTES" --target "$GITHUB_SHA"
+            gh release create apk ioniq5-monitor.apk ioniq5-monitor.aab --title "Uusim APK" --notes "$NOTES" --target "$GITHUB_SHA"
           fi

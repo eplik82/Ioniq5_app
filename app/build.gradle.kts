@@ -8,12 +8,12 @@ plugins {
 
 android {
     namespace = "com.eplik.ioniq5"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.eplik.ioniq5"
         minSdk = 26
-        targetSdk = 35
+        targetSdk = 36
         // CI annab igale ehitusele kasvava numbri, et uus APK paigalduks vana peale
         val build = System.getenv("GITHUB_RUN_NUMBER")?.toIntOrNull() ?: 1
         versionCode = build
@@ -29,11 +29,25 @@ android {
             keyAlias = "androiddebugkey"
             keyPassword = "android"
         }
+        // Play üleslaadimisvõti (ainult CI-s, GitHubi saladustest). Play allkirjastab rakenduse
+        // ümber oma võtmega, seega Play kaudu paigaldatud versioon ei paigaldu debug-APK peale.
+        val uploadStore = System.getenv("UPLOAD_KEYSTORE_FILE")
+        if (uploadStore != null) {
+            create("upload") {
+                storeFile = file(uploadStore)
+                storePassword = System.getenv("UPLOAD_KEYSTORE_PASSWORD")
+                keyAlias = "upload"
+                keyPassword = System.getenv("UPLOAD_KEYSTORE_PASSWORD")
+            }
+        }
     }
 
     buildTypes {
         release {
-            isMinifyEnabled = true
+            // R8 on välja lülitatud: Car App Library ja Compose töötavad debug-ehitusega kindlalt,
+            // väljalaskes ei taha me ainult Play jaoks uusi vigu
+            isMinifyEnabled = false
+            signingConfig = signingConfigs.findByName("upload")
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
     }
