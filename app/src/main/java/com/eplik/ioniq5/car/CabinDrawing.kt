@@ -1,13 +1,11 @@
 package com.eplik.ioniq5.car
 
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Path
 import android.graphics.RectF
-import java.io.File
 import kotlin.math.min
 
 /** Soojenduste olek: null = teadmata (baiti pole veel leitud), 0 = väljas, 1…3 = tase. */
@@ -333,34 +331,10 @@ class CabinDrawing(dark: Boolean) {
         (Color.blue(a) + (Color.blue(b) - Color.blue(a)) * t).toInt(),
     )
 
-    companion object {
-        private const val W = 1000f
-        private const val H = 500f
-        private const val PW = 994f
-        private const val PH = 496f
-
-        /** Foto asukoht telefonis (adb push … /sdcard/Android/data/com.eplik.ioniq5/files/cabin.png). */
-        const val PHOTO_NAME = "cabin.png"
-
-        private var cached: Bitmap? = null
-        private var cachedStamp = 0L
-
-        /**
-         * Salongi foto rakenduse failikaustast, kui kasutaja on selle sinna pannud. Fotot ei ole repos ega
-         * APK-s (Hyundai pilt, repo on avalik). Laaditakse uuesti ainult siis, kui fail muutub.
-         */
-        fun photo(filesDir: File?): Bitmap? {
-            val file = filesDir?.let { File(it, PHOTO_NAME) } ?: return null
-            if (!file.isFile) {
-                cached = null
-                return null
-            }
-            val stamp = file.lastModified() xor file.length()
-            if (cached == null || stamp != cachedStamp) {
-                cached = BitmapFactory.decodeFile(file.path)
-                cachedStamp = stamp
-            }
-            return cached
-        }
+    private companion object {
+        const val W = 1000f
+        const val H = 500f
+        const val PW = 994f
+        const val PH = 496f
     }
 }

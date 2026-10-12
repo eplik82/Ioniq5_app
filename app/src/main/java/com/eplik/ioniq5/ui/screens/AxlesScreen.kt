@@ -1,5 +1,12 @@
 package com.eplik.ioniq5.ui.screens
 
+import android.graphics.RectF
+import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
+import androidx.compose.ui.graphics.nativeCanvas
+import androidx.compose.ui.platform.LocalContext
+import com.eplik.ioniq5.car.ChassisDrawing
+import com.eplik.ioniq5.car.ChassisWheel
+import com.eplik.ioniq5.car.UserPhotos
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -84,7 +91,32 @@ fun AxlesScreen(
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         Text(stringResource(R.string.tires_axles_title), style = MaterialTheme.typography.displayMedium)
-        Canvas(Modifier.fillMaxWidth().aspectRatio(0.75f)) {
+        val photo = UserPhotos.load(LocalContext.current.getExternalFilesDir(null), UserPhotos.CHASSIS)
+        if (photo != null) {
+            // Kasutaja platvormi foto (esiots vasakul): näidud ratta juures, värv rõhu järgi
+            fun wheel(pId: String, tId: String, speedId: String, front: Boolean, left: Boolean): ChassisWheel {
+                val bar = v(pId)
+                return ChassisWheel(
+                    pressure = "${formatValue(bar?.times(pressureUnit.fromBar), pressureUnit.decimals)} ${pressureUnit.label}",
+                    temp = "${formatValue(v(tId), 0)} °C",
+                    speed = "${formatValue(v(speedId), 0)} km/h",
+                    low = bar?.let { it < lowPressureBar },
+                    front = front,
+                    left = left,
+                )
+            }
+            val wheels = listOf(
+                wheel(P.TIRE_PRESSURE_FL, P.TIRE_TEMP_FL, P.WHEEL_SPEED_FL, front = true, left = true),
+                wheel(P.TIRE_PRESSURE_FR, P.TIRE_TEMP_FR, P.WHEEL_SPEED_FR, front = true, left = false),
+                wheel(P.TIRE_PRESSURE_RL, P.TIRE_TEMP_RL, P.WHEEL_SPEED_RL, front = false, left = true),
+                wheel(P.TIRE_PRESSURE_RR, P.TIRE_TEMP_RR, P.WHEEL_SPEED_RR, front = false, left = false),
+            )
+            Canvas(Modifier.fillMaxWidth().aspectRatio(ChassisDrawing.PW / ChassisDrawing.PH)) {
+                drawIntoCanvas { canvas ->
+                    ChassisDrawing().draw(canvas.nativeCanvas, RectF(0f, 0f, size.width, size.height), wheels, photo)
+                }
+            }
+        } else Canvas(Modifier.fillMaxWidth().aspectRatio(0.75f)) {
             drawCar(
                 measurer = measurer,
                 colors = colors,

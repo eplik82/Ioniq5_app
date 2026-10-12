@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.dp
 import com.eplik.ioniq5.R
 import com.eplik.ioniq5.car.CabinDrawing
 import com.eplik.ioniq5.car.CabinState
+import com.eplik.ioniq5.car.UserPhotos
 import com.eplik.ioniq5.core.pid.Ioniq5Pids as P
 import com.eplik.ioniq5.core.poll.Readings
 import com.eplik.ioniq5.ui.components.ValueTile
@@ -42,7 +43,7 @@ fun ClimateScreen(readings: Readings, modifier: Modifier = Modifier) {
     fun v(id: String) = readings[id]?.takeIf { it.isFresh(now) }?.value
     fun level(id: String) = v(id)?.toInt()
     val dark = MaterialTheme.colorScheme.background.luminance() < 0.5f
-    val photo = CabinDrawing.photo(LocalContext.current.getExternalFilesDir(null))
+    val photo = UserPhotos.load(LocalContext.current.getExternalFilesDir(null), UserPhotos.CABIN)
     val heaters = CabinState(
         driverSeat = level(P.SEAT_HEAT_DRIVER),
         passengerSeat = level(P.SEAT_HEAT_PASSENGER),

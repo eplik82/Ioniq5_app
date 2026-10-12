@@ -406,7 +406,9 @@ foreground service'is.
   vahetab üks nupp lehti ringiratast. Paigutus on kontrollitud DHU-s Ioniq 5 ekraani suurusega 1920×720.
   Kliima joonis: kui telefonis on fail `Android/data/com.eplik.ioniq5/files/cabin.png` (Ioniq 5 salong
   pealtvaates, 994×496, esiots vasakul), joonistatakse soojendused selle foto peale; muidu kasutatakse
-  vektorjoonist. Fotot repos ega APK-s ei ole (Hyundai pilt, repo on avalik), see pannakse telefoni adb-ga. Auto ekraani avamisel ühendutakse viimase adapteriga, kui telefonis
+  vektorjoonist. Samamoodi rataste leht: `chassis.png` (E-GMP platvorm altvaates, 1361×718, esiots vasakul) –
+  rehvidel värv rõhu järgi, rõhk, temperatuur ja kiirus ratta juures. Fotosid repos ega APK-s ei ole
+  (Hyundai pildid, repo on avalik), need pannakse telefoni adb-ga (`car/UserPhotos.kt`). Auto ekraani avamisel ühendutakse viimase adapteriga, kui telefonis
   ühendust pole.
 
 ## 6. Mittefunktsionaalsed nõuded

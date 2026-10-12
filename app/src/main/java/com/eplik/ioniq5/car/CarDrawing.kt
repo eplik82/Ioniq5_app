@@ -170,6 +170,11 @@ class CarDrawing(private val context: Context, private val dark: Boolean) {
 
     private fun wheels(c: Canvas, b: RectF, settings: Settings) {
         val h = b.height()
+        val photo = UserPhotos.load(context.getExternalFilesDir(null), UserPhotos.CHASSIS)
+        if (photo != null) {
+            wheelsOnPhoto(c, b, settings, photo)
+            return
+        }
         val carW = h * 0.42f
         val carH = h * 0.9f
         val cx = b.left + b.width() * 0.32f
@@ -214,10 +219,44 @@ class CarDrawing(private val context: Context, private val dark: Boolean) {
             c.drawText("${formatValue(v(speedId), 0)} km/h", tx, y + h * 0.115f, text)
             text.textAlign = Paint.Align.LEFT
         }
-        val right = b.left + b.width() * 0.62f
+        wheelTiles(c, RectF(b.left + b.width() * 0.62f, b.top, b.right, b.bottom - h * 0.06f), steering)
+    }
+
+    private fun wheelsOnPhoto(c: Canvas, b: RectF, settings: Settings, photo: android.graphics.Bitmap) {
+        val h = b.height()
+        val unit = settings.pressureUnit
+        fun wheel(pId: String, tId: String, speedId: String, front: Boolean, left: Boolean): ChassisWheel {
+            val bar = v(pId)
+            return ChassisWheel(
+                pressure = "${formatValue(bar?.times(unit.fromBar), unit.decimals)} ${unit.label}",
+                temp = "${formatValue(v(tId), 0)} °C",
+                speed = "${formatValue(v(speedId), 0)} km/h",
+                low = bar?.let { it < settings.lowPressureBar },
+                front = front,
+                left = left,
+            )
+        }
+        val carW = min(b.width() * 0.64f, h * ChassisDrawing.PW / ChassisDrawing.PH)
+        val carH = carW * ChassisDrawing.PH / ChassisDrawing.PW
+        val car = RectF(b.left, b.centerY() - carH / 2, b.left + carW, b.centerY() + carH / 2)
+        ChassisDrawing().draw(
+            c,
+            car,
+            listOf(
+                wheel(P.TIRE_PRESSURE_FL, P.TIRE_TEMP_FL, P.WHEEL_SPEED_FL, front = true, left = true),
+                wheel(P.TIRE_PRESSURE_FR, P.TIRE_TEMP_FR, P.WHEEL_SPEED_FR, front = true, left = false),
+                wheel(P.TIRE_PRESSURE_RL, P.TIRE_TEMP_RL, P.WHEEL_SPEED_RL, front = false, left = true),
+                wheel(P.TIRE_PRESSURE_RR, P.TIRE_TEMP_RR, P.WHEEL_SPEED_RR, front = false, left = false),
+            ),
+            photo,
+        )
+        wheelTiles(c, RectF(car.right + b.width() * 0.03f, b.top, b.right, b.bottom - h * 0.06f), v(P.STEERING_ANGLE))
+    }
+
+    private fun wheelTiles(c: Canvas, area: RectF, steering: Double?) {
         tileGrid(
             c,
-            RectF(right, b.top, b.right, b.bottom - h * 0.06f),
+            area,
             listOf(
                 Tile(
                     str(R.string.steering_angle),
@@ -315,7 +354,7 @@ class CarDrawing(private val context: Context, private val dark: Boolean) {
                 rearWindow = level(P.REAR_WINDOW_HEAT),
                 mirrors = level(P.MIRROR_HEAT),
             ),
-            CabinDrawing.photo(context.getExternalFilesDir(null)),
+            UserPhotos.load(context.getExternalFilesDir(null), UserPhotos.CABIN),
         )
         tileGrid(
             c,
