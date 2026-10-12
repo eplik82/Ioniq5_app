@@ -399,9 +399,11 @@ foreground service'is.
 - **Teostus (etapp 5):** `car/MonitorCarAppService` → `DashboardScreen` (NavigationTemplate) + `CarRenderer`
   (SurfaceCallback, joonistab 2× sekundis, kui ekraan on nähtav) + `CarDrawing` (Canvas). Lehed: Ülevaade,
   Aku (180 elemendi ruudustik pinge järgi värvitud), Rattad (pealtvaade, rõhud, temperatuurid, roolinurk,
-  mootorite pöörded), Laadimine (võimsus, SOC, aeg 80%-ni). Navigatsioonimalli tööriistaribal tohib olla
-  vaid üks tekstiga nupp, seega vahetab üks nupp lehti ringiratast. Päikesekatuse leht on veel lisamata
-  (päikesevõimsus on ülevaates). Auto ekraani avamisel ühendutakse viimase adapteriga, kui telefonis
+  mootorite pöörded, rataste kiirused), Laadimine (võimsus, SOC, aeg 80%-ni), Päike (hetkevõimsus
+  pikslinäidikuga, ühenduse ajal kogutud energia, ICCU kõrgepinge), Kliima (salongi pealtvaade soojendustega
+  nagu telefonis, salongi- ja välistemperatuur, niiskus, seatud temperatuurid, aurusti, puhurid). Ülevaates on
+  ka salongi- ja välistemperatuur. Navigatsioonimalli tööriistaribal tohib olla vaid üks tekstiga nupp, seega
+  vahetab üks nupp lehti ringiratast. Paigutus on kontrollitud DHU-s Ioniq 5 ekraani suurusega 1920×720. Auto ekraani avamisel ühendutakse viimase adapteriga, kui telefonis
   ühendust pole.
 
 ## 6. Mittefunktsionaalsed nõuded

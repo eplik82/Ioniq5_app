@@ -23,6 +23,8 @@ enum class CarPage(val label: Int) {
     BATTERY(R.string.tab_battery),
     WHEELS(R.string.tab_axles),
     CHARGING(R.string.tab_charging),
+    SOLAR(R.string.tab_solar),
+    CLIMATE(R.string.tab_climate),
 }
 
 /** Auto ekraan: navigatsioonimall, mille all joonistame näidikud ise ([CarRenderer]). */
@@ -126,6 +128,7 @@ class CarRenderer(private val carContext: CarContext) : DefaultLifecycleObserver
                 app.connection.sleeping.value,
                 app.settings.settings.value,
                 app.alerts.alerts.value,
+                app.connection.solarEnergyWh.value,
             )
         } finally {
             s.unlockCanvasAndPost(canvas)
