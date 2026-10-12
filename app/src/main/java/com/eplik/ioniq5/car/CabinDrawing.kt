@@ -156,7 +156,7 @@ class CabinDrawing(dark: Boolean) {
     }
 
     private fun steeringWheel(c: Canvas, level: Int?) {
-        val cx = 396f
+        val cx = 388f
         val cy = 324f
         stroke.color = when {
             level == null -> 0xFF2A3036.toInt()
@@ -173,12 +173,12 @@ class CabinDrawing(dark: Boolean) {
     private fun frontSeat(c: Canvas, cy: Float, heat: Int?, vent: Int?) {
         val color = heaterColor(heat, seat)
         fill.color = color
-        c.drawRoundRect(RectF(400f, cy - 46f, 492f, cy + 46f), 20f, 20f, fill)
+        c.drawRoundRect(RectF(408f, cy - 46f, 492f, cy + 46f), 20f, 20f, fill)
         fill.color = if ((heat ?: 0) > 0) darken(color) else heaterColor(heat, seatBack)
         c.drawRoundRect(RectF(484f, cy - 50f, 548f, cy + 50f), 24f, 24f, fill)
         fill.color = seatBack
         c.drawRoundRect(RectF(545f, cy - 25f, 561f, cy + 25f), 7f, 7f, fill)
-        if ((heat ?: 0) > 0) heatWaves(c, 446f, cy, 56f, waveDark, heat!!.coerceIn(1, 3))
+        if ((heat ?: 0) > 0) heatWaves(c, 450f, cy, 56f, waveDark, heat!!.coerceIn(1, 3))
         if ((vent ?: 0) > 0) {
             fill.color = ventBlue
             repeat(vent!!.coerceIn(1, 3)) { i -> c.drawCircle(510f + 14f * i, cy, 5f, fill) }
