@@ -329,3 +329,25 @@ Nimetused on osanumbri järgi oletatud, kui lõpus on „?”.
 | `7E6` → `7EE` | 42951-18115 | 42951-18115 |  | ? |
 
 Märkus: `7B3` (kliima, mida kogukonna PID-id kasutavad) `3E 00`-le ei vastanud; kontrollida eraldi päringuga.
+
+
+## Internetist leitud (2026-10-12)
+
+Allikad: [OBDb Hyundai-IONIQ-5](https://github.com/OBDb/Hyundai-IONIQ-5) (E-GMP signaalid koos baitidega;
+sama ka EV6, GV60, IONIQ 6) ja [Esprit1st Torque PID-fail](https://github.com/Esprit1st/Hyundai-Ioniq-5-Torque-Pro-PIDs).
+Baitide loendus on sama mis meil (0x62 = bait 0).
+
+| ECU | Päring | Bait | Signaal | Valem | Meie logides | Olek |
+|---|---|---|---|---|---|---|
+| 7E4 | 220105 | 26 | Aku soojendi temperatuur | signed | 9–13 °C (väljas) | kasutusel (Torque X) |
+| 7E4 | 220105 | 31–32 | Aku järelejäänud energia | × 2 Wh | 16,2 / 57,4 kWh | kasutusel |
+| 7E4 | 220101 | 25 | Aku sisendi temperatuur | − 40 | 9–13 °C | kasutusel |
+| 7E4 | 220106 | 7 | Aku jahutusvedelik (WCS) | signed | 11–12 °C | kasutusel |
+| 7E4 | 220106 | 15 | Kliimakompressor | × 20 p/min | 700–800 | kasutusel |
+| 7B3 | 220102 | 7 | Jahutusvedelik (kliima) | / 2 − 40 | 33–47 °C | kasutusel (oli „teadmata, langeb”) |
+| 7E3 | 22E001 | 24–25, 28–29, 30–31 | Mootori pöördemoment, mootori ja inverteri temp. | /10 Nm, /100 °C | — | skaneerida (3. etapp) |
+| 744 | 22E004 | 11, 12, 13 | DC1, DC2, AC pistiku temperatuur | − 50 | — | skaneerida (3. etapp) |
+| 7E2 | 22E004/E005 | | Gaasipedaal, esisilla lahutusmehhanism | | baidid ei klapi | ei kasutata |
+
+Istmete soojenduse/ventilatsiooni ega aku eelsoojenduse olekubitti ei leidnud ükski allikas. Eelsoojendust
+hinnatakse soojendi ja moodulite temperatuuride vahest (`batteryPreheating()`).

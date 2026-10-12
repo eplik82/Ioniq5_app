@@ -20,6 +20,7 @@ object DiscoveryPlan {
     /**
      * 3. etapp, 2. ring (pärast 2026-10-10 skaneeringuid): TPMS ja roolinurk on leitud.
      * Otsida mootorite pöördemoment ja temperatuurid ning rataste kiirused ja kiirendused.
+     * OBDb (E-GMP): 7E3 22E001 baidid 24–25 / 10 Nm pöördemoment, 28–29 / 100 °C mootor, 30–31 / 100 °C inverter.
      * Kiirenduste ja rataste kiiruste leidmiseks tuleb skaneerida sõidu ajal (kaasreisija!).
      */
     val STAGE3: List<ScanTask> = listOf(
@@ -28,6 +29,8 @@ object DiscoveryPlan {
         ScanTask(EcuAddress(0x7E6), 0x22, 0xE000..0xE0FF, "Esimootor? 7E6"),
         ScanTask(EcuAddress(0x7E6), 0x22, 0x2000..0x20FF, "Esimootor? 7E6"),
         ScanTask(EcuAddress(0x7E2), 0x22, 0xE000..0xE0FF, "VCU"),
+        // OBDb: laadimispistiku temperatuurid 744 22E004 (01xx ei vastanud 2026-10-10)
+        ScanTask(EcuAddress(0x744), 0x22, 0xE000..0xE00F, "Laadimisport (744)"),
         ScanTask(EcuAddress(0x7D1), 0x22, 0x0100..0x010F, "Pidurid (IEB/ESC)"),
         ScanTask(EcuAddress(0x7D4), 0x22, 0x0100..0x0112, "Roolivõimendi (MDPS)"),
         ScanTask(EcuAddress(0x7C4), 0x22, 0x0100..0x01FF, "Esikaamera"),

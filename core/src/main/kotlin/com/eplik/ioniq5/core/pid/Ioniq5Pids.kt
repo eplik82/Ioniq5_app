@@ -35,6 +35,11 @@ object Ioniq5Pids {
     const val CUMULATIVE_DISCHARGED_KWH = "cumulative_discharged_kwh"
     const val OPERATING_HOURS = "operating_hours"
     const val BATTERY_HEATER_TEMP = "battery_heater_temp"
+    const val BATTERY_REMAINING_KWH = "battery_remaining_kwh"
+    const val BATTERY_INLET_TEMP = "battery_inlet_temp"
+    const val BATTERY_COOLANT_TEMP = "battery_coolant_temp"
+    const val AC_COMPRESSOR_RPM = "ac_compressor_rpm"
+    const val HVAC_COOLANT_TEMP = "hvac_coolant_temp"
     const val MOTOR_RPM = "motor_rpm"
     const val MOTOR2_RPM = "motor2_rpm"
 
@@ -129,6 +134,8 @@ object Ioniq5Pids {
             s(CELL_V_MAX_NO, "Max pingega element", "Max cell number", "", ParameterGroup.CELLS, 27),
             s(CELL_V_MIN, "Elemendi min pinge", "Min cell voltage", "V", ParameterGroup.CELLS, 28, scale = 0.02),
             s(CELL_V_MIN_NO, "Min pingega element", "Min cell number", "", ParameterGroup.CELLS, 29),
+            // OBDb Hyundai-IONIQ-5: aku sisendi (jahutusvedeliku) temperatuur, bait 25 − 40; sõidulogides 12–13 °C
+            SignalDefinition(BATTERY_INLET_TEMP, "Aku sisendi temperatuur", "Battery inlet temperature", "°C", ParameterGroup.BATTERY, 25, offset = -40.0),
             s(AUX_VOLTAGE, "12 V aku", "12 V battery", "V", ParameterGroup.AUX_BATTERY, 32, scale = 0.1),
             s(CUMULATIVE_CHARGED_KWH, "Laetud kokku", "Total charged", "kWh", ParameterGroup.BATTERY, 41, 4, scale = 0.1),
             s(CUMULATIVE_DISCHARGED_KWH, "Tühjendatud kokku", "Total discharged", "kWh", ParameterGroup.BATTERY, 45, 4, scale = 0.1),
@@ -148,8 +155,10 @@ object Ioniq5Pids {
             s(SOH, "Aku tervis (SOH)", "State of health", "%", ParameterGroup.BATTERY, 28, 2, scale = 0.1),
             // Kandidaat: kontrollida auto näiduga
             s(SOC_DISPLAY, "Laetus (näidik)", "State of charge (display)", "%", ParameterGroup.BATTERY, 34, scale = 0.5),
-            // Kandidaat: aku soojendi temperatuur (Car Scanner „Battery Heater 1 Temperature”). Sõidulogides
-            // 11–13 °C, kui soojendi oli väljas; kinnitada Car Scanneriga samal ajal.
+            // OBDb ja Torque: järelejäänud energia baidid 31–32 × 2 Wh; sõidulogis 57,4 kWh
+            s(BATTERY_REMAINING_KWH, "Aku järelejäänud energia", "Battery remaining energy", "kWh", ParameterGroup.BATTERY, 31, 2, scale = 0.002),
+            // Aku soojendi temperatuur: Torque/Car Scanneri Ioniq 5 PID-fail „Battery Heater 1 Temperature” =
+            // Signed(X) = bait 26. Sõidulogides 11–13 °C (soojendi väljas), DC-laadimisel 24–33 °C.
             s(BATTERY_HEATER_TEMP, "Aku soojendi temperatuur", "Battery heater temperature", "°C", ParameterGroup.BATTERY, 26, signed = true),
         ) +
             // Moodulid 6–12: baidid 12–18, moodulid 13–16: baidid 42–45 (Car Scanneri B06–B16 järgi)
@@ -326,6 +335,32 @@ object Ioniq5Pids {
         ),
     )
 
+    /**
+     * BMS 220106 (OBDb, E-GMP): bait 7 aku jahutusvedelik WCS sisendis (sõidulogides 11–12 °C),
+     * bait 15 × 20 kliimakompressori pöörded (700–800 p/min kliima töötamisel).
+     */
+    private val bmsThermal = PidDefinition(
+        id = "bms_0106",
+        ecu = BMS,
+        request = "220106",
+        pollIntervalMs = 5_000,
+        signals = listOf(
+            s(BATTERY_COOLANT_TEMP, "Aku jahutusvedelik", "Battery coolant temperature", "°C", ParameterGroup.BATTERY, 7, signed = true),
+            s(AC_COMPRESSOR_RPM, "Kliimakompressor", "A/C compressor speed", "rpm", ParameterGroup.CLIMATE, 15, scale = 20.0),
+        ),
+    )
+
+    /** Kliima 7B3 220102 (OBDb): bait 7 / 2 − 40 jahutusvedeliku temperatuur (33–47 °C). */
+    private val hvacCoolant = PidDefinition(
+        id = "hvac_0102",
+        ecu = HVAC,
+        request = "220102",
+        pollIntervalMs = 10_000,
+        signals = listOf(
+            SignalDefinition(HVAC_COOLANT_TEMP, "Jahutusvedelik (kliima)", "Coolant temperature (HVAC)", "°C", ParameterGroup.CLIMATE, 7, scale = 0.5, offset = -40.0),
+        ),
+    )
+
     val ALL: List<PidDefinition> = listOf(bmsMain, bmsHealth) + cellPids +
-        listOf(odometer, iccuSolar, obc, tires, steering, esc, hvac, hvacSettings, ibuRearWindow, ibuSteering)
+        listOf(bmsThermal, odometer, iccuSolar, obc, tires, steering, esc, hvac, hvacCoolant, hvacSettings, ibuRearWindow, ibuSteering)
 }
