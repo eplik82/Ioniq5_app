@@ -149,4 +149,16 @@
     <string name="cabin_temp">Cabin</string>
     <string name="outdoor_temp">Outside</string>
     <string name="capture_climate">Climate dev log</string>
+    <string name="tab_climate">Climate</string>
+    <string name="climate_title">Climate</string>
+    <string name="cabin_humidity">Cabin humidity</string>
+    <string name="outdoor_humidity">Outdoor humidity</string>
+    <string name="outdoor_humidity_none">the car has no outdoor humidity sensor</string>
+    <string name="evaporator_temp">Evaporator</string>
+    <string name="vent_temp">Vents</string>
+    <string name="set_temp">Set temp.</string>
+    <string name="steering_heat">Steering heater</string>
+    <string name="on">on</string>
+    <string name="off">off</string>
+    <string name="climate_heaters_note">Orange = heater on, turquoise = off, grey = state unknown. Steering wheel, rear window and mirror heaters are decoded; windshield defrost is a candidate. Seat heating and ventilation are not decoded yet (Diagnostics → Discover climate).</string>
 </resources>

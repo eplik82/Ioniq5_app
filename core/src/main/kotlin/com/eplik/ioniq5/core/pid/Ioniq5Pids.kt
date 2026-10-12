@@ -13,6 +13,7 @@ object Ioniq5Pids {
     val MDPS = EcuAddress(0x7D4)
     val HVAC = EcuAddress(0x7B3)
     val ESC = EcuAddress(0x7D1)
+    val IBU = EcuAddress(0x770)
 
     /** TPMS rõhk: bait × 0,2 psi, teisendatud baarideks. */
     private const val PSI_02_TO_BAR = 0.2 * 0.0689476
@@ -64,6 +65,24 @@ object Ioniq5Pids {
     const val OUTDOOR_TEMP = "outdoor_temp"
     const val EVAPORATOR_TEMP = "evaporator_temp"
     const val HVAC_VEHICLE_SPEED = "hvac_vehicle_speed"
+    const val CABIN_HUMIDITY = "cabin_humidity"
+    const val VENT_TEMP_1 = "vent_temp_1"
+    const val VENT_TEMP_2 = "vent_temp_2"
+
+    // Soojendused: tase 0–3 (istmed) või 0/1. Rool, tagaklaas, peeglid ja esiklaas on leitud kliima
+    // arenduslogist 2026-10-12; istmete soojendus ja ventilatsioon on veel leidmata (vaade näitab teadmata).
+    const val SEAT_HEAT_DRIVER = "seat_heat_driver"
+    const val SEAT_HEAT_PASSENGER = "seat_heat_passenger"
+    const val SEAT_HEAT_REAR_LEFT = "seat_heat_rear_left"
+    const val SEAT_HEAT_REAR_RIGHT = "seat_heat_rear_right"
+    const val SEAT_VENT_DRIVER = "seat_vent_driver"
+    const val SEAT_VENT_PASSENGER = "seat_vent_passenger"
+    const val STEERING_HEAT = "steering_heat"
+    const val WINDSHIELD_HEAT = "windshield_heat"
+    const val REAR_WINDOW_HEAT = "rear_window_heat"
+    const val MIRROR_HEAT = "mirror_heat"
+    const val SET_TEMP_DRIVER = "set_temp_driver"
+    const val SET_TEMP_PASSENGER = "set_temp_passenger"
     const val VEHICLE_SPEED = "vehicle_speed"
     const val WHEEL_SPEED_FL = "wheel_speed_fl"
     const val WHEEL_SPEED_FR = "wheel_speed_fr"
@@ -236,6 +255,11 @@ object Ioniq5Pids {
             SignalDefinition(OUTDOOR_TEMP, "Välistemperatuur", "Outdoor temperature", "°C", ParameterGroup.CLIMATE, 9, scale = 0.5, offset = -40.0),
             SignalDefinition(EVAPORATOR_TEMP, "Aurusti temperatuur", "Evaporator temperature", "°C", ParameterGroup.CLIMATE, 10, scale = 0.5, offset = -40.0),
             s(HVAC_VEHICLE_SPEED, "Kiirus (kliimamoodul)", "Speed (climate module)", "km/h", ParameterGroup.DRIVE, 32),
+            // Kandidaadid: niiskus 48…54 % (Car Scanner „Humidity sensor for automatic defogger”),
+            // puhurid 25…40 °C (Car Scanner „Interior temperature: driver vent / legs vent”)
+            s(CABIN_HUMIDITY, "Salongi õhuniiskus", "Cabin humidity", "%", ParameterGroup.CLIMATE, 28),
+            SignalDefinition(VENT_TEMP_1, "Puhuri temperatuur 1", "Vent temperature 1", "°C", ParameterGroup.CLIMATE, 30, scale = 0.5, offset = -40.0),
+            SignalDefinition(VENT_TEMP_2, "Puhuri temperatuur 2", "Vent temperature 2", "°C", ParameterGroup.CLIMATE, 31, scale = 0.5, offset = -40.0),
         ),
     )
 
@@ -258,5 +282,46 @@ object Ioniq5Pids {
         ),
     )
 
-    val ALL: List<PidDefinition> = listOf(bmsMain, bmsHealth) + cellPids + listOf(odometer, iccuSolar, obc, tires, steering, esc, hvac)
+    /**
+     * Kliima seaded (7B3 2201A0). Arenduslogi 2026-10-12: seatud temperatuur 20 / 22 / 23,5 °C andis
+     * baitides 59–60 väärtused 0C / 10 / 13 → 14 + bait × 0,5 °C. Bait 5 oli 1 esiklaasi soojenduse
+     * (defrosteri) ajal (kandidaat).
+     */
+    private val hvacSettings = PidDefinition(
+        id = "hvac_01A0",
+        ecu = HVAC,
+        request = "2201A0",
+        pollIntervalMs = 5_000,
+        signals = listOf(
+            SignalDefinition(SET_TEMP_DRIVER, "Seatud temp. (juht)", "Set temperature (driver)", "°C", ParameterGroup.CLIMATE, 59, scale = 0.5, offset = 14.0),
+            SignalDefinition(SET_TEMP_PASSENGER, "Seatud temp. (kõrvalistuja)", "Set temperature (passenger)", "°C", ParameterGroup.CLIMATE, 60, scale = 0.5, offset = 14.0),
+            SignalDefinition(WINDSHIELD_HEAT, "Esiklaasi soojendus", "Windshield defrost", "", ParameterGroup.CLIMATE, 5, bit = 0),
+        ),
+    )
+
+    /** IBU 770 BC03 bait 10 bit 1: tagaklaasi soojendus (lülitab ka peeglid). Arenduslogi 2026-10-12. */
+    private val ibuRearWindow = PidDefinition(
+        id = "ibu_bc03",
+        ecu = IBU,
+        request = "22BC03",
+        pollIntervalMs = 5_000,
+        signals = listOf(
+            SignalDefinition(REAR_WINDOW_HEAT, "Tagaklaasi soojendus", "Rear window heater", "", ParameterGroup.CLIMATE, 10, bit = 1),
+            SignalDefinition(MIRROR_HEAT, "Peeglite soojendus", "Mirror heaters", "", ParameterGroup.CLIMATE, 10, bit = 1),
+        ),
+    )
+
+    /** IBU 770 BC08 bait 8 bit 6: roolisoojendus. Arenduslogi 2026-10-12. */
+    private val ibuSteering = PidDefinition(
+        id = "ibu_bc08",
+        ecu = IBU,
+        request = "22BC08",
+        pollIntervalMs = 5_000,
+        signals = listOf(
+            SignalDefinition(STEERING_HEAT, "Roolisoojendus", "Steering wheel heater", "", ParameterGroup.CLIMATE, 8, bit = 6),
+        ),
+    )
+
+    val ALL: List<PidDefinition> = listOf(bmsMain, bmsHealth) + cellPids +
+        listOf(odometer, iccuSolar, obc, tires, steering, esc, hvac, hvacSettings, ibuRearWindow, ibuSteering)
 }

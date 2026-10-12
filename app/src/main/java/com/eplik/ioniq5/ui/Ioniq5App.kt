@@ -9,6 +9,8 @@ import androidx.compose.material.icons.filled.EvStation
 import androidx.compose.material.icons.filled.Speed
 import androidx.compose.material.icons.filled.DirectionsCar
 import androidx.compose.material.icons.filled.WbSunny
+import androidx.compose.material.icons.filled.Thermostat
+import com.eplik.ioniq5.ui.screens.ClimateScreen
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
@@ -63,6 +65,7 @@ private enum class Tab(@StringRes val label: Int, val icon: ImageVector, val sta
     BATTERY(R.string.tab_battery, Icons.Filled.BatteryChargingFull, 2),
     AXLES(R.string.tab_axles, Icons.Filled.DirectionsCar, 3),
     CHARGING(R.string.tab_charging, Icons.Filled.EvStation, 3),
+    CLIMATE(R.string.tab_climate, Icons.Filled.Thermostat, 3),
     SOLAR(R.string.tab_solar, Icons.Filled.WbSunny, 3),
     DIAGNOSTICS(R.string.tab_diagnostics, Icons.Filled.Build, 1),
 }
@@ -214,6 +217,7 @@ private fun AppContent(
         selected == Tab.AXLES -> AxlesScreen(readings, settings.pressureUnit, settings.lowPressureBar, modifier)
         selected == Tab.CHARGING -> ChargingScreen(readings, chargeSession, capacityKwh, modifier)
         selected == Tab.SOLAR -> SolarScreen(readings, solarEnergyWh, modifier)
+        selected == Tab.CLIMATE -> ClimateScreen(readings, modifier)
         selected == Tab.DIAGNOSTICS -> DiagnosticsScreen(onConnectionClick = onOpenConnection, modifier = modifier)
         else -> PlaceholderScreen(stringResource(selected.label), selected.stage, modifier)
     }

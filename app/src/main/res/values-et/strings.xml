@@ -149,4 +149,16 @@
     <string name="cabin_temp">Salongis</string>
     <string name="outdoor_temp">Väljas</string>
     <string name="capture_climate">Kliima arenduslogi</string>
+    <string name="tab_climate">Kliima</string>
+    <string name="climate_title">Kliima</string>
+    <string name="cabin_humidity">Õhuniiskus salongis</string>
+    <string name="outdoor_humidity">Õhuniiskus väljas</string>
+    <string name="outdoor_humidity_none">autol pole välisniiskuse andurit</string>
+    <string name="evaporator_temp">Aurusti</string>
+    <string name="vent_temp">Puhurid</string>
+    <string name="set_temp">Seatud temp.</string>
+    <string name="steering_heat">Roolisoojendus</string>
+    <string name="on">sees</string>
+    <string name="off">väljas</string>
+    <string name="climate_heaters_note">Oranž = soojendus sees, türkiis = väljas, hall = olek teadmata. Rooli-, tagaklaasi- ja peeglisoojendus on leitud; esiklaasi soojendus on kandidaat. Istmete soojendus ja ventilatsioon on veel avastamata (Diagnostika → Avasta kliima).</string>
 </resources>

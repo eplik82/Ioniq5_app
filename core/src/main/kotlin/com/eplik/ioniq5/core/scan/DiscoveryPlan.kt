@@ -35,15 +35,19 @@ object DiscoveryPlan {
     )
 
     /**
-     * Kliima ja soojendused (lähteülesanne 4.4): sise- ja välistemperatuur, kliima režiim,
-     * istme-, rooli-, klaasi- ja peeglisoojendus. Skaneerida süüde sees.
+     * Kliima, 2. ring: istmete soojendus ja ventilatsioon. 1. ring (2026-10-12) leidis 7B3 0100–0102,
+     * 01A0–01A3, 7A0 B001–B012 ja 770 BC01–BC10; rool ja tagaklaas olid seal, istmed mitte. 706 ja 7A1 ei
+     * vastanud vahemikus 0100–01FF, seega proovitakse teisi vahemikke ja KWP teenust 0x21.
+     * Skaneerida süüde sees.
      */
     val CLIMATE: List<ScanTask> = listOf(
-        ScanTask(EcuAddress(0x7B3), 0x22, 0x0100..0x01FF, "Kliima (HVAC) 7B3"),
-        ScanTask(EcuAddress(0x7A0), 0x22, 0xB000..0xB0FF, "IBU/BCM 7A0"),
-        ScanTask(EcuAddress(0x770), 0x22, 0xBC00..0xBCFF, "IBU 770"),
-        ScanTask(EcuAddress(0x770), 0x22, 0xB000..0xB0FF, "IBU 770"),
-        ScanTask(EcuAddress(0x706), 0x22, 0x0100..0x01FF, "Istmemoodul? 706"),
-        ScanTask(EcuAddress(0x7A1), 0x22, 0x0100..0x01FF, "7A1"),
+        ScanTask(EcuAddress(0x706), 0x22, 0xB000..0xB0FF, "Istmemoodul? 706"),
+        ScanTask(EcuAddress(0x706), 0x22, 0xC000..0xC0FF, "Istmemoodul? 706"),
+        ScanTask(EcuAddress(0x706), 0x21, 0x01..0xFF, "Istmemoodul? 706 (KWP)"),
+        ScanTask(EcuAddress(0x7A6), 0x22, 0x0100..0x01FF, "Lüliti? 7A6"),
+        ScanTask(EcuAddress(0x7A6), 0x22, 0xB000..0xB0FF, "Lüliti? 7A6"),
+        ScanTask(EcuAddress(0x7A3), 0x22, 0xB000..0xB0FF, "7A3"),
+        ScanTask(EcuAddress(0x7A0), 0x22, 0xC000..0xC0FF, "IBU/BCM 7A0"),
+        ScanTask(EcuAddress(0x770), 0x22, 0xC000..0xC0FF, "IBU 770"),
     )
 }

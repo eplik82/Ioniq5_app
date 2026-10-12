@@ -1,6 +1,6 @@
 # Lähteülesanne: Ioniq 5 CAN-andmete Android-rakendus
 
-Versioon 0.23 · 2026-10-12
+Versioon 0.24 · 2026-10-12
 
 ## 1. Eesmärk
 
@@ -294,6 +294,21 @@ lülitusi ja märkeid ei tehtud.
 | `770` IBU | `BC01`, `BC03`–`BC09`, `BC10` |
 | `706`, `7A1` | ei vastanud |
 
+**Kliima arenduslogi märgetega 2026-10-12 18:02–18:09** (`testdata/raw/climate-devlog_2026-10-12_1802.txt`, GPS eemaldatud):
+
+| Märge | Leitud | Olek |
+|---|---|---|
+| roolisoojendus | `770` `22BC08` bait 8 bit 6 (`40`) | kasutusel |
+| tagaklaasi soojendus | `770` `22BC03` bait 10 bit 1 (`02`); Hyundai lülitab sellega ka peeglid | kasutusel |
+| temp 22 / 23,5 / 20 | `7B3` `2201A0` baidid 59 (juht) ja 60 (kõrvalistuja): `10` / `13` / `0C` → 14 + bait × 0,5 °C | kasutusel |
+| esiklaasi soojendus | `7B3` `2201A0` bait 5 bit 0 oli 1 ~10 s pärast märget | kandidaat |
+| siseõhk | `7B3` `2201A1` bait 16 `01` → `00` | kandidaat |
+| puhuri kiirus | `7B3` `2201A2` baidid 20, 22, 24 (väärtused 0–4) | kandidaat |
+| istmete soojendus 3-2-1, ventilatsioon | neis 34 päringus muutust polnud | otsida 2. ringi skaneeringuga |
+
+Istmete jaoks on **„Avasta kliima”** nüüd 2. ring: `706` (`22 B0xx`, `22 C0xx`, `21 xx`), `7A6`, `7A3`,
+`7A0 22 C0xx`, `770 22 C0xx`. Välisõhu niiskust autol pole (ainult salongi niiskusandur esiklaasil).
+
 Diagnostika nupp **„Kliima arenduslogi”** loeb ainult neid 34 päringut (tsükkel ~4 s), et soojenduste ja
 kliima lülitite mõju oleks märgete järgi selgelt näha.
 
@@ -330,7 +345,7 @@ juhtida ei saa (jaotis 9).
    **Kinnitatud 2026-10-11:** 25–74 km/h sõidul (ka 44 kW kiirendusel ja −24 kW regeneratsioonil) oli
    „mootor 2” 0 p/min. 12 km/h juures oli see 911 ja tagamootor 910 p/min. Esimootor (vedav sild
    ees) on püsikiirusel lahti ühendatud (EV disconnector) ja ühendub aeglaselt sõites.
-7. **Kliima ja soojendused:**
+7. **Kliima ja soojendused** (vahekaart „Kliima”, teostatud 2026-10-12):
    - **temperatuurid:** salongi temperatuur, välistemperatuur (suurelt), seatud temperatuur juhil ja
      kõrvalistujal, puhurite väljundtemperatuurid, aurusti temperatuur, salongi õhuniiskus;
    - **kliima režiim:** AUTO / käsitsi, A/C sees/väljas, õhuringlus (värske/ringlus), puhuri kiirus,

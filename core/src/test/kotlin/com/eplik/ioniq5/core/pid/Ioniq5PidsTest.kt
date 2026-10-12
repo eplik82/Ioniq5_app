@@ -26,6 +26,11 @@ class Ioniq5PidsTest {
         // Kliima sõidu ajal (testdata/raw/drive-log_2026-10-11_1648.txt, 16:51:09)
         // Pidurisüsteem 73 km/h juures (sama logi, 16:51:08)
         "220104@7D1" to "620104FFFEFFFC5774474304BF47474747001A000C7FFF00F0F0F0F0D5FC000011D00007F500090000" + "0000FCFFFD",
+        // Kliima arenduslogi 2026-10-12: roolisoojendus ja tagaklaas sees, seatud 21,5 °C
+        "22BC08@770" to "62BC08005290BC0040011C",
+        "22BC03@770" to "62BC03FDEE20630A600402",
+        "2201A0@7B3" to "6201A0010000667563005600200101E85A0030030F7DA09F9F0D115B700000000000000000800F8F8E" +
+            "0000A0990000FF00000000A9B6B2EF00EFEE0F0F0000",
         "220100@7B3" to "6201007F9407C8FF7F695A02EF8F02F0FFFF0FFFB1FFFFFFFFFFFFFF367E939647FFFF01FFFFFF",
         "22E011" to "62E011FFFFFFF80101000000753A5507B4195A39847FCD512251006708010101000A000009000700000000000000000000",
     )
@@ -64,11 +69,24 @@ class Ioniq5PidsTest {
     }
 
     @Test
+    fun heaters() {
+        check(1.0, P.STEERING_HEAT)
+        check(1.0, P.REAR_WINDOW_HEAT)
+        check(1.0, P.MIRROR_HEAT)
+        check(0.0, P.WINDSHIELD_HEAT)
+        check(21.5, P.SET_TEMP_DRIVER)
+        check(21.5, P.SET_TEMP_PASSENGER)
+    }
+
+    @Test
     fun hvac() {
         check(23.5, P.CABIN_TEMP)
         check(12.5, P.OUTDOOR_TEMP)
         check(5.0, P.EVAPORATOR_TEMP)
         check(71.0, P.HVAC_VEHICLE_SPEED)
+        check(54.0, P.CABIN_HUMIDITY)
+        check(33.5, P.VENT_TEMP_1)
+        check(35.0, P.VENT_TEMP_2)
     }
 
     @Test
