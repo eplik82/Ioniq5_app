@@ -4,7 +4,6 @@ import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
-import android.graphics.Path
 import android.graphics.Rect
 import android.graphics.RectF
 import android.graphics.Typeface
@@ -30,7 +29,7 @@ import kotlin.math.min
  * Android Auto näidikud Ioniq 5 stiilis: tume taust, õhukesed numbrid, türkiissinine aktsent,
  * pikslinäidikud. Joonistab otse Canvas'ile nähtavasse alasse.
  */
-class CarDrawing(private val context: Context, dark: Boolean) {
+class CarDrawing(private val context: Context, private val dark: Boolean) {
 
     private val background = if (dark) 0xFF0B0E11.toInt() else 0xFFF4F6F7.toInt()
     private val surface = if (dark) 0xFF14181C.toInt() else 0xFFFFFFFF.toInt()
@@ -296,12 +295,30 @@ class CarDrawing(private val context: Context, dark: Boolean) {
 
     private fun climate(c: Canvas, b: RectF) {
         val h = b.height()
-        // Salongi joonis on püstine nagu telefonis (esiklaas üleval), paremal näidud
-        val interior = RectF(b.left + b.width() * 0.02f, b.top, b.left + b.width() * 0.02f + h * 0.72f, b.bottom)
-        drawInterior(c, interior)
+        // Salong pealtvaates (esiots vasakul), võimalikult suur; paremal näidud
+        val carW = min(b.width() * 0.62f, h * 2f)
+        val carH = carW / 2
+        val car = RectF(b.left, b.centerY() - carH / 2, b.left + carW, b.centerY() + carH / 2)
+        fun level(id: String) = v(id)?.toInt()
+        CabinDrawing(dark).draw(
+            c,
+            car,
+            CabinState(
+                driverSeat = level(P.SEAT_HEAT_DRIVER),
+                passengerSeat = level(P.SEAT_HEAT_PASSENGER),
+                rearLeftSeat = level(P.SEAT_HEAT_REAR_LEFT),
+                rearRightSeat = level(P.SEAT_HEAT_REAR_RIGHT),
+                driverVent = level(P.SEAT_VENT_DRIVER),
+                passengerVent = level(P.SEAT_VENT_PASSENGER),
+                steering = level(P.STEERING_HEAT),
+                windshield = level(P.WINDSHIELD_HEAT),
+                rearWindow = level(P.REAR_WINDOW_HEAT),
+                mirrors = level(P.MIRROR_HEAT),
+            ),
+        )
         tileGrid(
             c,
-            RectF(interior.right + b.width() * 0.04f, b.top, b.right, b.bottom - h * 0.06f),
+            RectF(car.right + b.width() * 0.02f, b.top, b.right, b.bottom - h * 0.06f),
             listOf(
                 Tile(str(R.string.cabin_temp), formatValue(v(P.CABIN_TEMP), 1), "°C", fresh(P.CABIN_TEMP)),
                 Tile(str(R.string.outdoor_temp), formatValue(v(P.OUTDOOR_TEMP), 1), "°C", fresh(P.OUTDOOR_TEMP)),
@@ -322,155 +339,6 @@ class CarDrawing(private val context: Context, dark: Boolean) {
             ),
             columns = 2,
         )
-    }
-
-    /**
-     * Ioniq 5 salong pealtvaates, sama geomeetria nagu telefoni kliima vaates. Soojendus sees = oranž
-     * koos lainetega, väljas = türkiis, teadmata (baiti pole leitud) = hall.
-     */
-    private fun drawInterior(c: Canvas, a: RectF) {
-        val w = a.width()
-        val h = a.height()
-        val sw = w * 0.008f
-        fun level(id: String) = v(id)?.toInt()
-        val outdoor = v(P.OUTDOOR_TEMP)
-        val cabin = v(P.CABIN_TEMP)
-
-        text.textAlign = Paint.Align.CENTER
-        text.color = textPrimary
-        text.textSize = h * 0.045f
-        c.drawText("${str(R.string.outdoor_temp)}  ${formatValue(outdoor, 1)} °C", a.left + w / 2, a.top + h * 0.055f, text)
-
-        val bodyW = w * 0.56f
-        val bodyH = h * 0.84f
-        val left = a.left + (w - bodyW) / 2
-        val top = a.top + h * 0.09f
-        val right = left + bodyW
-        stroke.color = textSecondary
-        stroke.strokeWidth = sw
-        c.drawRoundRect(RectF(left, top, right, top + bodyH), bodyW * 0.14f, bodyW * 0.14f, stroke)
-
-        // Peeglid
-        val mirrors = level(P.MIRROR_HEAT)
-        val mirrorY = top + bodyH * 0.28f
-        fill.color = if (mirrors == null) pixelOff else heaterColor(mirrors)
-        listOf(left - w * 0.07f, right).forEach { x ->
-            c.drawRoundRect(RectF(x, mirrorY, x + w * 0.07f, mirrorY + h * 0.035f), w * 0.012f, w * 0.012f, fill)
-        }
-        if ((mirrors ?: 0) > 0) {
-            heatWaves(c, left - w * 0.035f, mirrorY - h * 0.01f, w * 0.03f, warning, 2)
-            heatWaves(c, right + w * 0.035f, mirrorY - h * 0.01f, w * 0.03f, warning, 2)
-        }
-
-        // Esiklaas ja tagaklaas
-        val windshield = level(P.WINDSHIELD_HEAT)
-        val rearWindow = level(P.REAR_WINDOW_HEAT)
-        glass(c, Path().apply {
-            moveTo(left + bodyW * 0.10f, top + bodyH * 0.21f)
-            lineTo(right - bodyW * 0.10f, top + bodyH * 0.21f)
-            lineTo(right - bodyW * 0.16f, top + bodyH * 0.11f)
-            lineTo(left + bodyW * 0.16f, top + bodyH * 0.11f)
-            close()
-        }, windshield, sw)
-        glass(c, Path().apply {
-            moveTo(left + bodyW * 0.14f, top + bodyH * 0.84f)
-            lineTo(right - bodyW * 0.14f, top + bodyH * 0.84f)
-            lineTo(right - bodyW * 0.18f, top + bodyH * 0.92f)
-            lineTo(left + bodyW * 0.18f, top + bodyH * 0.92f)
-            close()
-        }, rearWindow, sw)
-        if ((windshield ?: 0) > 0) heatWaves(c, a.left + w / 2, top + bodyH * 0.16f, bodyW * 0.22f, warning, 3)
-        if ((rearWindow ?: 0) > 0) heatWaves(c, a.left + w / 2, top + bodyH * 0.88f, bodyW * 0.18f, warning, 3)
-
-        // Küljeaknad
-        val windowW = bodyW * 0.035f
-        fill.color = pixelOff
-        listOf(0.30f to 0.50f, 0.54f to 0.78f).forEach { (from, to) ->
-            listOf(left + sw * 1.5f, right - sw * 1.5f - windowW).forEach { x ->
-                c.drawRoundRect(RectF(x, top + bodyH * from, x + windowW, top + bodyH * to), windowW / 2, windowW / 2, fill)
-            }
-        }
-
-        // Istmed
-        val seatW = bodyW * 0.30f
-        val seatH = bodyH * 0.17f
-        val frontY = top + bodyH * 0.33f
-        val rearY = top + bodyH * 0.60f
-        val driverX = left + bodyW * 0.12f
-        val passengerX = right - bodyW * 0.12f - seatW
-        seat(c, RectF(driverX, frontY, driverX + seatW, frontY + seatH), level(P.SEAT_HEAT_DRIVER), level(P.SEAT_VENT_DRIVER))
-        seat(c, RectF(passengerX, frontY, passengerX + seatW, frontY + seatH), level(P.SEAT_HEAT_PASSENGER), level(P.SEAT_VENT_PASSENGER))
-        seat(c, RectF(driverX, rearY, driverX + seatW, rearY + seatH), level(P.SEAT_HEAT_REAR_LEFT), null)
-        seat(c, RectF(passengerX, rearY, passengerX + seatW, rearY + seatH), level(P.SEAT_HEAT_REAR_RIGHT), null)
-
-        // Rool juhi ees
-        val steering = level(P.STEERING_HEAT)
-        val cx = driverX + seatW / 2
-        val cy = top + bodyH * 0.265f
-        val wheelR = seatW * 0.30f
-        stroke.color = if (steering == null) textSecondary else heaterColor(steering)
-        stroke.strokeWidth = sw * 1.6f
-        c.drawCircle(cx, cy, wheelR, stroke)
-        stroke.strokeWidth = sw * 1.2f
-        c.drawLine(cx - wheelR, cy + wheelR * 0.2f, cx + wheelR, cy + wheelR * 0.2f, stroke)
-        if ((steering ?: 0) > 0) heatWaves(c, cx, cy - wheelR * 0.35f, wheelR * 0.9f, warning, 3)
-
-        // Salongi temperatuur keskel
-        text.textAlign = Paint.Align.CENTER
-        text.color = textPrimary
-        text.textSize = h * 0.04f
-        c.drawText("${formatValue(cabin, 1)} °C", a.left + w / 2, top + bodyH * 0.565f, text)
-        text.textAlign = Paint.Align.LEFT
-    }
-
-    private fun seat(c: Canvas, s: RectF, heat: Int?, vent: Int?) {
-        val corner = s.width() * 0.18f
-        fill.color = heaterColor(heat)
-        c.drawRoundRect(s, corner, corner, fill)
-        fill.color = textSecondary
-        fill.alpha = 150
-        c.drawRoundRect(RectF(s.left, s.top + s.height() * 0.80f, s.right, s.bottom), corner, corner, fill)
-        fill.alpha = 255
-        if ((heat ?: 0) > 0) heatWaves(c, s.centerX(), s.top + s.height() * 0.40f, s.width() * 0.55f, 0xFF0B0E11.toInt(), heat!!.coerceIn(1, 3))
-        if ((vent ?: 0) > 0) {
-            fill.color = VENT_BLUE
-            repeat(vent!!.coerceIn(1, 3)) { i ->
-                c.drawCircle(s.left + s.width() * (0.3f + 0.2f * i), s.top + s.height() * 0.68f, s.width() * 0.05f, fill)
-            }
-        }
-    }
-
-    private fun glass(c: Canvas, path: Path, level: Int?, sw: Float) {
-        fill.color = pixelOff
-        c.drawPath(path, fill)
-        if ((level ?: 0) > 0) {
-            stroke.color = warning
-            stroke.strokeWidth = sw * 1.5f
-            c.drawPath(path, stroke)
-        }
-    }
-
-    /** Soojuse lained: [count] lainelist püstjoont laiusega [width]. */
-    private fun heatWaves(c: Canvas, x0: Float, y0: Float, width: Float, color: Int, count: Int) {
-        val height = width * 0.9f
-        val gap = width / 4
-        stroke.color = color
-        stroke.strokeWidth = width * 0.07f
-        stroke.strokeCap = Paint.Cap.ROUND
-        for (i in 0 until count) {
-            val x = x0 + (i - (count - 1) / 2f) * gap
-            c.drawPath(Path().apply {
-                moveTo(x, y0 + height / 2)
-                cubicTo(x - gap * 0.4f, y0 + height / 6, x + gap * 0.4f, y0 - height / 6, x, y0 - height / 2)
-            }, stroke)
-        }
-        stroke.strokeCap = Paint.Cap.BUTT
-    }
-
-    private fun heaterColor(level: Int?): Int = when {
-        level == null -> pixelOff
-        level > 0 -> warning
-        else -> blend(background, accent, 0.35f)
     }
 
     // ---------- Abifunktsioonid ----------
@@ -575,6 +443,5 @@ class CarDrawing(private val context: Context, dark: Boolean) {
     private companion object {
         const val STALE_MS = 15_000L
         const val SOLAR_PEAK_W = 200.0
-        val VENT_BLUE = 0xFF4FA3FF.toInt()
     }
 }
