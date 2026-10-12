@@ -34,6 +34,7 @@ object Ioniq5Pids {
     const val CUMULATIVE_CHARGED_KWH = "cumulative_charged_kwh"
     const val CUMULATIVE_DISCHARGED_KWH = "cumulative_discharged_kwh"
     const val OPERATING_HOURS = "operating_hours"
+    const val BATTERY_HEATER_TEMP = "battery_heater_temp"
     const val MOTOR_RPM = "motor_rpm"
     const val MOTOR2_RPM = "motor2_rpm"
 
@@ -147,6 +148,9 @@ object Ioniq5Pids {
             s(SOH, "Aku tervis (SOH)", "State of health", "%", ParameterGroup.BATTERY, 28, 2, scale = 0.1),
             // Kandidaat: kontrollida auto näiduga
             s(SOC_DISPLAY, "Laetus (näidik)", "State of charge (display)", "%", ParameterGroup.BATTERY, 34, scale = 0.5),
+            // Kandidaat: aku soojendi temperatuur (Car Scanner „Battery Heater 1 Temperature”). Sõidulogides
+            // 11–13 °C, kui soojendi oli väljas; kinnitada Car Scanneriga samal ajal.
+            s(BATTERY_HEATER_TEMP, "Aku soojendi temperatuur", "Battery heater temperature", "°C", ParameterGroup.BATTERY, 26, signed = true),
         ) +
             // Moodulid 6–12: baidid 12–18, moodulid 13–16: baidid 42–45 (Car Scanneri B06–B16 järgi)
             (6..12).map { moduleTemp(it, it + 6) } +

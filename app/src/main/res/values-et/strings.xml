@@ -161,4 +161,10 @@
     <string name="on">sees</string>
     <string name="off">väljas</string>
     <string name="climate_heaters_note">Oranž = soojendus sees, türkiis = väljas, hall = olek teadmata. Rooli-, tagaklaasi- ja peeglisoojendus on leitud; esiklaasi soojendus on kandidaat. Istmete soojendus ja ventilatsioon on veel avastamata (Diagnostika → Avasta kliima).</string>
+    <string name="battery_preheat">Aku eelsoojendus</string>
+    <string name="battery_heater_temp">Aku soojendi</string>
+    <string name="tap_show_modules">Puuduta: moodulite temperatuurid</string>
+    <string name="tap_show_cells">Puuduta: elementide pinged</string>
+    <string name="modules_count">moodulit</string>
+    <string name="preheat_estimate">hinnang soojendi temperatuurist</string>
 </resources>

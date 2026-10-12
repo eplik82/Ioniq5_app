@@ -58,6 +58,9 @@ class CarRenderer(private val carContext: CarContext) : DefaultLifecycleObserver
 
     var page = CarPage.OVERVIEW
 
+    /** Aku lehel: false = elementide pinged, true = moodulite temperatuurid (vahetub puudutusega). */
+    var batteryModules = false
+
     private val app = carContext.applicationContext as Ioniq5Application
     private var surface: Surface? = null
     private var width = 0
@@ -86,6 +89,14 @@ class CarRenderer(private val carContext: CarContext) : DefaultLifecycleObserver
         }
 
         override fun onStableAreaChanged(stableArea: Rect) = Unit
+
+        // Puudutus joonistuspinnal (Car API 5+): aku lehel vahetab elementide ja moodulite vaate
+        override fun onClick(x: Float, y: Float) {
+            if (page == CarPage.BATTERY) {
+                batteryModules = !batteryModules
+                draw()
+            }
+        }
 
         override fun onSurfaceDestroyed(surfaceContainer: SurfaceContainer) {
             surface = null
@@ -129,6 +140,7 @@ class CarRenderer(private val carContext: CarContext) : DefaultLifecycleObserver
                 app.settings.settings.value,
                 app.alerts.alerts.value,
                 app.connection.solarEnergyWh.value,
+                batteryModules,
             )
         } finally {
             s.unlockCanvasAndPost(canvas)

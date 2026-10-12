@@ -16,6 +16,7 @@ import com.eplik.ioniq5.core.pid.Ioniq5Pids as P
 import com.eplik.ioniq5.core.poll.Readings
 import com.eplik.ioniq5.core.poll.acInputPowerKw
 import com.eplik.ioniq5.core.poll.batteryPowerKw
+import com.eplik.ioniq5.core.poll.batteryPreheating
 import com.eplik.ioniq5.core.poll.cellVoltages
 import com.eplik.ioniq5.core.poll.minutesToSoc
 import com.eplik.ioniq5.core.poll.speedKmh
@@ -59,6 +60,7 @@ class CarDrawing(private val context: Context, private val dark: Boolean) {
         settings: Settings,
         alerts: List<Alert> = emptyList(),
         solarEnergyWh: Double = 0.0,
+        batteryModules: Boolean = false,
     ) {
         r = readings
         now = System.currentTimeMillis()
@@ -67,7 +69,7 @@ class CarDrawing(private val context: Context, private val dark: Boolean) {
         val box = RectF(area.left + pad, area.top + pad, area.right - pad, area.bottom - pad)
         when (page) {
             CarPage.OVERVIEW -> overview(canvas, box)
-            CarPage.BATTERY -> battery(canvas, box)
+            CarPage.BATTERY -> battery(canvas, box, batteryModules)
             CarPage.WHEELS -> wheels(canvas, box, settings)
             CarPage.CHARGING -> charging(canvas, box, settings)
             CarPage.SOLAR -> solar(canvas, box, solarEnergyWh)
@@ -122,29 +124,17 @@ class CarDrawing(private val context: Context, private val dark: Boolean) {
         tileGrid(c, RectF(b.left + leftW, b.top, b.right, b.bottom - h * 0.06f), tiles, columns = 2)
     }
 
-    private fun battery(c: Canvas, b: RectF) {
-        val cells = r.cellVoltages()
-        val gridW = b.width() * 0.62f
+    private fun battery(c: Canvas, b: RectF, modules: Boolean) {
+        val gridW = b.width() * 0.58f
         val h = b.height()
-        if (cells.isNotEmpty()) {
-            val columns = 18
-            val rows = (cells.size + columns - 1) / columns
-            val cell = min(gridW / columns, (h * 0.9f) / rows)
-            val minV = cells.min()
-            val maxV = cells.max()
-            cells.forEachIndexed { i, volts ->
-                val t = if (maxV > minV) ((volts - minV) / (maxV - minV)).toFloat() else 0.5f
-                fill.color = scale(t)
-                val x = b.left + (i % columns) * cell
-                val y = b.top + (i / columns) * cell
-                c.drawRoundRect(RectF(x + cell * 0.08f, y + cell * 0.08f, x + cell * 0.92f, y + cell * 0.92f), cell * 0.12f, cell * 0.12f, fill)
-            }
-            label(c, "${cells.size} · ${formatValue(minV, 2)}…${formatValue(maxV, 2)} V", b.left, b.top + rows * cell + h * 0.07f, h * 0.045f)
-        } else {
-            label(c, "—", b.left, b.top + h * 0.1f, h * 0.05f)
-        }
+        val grid = RectF(b.left, b.top, b.left + gridW, b.top + h * 0.82f)
+        if (modules) moduleGrid(c, grid, h) else cellGrid(c, grid, h)
+        // Vihje: puudutus vahetab vaadet
+        label(c, str(if (modules) R.string.tap_show_cells else R.string.tap_show_modules), b.left, b.bottom - h * 0.01f, h * 0.035f)
+
         val maxCell = v(P.CELL_V_MAX)
         val minCell = v(P.CELL_V_MIN)
+        val preheat = r.batteryPreheating().takeIf { fresh(P.BATTERY_HEATER_TEMP) }
         tileGrid(
             c,
             RectF(b.left + gridW + b.width() * 0.03f, b.top, b.right, b.bottom - h * 0.06f),
@@ -163,8 +153,77 @@ class CarDrawing(private val context: Context, private val dark: Boolean) {
                     "°C",
                     fresh(P.BATTERY_TEMP_MAX),
                 ),
+                Tile(
+                    str(R.string.battery_preheat),
+                    when (preheat) {
+                        null -> "—"
+                        true -> str(R.string.on)
+                        false -> str(R.string.off)
+                    },
+                    "",
+                    preheat != null,
+                    if (preheat == true) warning else null,
+                ),
+                Tile(str(R.string.battery_heater_temp), formatValue(v(P.BATTERY_HEATER_TEMP), 0), "°C", fresh(P.BATTERY_HEATER_TEMP)),
             ),
-            columns = 1,
+            columns = 2,
+        )
+    }
+
+    private fun cellGrid(c: Canvas, g: RectF, h: Float) {
+        val cells = r.cellVoltages()
+        if (cells.isEmpty()) {
+            label(c, "—", g.left, g.top + h * 0.1f, h * 0.05f)
+            return
+        }
+        val columns = 18
+        val rows = (cells.size + columns - 1) / columns
+        val cell = min(g.width() / columns, (g.height() * 0.9f) / rows)
+        val minV = cells.min()
+        val maxV = cells.max()
+        cells.forEachIndexed { i, volts ->
+            val t = if (maxV > minV) ((volts - minV) / (maxV - minV)).toFloat() else 0.5f
+            fill.color = scale(t)
+            val x = g.left + (i % columns) * cell
+            val y = g.top + (i / columns) * cell
+            c.drawRoundRect(RectF(x + cell * 0.08f, y + cell * 0.08f, x + cell * 0.92f, y + cell * 0.92f), cell * 0.12f, cell * 0.12f, fill)
+        }
+        label(c, "${cells.size} · ${formatValue(minV, 2)}…${formatValue(maxV, 2)} V", g.left, g.top + rows * cell + h * 0.07f, h * 0.045f)
+    }
+
+    /** 16 mooduli temperatuuri ruudustikuna (8 × 2), värv madalaimast kõrgeimani, number ruudu sees. */
+    private fun moduleGrid(c: Canvas, g: RectF, h: Float) {
+        val temps = (1..P.MODULE_TEMP_COUNT).map { v(P.moduleTempId(it)) }
+        val known = temps.filterNotNull()
+        if (known.isEmpty()) {
+            label(c, "—", g.left, g.top + h * 0.1f, h * 0.05f)
+            return
+        }
+        val columns = 8
+        val rows = 2
+        val cell = min(g.width() / columns, (g.height() * 0.85f) / rows)
+        val lo = known.min()
+        val hi = known.max()
+        temps.forEachIndexed { i, t ->
+            val x = g.left + (i % columns) * cell
+            val y = g.top + (i / columns) * cell
+            fill.color = if (t == null) pixelOff else scale(if (hi > lo) ((t - lo) / (hi - lo)).toFloat() else 0.5f)
+            val box = RectF(x + cell * 0.05f, y + cell * 0.05f, x + cell * 0.95f, y + cell * 0.95f)
+            c.drawRoundRect(box, cell * 0.1f, cell * 0.1f, fill)
+            text.textAlign = Paint.Align.CENTER
+            text.color = 0xFF0B0E11.toInt()
+            text.textSize = cell * 0.32f
+            c.drawText(formatValue(t, 0), box.centerX(), box.centerY() + cell * 0.08f, text)
+            text.textSize = cell * 0.15f
+            c.drawText("${i + 1}", box.centerX(), box.bottom - cell * 0.1f, text)
+            text.textAlign = Paint.Align.LEFT
+        }
+        label(
+            c,
+            "${known.size} ${str(R.string.modules_count)} · ${formatValue(lo, 0)}…${formatValue(hi, 0)} °C",
+            g.left,
+            g.top + rows * cell + h * 0.07f,
+            h * 0.045f,
         )
     }
 

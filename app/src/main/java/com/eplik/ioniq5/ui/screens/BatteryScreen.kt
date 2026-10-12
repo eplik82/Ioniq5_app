@@ -26,6 +26,7 @@ import com.eplik.ioniq5.core.pid.Ioniq5Pids as P
 import com.eplik.ioniq5.core.poll.Readings
 import com.eplik.ioniq5.core.poll.batteryPowerKw
 import com.eplik.ioniq5.core.poll.cellVoltages
+import com.eplik.ioniq5.core.poll.batteryPreheating
 import com.eplik.ioniq5.core.poll.moduleTemperatures
 import com.eplik.ioniq5.ui.components.BatteryCellGrid
 import com.eplik.ioniq5.ui.components.CellColorMode
@@ -118,6 +119,17 @@ fun BatteryScreen(readings: Readings, modifier: Modifier = Modifier) {
                 }
             }
         }
+        item {
+            val preheat = readings.batteryPreheating()
+            ValueTile(
+                stringResource(R.string.battery_preheat),
+                stringResource(if (preheat == true) R.string.on else R.string.off).takeIf { preheat != null } ?: "—",
+                "",
+                readings[P.BATTERY_HEATER_TEMP].isFresh(now),
+                detail = stringResource(R.string.preheat_estimate),
+            )
+        }
+        item { tile(R.string.battery_heater_temp, P.BATTERY_HEATER_TEMP, 0, "°C", stringResource(R.string.candidate)) }
         item { tile(R.string.soc_display, P.SOC_DISPLAY, 1, "%", stringResource(R.string.candidate)) }
         item { tile(R.string.soc_bms, P.SOC_BMS, 1, "%") }
         item { tile(R.string.soh, P.SOH, 1, "%") }

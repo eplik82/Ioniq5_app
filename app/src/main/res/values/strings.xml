@@ -161,4 +161,10 @@
     <string name="on">on</string>
     <string name="off">off</string>
     <string name="climate_heaters_note">Orange = heater on, turquoise = off, grey = state unknown. Steering wheel, rear window and mirror heaters are decoded; windshield defrost is a candidate. Seat heating and ventilation are not decoded yet (Diagnostics → Discover climate).</string>
+    <string name="battery_preheat">Battery preheating</string>
+    <string name="battery_heater_temp">Battery heater</string>
+    <string name="tap_show_modules">Tap: module temperatures</string>
+    <string name="tap_show_cells">Tap: cell voltages</string>
+    <string name="modules_count">modules</string>
+    <string name="preheat_estimate">estimated from heater temperature</string>
 </resources>

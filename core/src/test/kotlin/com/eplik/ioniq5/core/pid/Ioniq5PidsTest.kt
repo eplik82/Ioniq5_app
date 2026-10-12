@@ -45,6 +45,12 @@ class Ioniq5PidsTest {
     private fun check(expected: Double, id: String) = assertEquals(id, expected, decode(id)!!, 1e-6)
 
     @Test
+    fun batteryHeater() {
+        // Kandidaat: soojendi väljas, moodulid 15–22 °C
+        check(13.0, P.BATTERY_HEATER_TEMP)
+    }
+
+    @Test
     fun bmsMain() {
         check(29.5, P.SOC_BMS)
         check(42.2, P.BATTERY_CURRENT)

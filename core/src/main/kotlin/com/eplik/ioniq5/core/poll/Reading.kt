@@ -30,6 +30,20 @@ fun Readings.cellVoltages(): List<Double> =
 fun Readings.moduleTemperatures(): List<Double?> =
     (1..Ioniq5Pids.MODULE_TEMP_COUNT).map { value(Ioniq5Pids.moduleTempId(it)) }
 
+/** Soojendi peab olema moodulitest vähemalt nii palju soojem, et lugeda eelsoojendus sisselülitatuks. */
+const val PREHEAT_DELTA_C = 5.0
+
+/**
+ * Aku eelsoojendus: sees, kui soojendi temperatuur on kõige soojemast moodulist vähemalt [PREHEAT_DELTA_C]
+ * võrra kõrgem (Car Scanneri DC-laadimise logis soojendi 24–33 °C, moodulid 11–17 °C). Otsest olekubitti
+ * pole leitud, seega on see hinnang. null = andmed puuduvad.
+ */
+fun Readings.batteryPreheating(): Boolean? {
+    val heater = value(Ioniq5Pids.BATTERY_HEATER_TEMP) ?: return null
+    val warmest = value(Ioniq5Pids.BATTERY_TEMP_MAX) ?: moduleTemperatures().filterNotNull().maxOrNull() ?: return null
+    return heater >= warmest + PREHEAT_DELTA_C
+}
+
 /** Ioniq 5 AWD tagasilla ülekandearv ja 255/45 R20 rehvi ümbermõõt (m). */
 private const val REAR_GEAR_RATIO = 10.65
 private const val TIRE_CIRCUMFERENCE_M = 2.316
