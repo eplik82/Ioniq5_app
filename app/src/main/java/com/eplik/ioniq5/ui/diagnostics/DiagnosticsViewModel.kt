@@ -110,10 +110,10 @@ class DiagnosticsViewModel(application: Application) : AndroidViewModel(applicat
     }
 
     /**
-     * Arenduslogi: küsib [DevCapture.REQUESTS] ringiratast, kuni peatatakse, ja kirjutab toorvastused
+     * Arenduslogi: küsib [requests] (vaikimisi [DevCapture.REQUESTS]) ringiratast, kuni peatatakse, ja kirjutab toorvastused
      * ajatemplitega faili. Märkused lisatakse logisse järgmise päringu eel.
      */
-    fun startCapture(note: String) {
+    fun startCapture(note: String, requests: List<DevCapture.Request> = DevCapture.REQUESTS) {
         val elm = connection.elm ?: return notConnected()
         if (job?.isActive == true || captureJob?.isActive == true) return
         val app = getApplication<Application>()
@@ -138,7 +138,7 @@ class DiagnosticsViewModel(application: Application) : AndroidViewModel(applicat
                     cycle++
                     val elapsed = (System.currentTimeMillis() - start) / 1000
                     _progress.value = app.getString(R.string.capture_progress, cycle, "%d:%02d".format(elapsed / 60, elapsed % 60))
-                    for (r in DevCapture.REQUESTS) {
+                    for (r in requests) {
                         while (true) {
                             val n = pendingNotes.poll() ?: break
                             w.write("# MÄRKUS ${time.format(Date())}: $n\n")

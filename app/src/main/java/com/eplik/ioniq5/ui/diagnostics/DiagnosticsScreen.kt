@@ -56,6 +56,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.eplik.ioniq5.R
 import com.eplik.ioniq5.connection.ConnectionStatus
+import com.eplik.ioniq5.core.scan.DevCapture
 import com.eplik.ioniq5.core.scan.DiscoveryPlan
 import com.eplik.ioniq5.ui.screens.statusText
 
@@ -82,17 +83,19 @@ fun DiagnosticsScreen(
 
     // Arenduslogi küsib asukohaloa (GPS); ilma loata logib ilma GPS-ita
     var pendingCaptureNote by remember { mutableStateOf<String?>(null) }
+    var pendingCaptureRequests by remember { mutableStateOf(DevCapture.REQUESTS) }
     val locationLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
-        pendingCaptureNote?.let { viewModel.startCapture(it) }
+        pendingCaptureNote?.let { viewModel.startCapture(it, pendingCaptureRequests) }
         pendingCaptureNote = null
     }
-    fun startCaptureWithGps(text: String) {
+    fun startCaptureWithGps(text: String, requests: List<DevCapture.Request> = DevCapture.REQUESTS) {
         val granted = ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) ==
             PackageManager.PERMISSION_GRANTED
         if (granted) {
-            viewModel.startCapture(text)
+            viewModel.startCapture(text, requests)
         } else {
             pendingCaptureNote = text
+            pendingCaptureRequests = requests
             locationLauncher.launch(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION))
         }
     }
@@ -170,6 +173,15 @@ fun DiagnosticsScreen(
                     enabled = connected && !busy,
                 ) { Text(stringResource(R.string.capture_start)) }
             }
+        }
+        if (!capturing) {
+            OutlinedButton(
+                onClick = {
+                    startCaptureWithGps(note, DevCapture.CLIMATE)
+                    note = ""
+                },
+                enabled = connected && !busy,
+            ) { Text(stringResource(R.string.capture_climate)) }
         }
 
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {

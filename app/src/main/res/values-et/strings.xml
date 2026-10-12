@@ -148,4 +148,5 @@
     <string name="error_bluetooth_off">Bluetooth on välja lülitatud</string>
     <string name="cabin_temp">Salongis</string>
     <string name="outdoor_temp">Väljas</string>
+    <string name="capture_climate">Kliima arenduslogi</string>
 </resources>

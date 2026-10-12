@@ -18,6 +18,8 @@ object DevCapture {
     private val ESC = EcuAddress(0x7D1)
     private val VCU = EcuAddress(0x7E2)
     private val HVAC = EcuAddress(0x7B3)
+    private val BCM = EcuAddress(0x7A0)
+    private val IBU = EcuAddress(0x770)
 
     val REQUESTS: List<Request> = listOf(
         Request(BMS, "220101", "BMS põhiandmed"),
@@ -49,4 +51,14 @@ object DevCapture {
         Request(BMS, "22010B", "Elemendid 129–160"),
         Request(BMS, "22010C", "Elemendid 161–180"),
     )
+
+    /**
+     * Kliima ja soojendused: kõik DID-id, mis kliima avastusskaneering 2026-10-12 leidis
+     * (7B3: 7, 7A0: 18, 770: 9). Lühike tsükkel, et iga lüliti mõju oleks logis selgelt näha.
+     */
+    val CLIMATE: List<Request> =
+        listOf("220100", "220101", "220102", "2201A0", "2201A1", "2201A2", "2201A3").map { Request(HVAC, it, "Kliima") } +
+            (0x01..0x12).map { Request(BCM, "22B0%02X".format(it), "Kere 7A0") } +
+            listOf("22BC01", "22BC03", "22BC04", "22BC05", "22BC06", "22BC07", "22BC08", "22BC09", "22BC10")
+                .map { Request(IBU, it, "Kere 770") }
 }

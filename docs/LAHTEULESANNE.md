@@ -1,6 +1,6 @@
 # Lähteülesanne: Ioniq 5 CAN-andmete Android-rakendus
 
-Versioon 0.22 · 2026-10-11
+Versioon 0.23 · 2026-10-12
 
 ## 1. Eesmärk
 
@@ -284,6 +284,18 @@ nii `220100` kui ka `220102` päringule (`testdata/raw/drive-log_2026-10-11_1648
 `220102` bait 7 (`9E`→`9A`) ja bait 15 (`2D`→`2A`) langesid sõidu ajal aeglaselt. Tähendus on veel
 teadmata. Istmete, rooli, klaaside ja peeglite soojenduse andmeid selles logis polnud, sest
 lülitusi ja märkeid ei tehtud.
+
+**Kliima avastusskaneering 2026-10-12 17:09 (süüde sees, `testdata/raw/climate-scan_2026-10-12_1709.txt`):**
+
+| ECU | Vastavad DID-id |
+|---|---|
+| `7B3` kliima | `0100`, `0101`, `0102`, `01A0`, `01A1`, `01A2`, `01A3` |
+| `7A0` kere (BCM/IBU) | `B001`–`B012` (18 tk; `B003` sisaldab rehvide andmeid) |
+| `770` IBU | `BC01`, `BC03`–`BC09`, `BC10` |
+| `706`, `7A1` | ei vastanud |
+
+Diagnostika nupp **„Kliima arenduslogi”** loeb ainult neid 34 päringut (tsükkel ~4 s), et soojenduste ja
+kliima lülitite mõju oleks märgete järgi selgelt näha.
 
 **Avastamise käik (diagnostika → arendajalogi):** süüde sees, auto paigal. Logi algab kõigi ülaltoodud
 ECU-de `22xxxx` lugemisega. Seejärel lülitatakse **ükshaaval** sisse ja välja: roolisoojendus,

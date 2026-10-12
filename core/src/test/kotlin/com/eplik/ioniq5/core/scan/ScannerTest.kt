@@ -64,7 +64,8 @@ class ScannerTest {
 
     @Test
     fun devCaptureIsReadOnly() {
-        DevCapture.REQUESTS.forEach {
+        assertEquals(34, DevCapture.CLIMATE.size)
+        (DevCapture.REQUESTS + DevCapture.CLIMATE).forEach {
             assert(com.eplik.ioniq5.core.uds.UdsSafety.isAllowed(it.request.hexToBytes()))
         }
     }
