@@ -124,6 +124,24 @@ fun ClimateScreen(readings: Readings, modifier: Modifier = Modifier) {
                 Modifier.weight(1f),
             )
         }
+        Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            ValueTile(
+                stringResource(R.string.ac_compressor),
+                formatValue(v(P.AC_COMPRESSOR_RPM), 0),
+                "rpm",
+                v(P.AC_COMPRESSOR_RPM) != null,
+                Modifier.weight(1f),
+                detail = stringResource(R.string.candidate),
+            )
+            ValueTile(
+                stringResource(R.string.hvac_coolant_temp),
+                formatValue(v(P.HVAC_COOLANT_TEMP), 1),
+                "°C",
+                v(P.HVAC_COOLANT_TEMP) != null,
+                Modifier.weight(1f),
+                detail = stringResource(R.string.candidate),
+            )
+        }
         Text(
             stringResource(R.string.climate_heaters_note),
             style = MaterialTheme.typography.labelMedium,

@@ -167,4 +167,9 @@
     <string name="tap_show_cells">Tap: cell voltages</string>
     <string name="modules_count">modules</string>
     <string name="preheat_estimate">estimated from heater temperature</string>
+    <string name="remaining_energy">Remaining energy</string>
+    <string name="battery_inlet_temp">Battery inlet</string>
+    <string name="battery_coolant_temp">Battery coolant</string>
+    <string name="ac_compressor">A/C compressor</string>
+    <string name="hvac_coolant_temp">Coolant</string>
 </resources>

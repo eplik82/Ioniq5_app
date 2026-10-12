@@ -165,6 +165,8 @@ class CarDrawing(private val context: Context, private val dark: Boolean) {
                     if (preheat == true) warning else null,
                 ),
                 Tile(str(R.string.battery_heater_temp), formatValue(v(P.BATTERY_HEATER_TEMP), 0), "°C", fresh(P.BATTERY_HEATER_TEMP)),
+                Tile(str(R.string.remaining_energy), formatValue(v(P.BATTERY_REMAINING_KWH), 1), "kWh", fresh(P.BATTERY_REMAINING_KWH)),
+                Tile(str(R.string.battery_coolant_temp), formatValue(v(P.BATTERY_COOLANT_TEMP), 0), "°C", fresh(P.BATTERY_COOLANT_TEMP)),
             ),
             columns = 2,
         )
@@ -435,6 +437,8 @@ class CarDrawing(private val context: Context, private val dark: Boolean) {
                     "°C",
                     fresh(P.VENT_TEMP_1),
                 ),
+                Tile(str(R.string.ac_compressor), formatValue(v(P.AC_COMPRESSOR_RPM), 0), "rpm", fresh(P.AC_COMPRESSOR_RPM)),
+                Tile(str(R.string.hvac_coolant_temp), formatValue(v(P.HVAC_COOLANT_TEMP), 1), "°C", fresh(P.HVAC_COOLANT_TEMP)),
             ),
             columns = 2,
         )

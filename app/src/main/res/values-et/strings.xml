@@ -167,4 +167,9 @@
     <string name="tap_show_cells">Puuduta: elementide pinged</string>
     <string name="modules_count">moodulit</string>
     <string name="preheat_estimate">hinnang soojendi temperatuurist</string>
+    <string name="remaining_energy">Järelejäänud energia</string>
+    <string name="battery_inlet_temp">Aku sisend</string>
+    <string name="battery_coolant_temp">Aku jahutusvedelik</string>
+    <string name="ac_compressor">Kliimakompressor</string>
+    <string name="hvac_coolant_temp">Jahutusvedelik</string>
 </resources>

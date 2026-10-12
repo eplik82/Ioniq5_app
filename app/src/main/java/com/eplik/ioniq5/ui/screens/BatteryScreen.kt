@@ -130,6 +130,9 @@ fun BatteryScreen(readings: Readings, modifier: Modifier = Modifier) {
             )
         }
         item { tile(R.string.battery_heater_temp, P.BATTERY_HEATER_TEMP, 0, "°C", stringResource(R.string.candidate)) }
+        item { tile(R.string.remaining_energy, P.BATTERY_REMAINING_KWH, 1, "kWh", stringResource(R.string.candidate)) }
+        item { tile(R.string.battery_inlet_temp, P.BATTERY_INLET_TEMP, 0, "°C", stringResource(R.string.candidate)) }
+        item { tile(R.string.battery_coolant_temp, P.BATTERY_COOLANT_TEMP, 0, "°C", stringResource(R.string.candidate)) }
         item { tile(R.string.soc_display, P.SOC_DISPLAY, 1, "%", stringResource(R.string.candidate)) }
         item { tile(R.string.soc_bms, P.SOC_BMS, 1, "%") }
         item { tile(R.string.soh, P.SOH, 1, "%") }
