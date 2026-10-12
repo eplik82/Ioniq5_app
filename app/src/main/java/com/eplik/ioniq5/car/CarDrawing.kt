@@ -86,12 +86,13 @@ class CarDrawing(private val context: Context, dark: Boolean) {
 
     private fun overview(c: Canvas, b: RectF) {
         val leftW = b.width() * 0.38f
-        val socId = if (r[P.SOC_DISPLAY] != null) P.SOC_DISPLAY else P.SOC_BMS
+        // Näidiku laetus, kui see on värske, muidu BMS-i oma (aegunud näidikuväärtus andis siin „—”)
+        val socId = if (fresh(P.SOC_DISPLAY)) P.SOC_DISPLAY else P.SOC_BMS
         val soc = v(socId)
         val h = b.height()
         label(c, str(R.string.state_of_charge).uppercase(), b.left, b.top + h * 0.08f, h * 0.045f)
         big(c, soc?.let { formatValue(it, 0) } ?: "—", " %", b.left, b.top + h * 0.38f, h * 0.30f, fresh(socId))
-        pixelGauge(c, RectF(b.left, b.top + h * 0.48f, b.left + leftW * 0.92f, b.top + h * 0.48f + leftW * 0.92f / 2), soc?.div(100))
+        pixelGauge(c, RectF(b.left, b.top + h * 0.48f, b.left + leftW * 0.92f, b.bottom - h * 0.08f), soc?.div(100))
 
         val power = r.batteryPowerKw()
         val tiles = listOf(
@@ -246,7 +247,7 @@ class CarDrawing(private val context: Context, dark: Boolean) {
             if (charging) accent else textSecondary,
         )
         big(c, if (charging) formatValue(-power!!, 1) else formatValue(soc, 0), if (charging) " kW" else " %", b.left, b.top + h * 0.38f, h * 0.28f, true)
-        pixelGauge(c, RectF(b.left, b.top + h * 0.48f, b.left + leftW * 0.9f, b.top + h * 0.48f + leftW * 0.9f / 2), soc?.div(100))
+        pixelGauge(c, RectF(b.left, b.top + h * 0.48f, b.left + leftW * 0.9f, b.bottom - h * 0.08f), soc?.div(100))
         val capacity = settings.capacityKwh(r.cellVoltages().size)
         fun eta(target: Double) = r.minutesToSoc(target, capacity)?.let { "%d:%02d".format(it.toInt() / 60, it.toInt() % 60) } ?: "—"
         tileGrid(
@@ -312,7 +313,8 @@ class CarDrawing(private val context: Context, dark: Boolean) {
     private fun pixelGauge(c: Canvas, area: RectF, fraction: Double?) {
         val columns = 10
         val rows = 5
-        val cell = area.width() / columns
+        // Ruudu suurus nii, et näidik mahub nii laiuses kui ka kõrguses (Ioniq 5 ekraan on väga lai)
+        val cell = min(area.width() / columns, area.height() / rows)
         val lit = ((fraction ?: 0.0).coerceIn(0.0, 1.0) * columns * rows).toInt()
         for (row in 0 until rows) {
             for (col in 0 until columns) {
