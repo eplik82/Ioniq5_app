@@ -180,8 +180,19 @@ class ConnectionManager(
         poller?.paused?.value = pauseCount > 0
     }
 
+    /** 12 V aku energiasääst (une režiim, kui auto on väljas); seadetest. */
+    private var powerSaving = true
+
+    @Synchronized
+    fun setPowerSaving(enabled: Boolean) {
+        powerSaving = enabled
+        poller?.sleepEnabled?.value = enabled
+        if (!enabled) poller?.wake()
+    }
+
     private fun startPolling(driver: Elm327) {
         val newPoller = Poller(driver, Ioniq5Pids.ALL)
+        newPoller.sleepEnabled.value = synchronized(this) { powerSaving }
         newPoller.paused.value = synchronized(this) { pauseCount > 0 }
         poller = newPoller
         pollJob = scope.launch {

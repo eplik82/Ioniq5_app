@@ -172,4 +172,7 @@
     <string name="battery_coolant_temp">Aku jahutusvedelik</string>
     <string name="ac_compressor">Kliimakompressor</string>
     <string name="hvac_coolant_temp">Jahutusvedelik</string>
+    <string name="setting_power_saving">12 V aku energiasääst</string>
+    <string name="setting_power_saving_on">Kui auto on välja lülitatud, loetakse andmeid ainult iga 5 min järel</string>
+    <string name="setting_power_saving_off">Väljas: kõiki andmeid loetakse pidevalt ka seisva auto puhul – adapter hoiab juhtplokid ärkvel ja tühjendab 12 V akut</string>
 </resources>

@@ -20,6 +20,8 @@ data class Settings(
     /** Aku nimimahutavus kWh; null = automaatne elementide arvu järgi. */
     val batteryCapacityKwh: Double? = null,
     val autoConnect: Boolean = true,
+    /** 12 V aku energiasääst: auto väljas → lugemine iga 5 min järel. */
+    val powerSaving: Boolean = true,
     /** Hoiatus, kui laetus on sellest madalam (%). */
     val lowSocPercent: Double = 10.0,
     /** Hoiatused ka telefoni teavitustena. */
@@ -44,6 +46,7 @@ class AppSettings(context: Context) {
             .putString(KEY_THEME, new.themeMode.name)
             .putFloat(KEY_CAPACITY, new.batteryCapacityKwh?.toFloat() ?: 0f)
             .putBoolean(KEY_AUTO, new.autoConnect)
+            .putBoolean(KEY_POWER_SAVING, new.powerSaving)
             .putFloat(KEY_LOW_SOC, new.lowSocPercent.toFloat())
             .putBoolean(KEY_ALERT_NOTIFY, new.alertNotifications)
             .putBoolean(KEY_SAFETY, new.safetyAccepted)
@@ -56,6 +59,7 @@ class AppSettings(context: Context) {
         themeMode = runCatching { ThemeMode.valueOf(prefs.getString(KEY_THEME, null)!!) }.getOrDefault(ThemeMode.SYSTEM),
         batteryCapacityKwh = prefs.getFloat(KEY_CAPACITY, 0f).toDouble().takeIf { it > 0 },
         autoConnect = prefs.getBoolean(KEY_AUTO, true),
+        powerSaving = prefs.getBoolean(KEY_POWER_SAVING, true),
         lowSocPercent = prefs.getFloat(KEY_LOW_SOC, 10f).toDouble(),
         alertNotifications = prefs.getBoolean(KEY_ALERT_NOTIFY, true),
         safetyAccepted = prefs.getBoolean(KEY_SAFETY, false),
@@ -67,6 +71,7 @@ class AppSettings(context: Context) {
         const val KEY_THEME = "theme"
         const val KEY_CAPACITY = "battery_capacity"
         const val KEY_AUTO = "auto_connect"
+        const val KEY_POWER_SAVING = "power_saving"
         const val KEY_LOW_SOC = "low_soc"
         const val KEY_ALERT_NOTIFY = "alert_notifications"
         const val KEY_SAFETY = "safety_accepted"

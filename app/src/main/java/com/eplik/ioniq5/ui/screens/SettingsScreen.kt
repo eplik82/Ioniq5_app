@@ -118,6 +118,18 @@ fun SettingsScreen(
             Switch(checked = settings.autoConnect, onCheckedChange = { v -> onChange { it.copy(autoConnect = v) } })
         }
 
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Column(Modifier.weight(1f)) {
+                Text(stringResource(R.string.setting_power_saving), style = MaterialTheme.typography.titleMedium)
+                Text(
+                    stringResource(if (settings.powerSaving) R.string.setting_power_saving_on else R.string.setting_power_saving_off),
+                    style = MaterialTheme.typography.labelMedium,
+                    color = if (settings.powerSaving) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.error,
+                )
+            }
+            Switch(checked = settings.powerSaving, onCheckedChange = { v -> onChange { it.copy(powerSaving = v) } })
+        }
+
         OutlinedButton(onClick = onBack) { Text(stringResource(R.string.back)) }
     }
 }

@@ -36,6 +36,9 @@ class Poller(
 
     val paused = MutableStateFlow(false)
 
+    /** Kasutaja seade: false = une režiimi ei kasutata, kõike pollitakse alati täiskiirusel (tühjendab 12 V akut). */
+    val sleepEnabled = MutableStateFlow(true)
+
     private val lastPolled = mutableMapOf<String, Long>()
 
     private val _sleeping = MutableStateFlow(false)
@@ -49,7 +52,7 @@ class Poller(
         val lastSuccess = lastSuccessMs ?: now.also { lastSuccessMs = it }
         val noAnswers = now - lastSuccess > sleepAfterMs
         val auxLow = auxLowSinceMs?.let { now - it > sleepAfterMs } ?: false
-        _sleeping.value = noAnswers || auxLow
+        _sleeping.value = sleepEnabled.value && (noAnswers || auxLow)
         return _sleeping.value
     }
 

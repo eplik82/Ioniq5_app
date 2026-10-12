@@ -76,4 +76,16 @@ class PollerTest {
         now = 260_000; poller.pollOnce(bms)
         org.junit.Assert.assertTrue(poller.updateSleepState(now))
     }
+
+    @Test
+    fun sleepDisabledNeverSleeps() {
+        var now = 1_000L
+        val poller = Poller(Elm327(transport()), Ioniq5Pids.ALL, clock = { now })
+        poller.sleepEnabled.value = false
+        poller.updateSleepState(now)
+        now += 10 * 60_000
+        org.junit.Assert.assertFalse(poller.updateSleepState(now))
+        poller.sleepEnabled.value = true
+        org.junit.Assert.assertTrue(poller.updateSleepState(now))
+    }
 }

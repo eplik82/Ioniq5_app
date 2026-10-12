@@ -6,6 +6,9 @@ import com.eplik.ioniq5.connection.ConnectionManager
 import com.eplik.ioniq5.record.RecordingManager
 import com.eplik.ioniq5.settings.AppSettings
 import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
 
 class Ioniq5Application : Application() {
     /** Üks ühendus kogu rakenduse kohta (hiljem kasutab sama ka taustteenus ja Android Auto). */
@@ -21,5 +24,8 @@ class Ioniq5Application : Application() {
         super.onCreate()
         recordings.start()
         alerts.start()
+        MainScope().launch {
+            settings.settings.map { it.powerSaving }.distinctUntilChanged().collect { connection.setPowerSaving(it) }
+        }
     }
 }
