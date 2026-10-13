@@ -1,6 +1,6 @@
 # Lähteülesanne: Ioniq 5 CAN-andmete Android-rakendus
 
-Versioon 0.24 · 2026-10-12
+Versioon 0.25 · 2026-10-13
 
 ## 1. Eesmärk
 
@@ -216,6 +216,22 @@ sõidu, pöörete ja foori taga seismisega. Baidid loetakse 0x62 baidist:
 
 Tagamootori pööretest arvutatud kiirus oli ~3 % suurem kui rataste kiirus (73,6 vs 71 km/h).
 Rakendus kasutab nüüd ESC kiirust ja arvutab pööretest ainult siis, kui ESC ei vasta.
+
+### 4.2c Tagamootor ja laadimispesa (3. etapi skaneering 2026-10-13, sõit 77 km/h)
+
+`testdata/raw/stage3-scan_2026-10-13_0814.txt`. Mootori kontroller `7E3` vastab sõidu ajal (`E001`–`E009`,
+`E0F2`); seistes ja välja lülitatud autoga ei vastanud. Väärtused on **little-endian**, baidid OBDb järgi:
+
+| ECU / DID | Baidid | Väärtus skaneeringus | Tähendus | Olek |
+|---|---|---|---|---|
+| `7E3` `22E001` | 24–25 / 10 | −80,1 Nm | tagamootori pöördemoment | kasutusel |
+| `7E3` `22E001` | 28–29 / 100 | 15,1 °C | tagamootori temperatuur | kasutusel |
+| `7E3` `22E001` | 30–31 / 100 | 12,1 °C | tagainverteri temperatuur | kasutusel |
+| `7E3` `22E001` | 14–15 | 5688 (≈ 74 km/h) | mootori pöörded? | kandidaat |
+| `744` `22E004` | 11, 12, 13 − 50 | 10 / 10 / 10 °C | laadimispesa DC1, DC2, AC | kasutusel |
+
+Esimootori kontrollerit (`7E6`) ei leitud: `E0xx` ja `20xx` ei vastanud. Kuni esimootori pöördemomenti pole, arvestab
+veojaotus lahti ühendatud esimootorit (0 p/min) kui 0 Nm.
 
 ### 4.2b Päikesekatuse võimsus (pime mõõtmine ilma laadimiseta, 10.10 20:41)
 

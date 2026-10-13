@@ -80,6 +80,15 @@ fun ChargingScreen(readings: Readings, session: ChargeSession?, capacityKwh: Dou
         item { ValueTile(stringResource(R.string.battery_current), formatValue(readings[P.BATTERY_CURRENT]?.value, 1), "A", fresh) }
         item {
             ValueTile(
+                stringResource(R.string.charge_port_temps),
+                "${formatValue(readings[P.CHARGE_PORT_DC1_TEMP]?.value, 0)} / ${formatValue(readings[P.CHARGE_PORT_DC2_TEMP]?.value, 0)} / " +
+                    formatValue(readings[P.CHARGE_PORT_AC_TEMP]?.value, 0),
+                "°C",
+                readings[P.CHARGE_PORT_DC1_TEMP] != null,
+            )
+        }
+        item {
+            ValueTile(
                 stringResource(R.string.battery_temp),
                 "${formatValue(readings[P.BATTERY_TEMP_MIN]?.value, 0)}…${formatValue(readings[P.BATTERY_TEMP_MAX]?.value, 0)}",
                 "°C",

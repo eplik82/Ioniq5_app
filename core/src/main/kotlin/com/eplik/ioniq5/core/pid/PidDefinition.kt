@@ -27,6 +27,8 @@ data class SignalDefinition(
     val offset: Double = 0.0,
     /** Kui määratud, loetakse ainult üht bitti (0 = madalaim) ja väärtus on 0 või 1. */
     val bit: Int? = null,
+    /** Mitmebaidine väärtus väikseim bait ees (nt mootori kontroller 7E3). */
+    val littleEndian: Boolean = false,
 )
 
 enum class ParameterGroup { BATTERY, CELLS, CHARGING, DRIVE, TIRES, CLIMATE, SOLAR, AUX_BATTERY, VEHICLE }

@@ -59,7 +59,7 @@
     <string name="rear_axle">Rear</string>
     <string name="steering_angle">Steering angle</string>
     <string name="torque_split">Torque split front / rear</string>
-    <string name="axles_data_note">Motor torque and accelerations are not decoded yet. The front motor is disconnected at steady speed (0 rpm), so the car then drives on the rear motor only.</string>
+    <string name="axles_data_note">Rear motor torque and temperatures come from the motor controller (7E3); front motor torque and accelerations are not decoded yet. The front motor is disconnected at steady speed (0 rpm), so the car then drives on the rear motor only.</string>
     <string name="mode_voltage">Voltage</string>
     <string name="mode_deviation">Deviation, mV</string>
     <string name="tap_cell_hint">Tap a cell for details</string>
@@ -175,4 +175,6 @@
     <string name="setting_power_saving">12 V battery saver</string>
     <string name="setting_power_saving_on">When the car is off, data is read only every 5 min</string>
     <string name="setting_power_saving_off">Off: all data is read continuously even when the car is off – the adapter keeps control units awake and drains the 12 V battery</string>
+    <string name="rear_motor_temps">Rear motor / inverter</string>
+    <string name="charge_port_temps">Port DC1 / DC2 / AC</string>
 </resources>

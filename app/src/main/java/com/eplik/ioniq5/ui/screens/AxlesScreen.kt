@@ -67,8 +67,9 @@ fun AxlesScreen(
     fun v(id: String) = readings[id]?.takeIf { it.isFresh(now) }?.value
 
     val steering = v(P.STEERING_ANGLE)
-    val frontTorque = v(P.FRONT_MOTOR_TORQUE)
     val rearTorque = v(P.REAR_MOTOR_TORQUE)
+    // Esimootori pöördemoment on leidmata; lahti ühendatud esimootor (0 p/min) annab 0 Nm
+    val frontTorque = v(P.FRONT_MOTOR_TORQUE) ?: if (rearTorque != null && v(P.MOTOR2_RPM) == 0.0) 0.0 else null
     val split = if (frontTorque != null && rearTorque != null && abs(frontTorque) + abs(rearTorque) > 1) {
         abs(frontTorque) / (abs(frontTorque) + abs(rearTorque))
     } else {
@@ -151,6 +152,11 @@ fun AxlesScreen(
         Text(
             stringResource(R.string.torque_split) + ": " +
                 (split?.let { "${formatValue(it * 100, 0)} / ${formatValue((1 - it) * 100, 0)} %" } ?: "—"),
+            style = MaterialTheme.typography.titleMedium,
+        )
+        Text(
+            stringResource(R.string.rear_motor_temps) + ": " +
+                "${formatValue(v(P.REAR_MOTOR_TEMP), 0)} / ${formatValue(v(P.REAR_INVERTER_TEMP), 0)} °C",
             style = MaterialTheme.typography.titleMedium,
         )
         Text(

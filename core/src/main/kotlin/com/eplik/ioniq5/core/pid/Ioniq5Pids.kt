@@ -14,6 +14,8 @@ object Ioniq5Pids {
     val HVAC = EcuAddress(0x7B3)
     val ESC = EcuAddress(0x7D1)
     val IBU = EcuAddress(0x770)
+    val REAR_MCU = EcuAddress(0x7E3)
+    val CHARGE_PORT = EcuAddress(0x744)
 
     /** TPMS rõhk: bait × 0,2 psi, teisendatud baarideks. */
     private const val PSI_02_TO_BAR = 0.2 * 0.0689476
@@ -55,6 +57,11 @@ object Ioniq5Pids {
     const val STEERING_ANGLE = "steering_angle"
     const val FRONT_MOTOR_TORQUE = "front_motor_torque"
     const val REAR_MOTOR_TORQUE = "rear_motor_torque"
+    const val REAR_MOTOR_TEMP = "rear_motor_temp"
+    const val REAR_INVERTER_TEMP = "rear_inverter_temp"
+    const val CHARGE_PORT_DC1_TEMP = "charge_port_dc1_temp"
+    const val CHARGE_PORT_DC2_TEMP = "charge_port_dc2_temp"
+    const val CHARGE_PORT_AC_TEMP = "charge_port_ac_temp"
     const val LATERAL_ACCEL = "lateral_accel"
     const val LONGITUDINAL_ACCEL = "longitudinal_accel"
     const val ODOMETER = "odometer"
@@ -361,6 +368,35 @@ object Ioniq5Pids {
         ),
     )
 
-    val ALL: List<PidDefinition> = listOf(bmsMain, bmsHealth) + cellPids +
+    /**
+     * Tagamootori kontroller (7E3 22E001, vastus ~200 baiti, little-endian). OBDb E-GMP baidid; kontrollitud
+     * skaneeringuga 2026-10-13 77 km/h juures: −80,1 Nm, mootor 15,1 °C, inverter 12,1 °C (hommik 8 °C).
+     */
+    private val rearMcu = PidDefinition(
+        id = "mcu_rear_E001",
+        ecu = REAR_MCU,
+        request = "22E001",
+        pollIntervalMs = 2_000,
+        signals = listOf(
+            SignalDefinition(REAR_MOTOR_TORQUE, "Tagamootori pöördemoment", "Rear motor torque", "Nm", ParameterGroup.DRIVE, 24, 2, signed = true, scale = 0.1, littleEndian = true),
+            SignalDefinition(REAR_MOTOR_TEMP, "Tagamootori temperatuur", "Rear motor temperature", "°C", ParameterGroup.DRIVE, 28, 2, signed = true, scale = 0.01, littleEndian = true),
+            SignalDefinition(REAR_INVERTER_TEMP, "Tagainverteri temperatuur", "Rear inverter temperature", "°C", ParameterGroup.DRIVE, 30, 2, signed = true, scale = 0.01, littleEndian = true),
+        ),
+    )
+
+    /** Laadimispesa (744 22E004): DC1, DC2 ja AC kontakti temperatuur − 50 °C (OBDb; 10 °C hommikul 8 °C juures). */
+    private val chargePort = PidDefinition(
+        id = "charge_port_E004",
+        ecu = CHARGE_PORT,
+        request = "22E004",
+        pollIntervalMs = 10_000,
+        signals = listOf(
+            SignalDefinition(CHARGE_PORT_DC1_TEMP, "Laadimispesa DC1", "Charge port DC1", "°C", ParameterGroup.CHARGING, 11, offset = -50.0),
+            SignalDefinition(CHARGE_PORT_DC2_TEMP, "Laadimispesa DC2", "Charge port DC2", "°C", ParameterGroup.CHARGING, 12, offset = -50.0),
+            SignalDefinition(CHARGE_PORT_AC_TEMP, "Laadimispesa AC", "Charge port AC", "°C", ParameterGroup.CHARGING, 13, offset = -50.0),
+        ),
+    )
+
+    val ALL: List<PidDefinition> = listOf(bmsMain, bmsHealth) + cellPids + listOf(rearMcu, chargePort) +
         listOf(bmsThermal, odometer, iccuSolar, obc, tires, steering, esc, hvac, hvacCoolant, hvacSettings, ibuRearWindow, ibuSteering)
 }
