@@ -22,7 +22,7 @@ poodi ainult sinu kontole (sisemine jagamine või sisemine testimine).
   `UPLOAD_KEYSTORE_PASSWORD`). Võti ei ole repos. Kui see kaob, saab Play Console'is
   üleslaadimisvõtme lähtestada.
 - **Sihttase API 36** (Play nõue alates 31.08.2026).
-- **Privaatsuspoliitika:** <https://github.com/eplik82/Ioniq5_app/blob/main/docs/PRIVAATSUSPOLIITIKA.md>
+- **Privaatsuspoliitika:** <https://github.com/eplik82/Ioniq5_app/blob/HEAD/docs/PRIVAATSUSPOLIITIKA.md>
 - Versiooninumber kasvab iga CI ehitusega ise (`versionCode` = ehituse number).
 
 ## 1. Rakenduse loomine Play Console'is
