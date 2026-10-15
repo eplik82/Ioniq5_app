@@ -80,3 +80,12 @@ Uue versiooni jaoks: Sisemine testimine → **Loo uus väljalase** → laadi ül
   klapi ja paigaldus ebaõnnestub. Debug-APK on edaspidi ainult arendamiseks.
 - Kui rakendus ikka Android Autos ei ilmu, ühenda telefon arvutiga ja vaata logi:
   `adb logcat | grep CAR.VALIDATOR`, samal ajal ava telefonis „Kohanda käivitajat”.
+
+
+## Automaatne üleslaadimine (alates 2026-10-15)
+
+CI laadib iga vaikeharu push'i AAB-i ise Play **sisemisele testimisele** (`internal`, olek `completed`),
+kasutades teenusekontot `claude-client@proven-agility-511719-s9.iam.gserviceaccount.com`
+(GitHubi saladus `PLAY_SERVICE_ACCOUNT_JSON`, õigus „Väljalasked testimisradadele”). Telefon uuendab
+rakenduse Play poe kaudu. Võtme kaotsimineku korral: Google Cloud → teenusekonto → Võtmed → uus JSON →
+`gh secret set PLAY_SERVICE_ACCOUNT_JSON < fail.json`.

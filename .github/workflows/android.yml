@@ -50,6 +50,17 @@ jobs:
           name: ioniq5-play-aab
           path: ioniq5-monitor.aab
 
+      # Uus versioon Play sisemisele testimisele (ainult vaikeharu); telefon uuendab Play poe kaudu
+      - name: Play sisemine testimine
+        if: github.event_name == 'push' && github.ref_name == github.event.repository.default_branch
+        uses: r0adkll/upload-google-play@v1.1.3
+        with:
+          serviceAccountJsonPlainText: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+          packageName: com.eplik.ioniq5
+          releaseFiles: ioniq5-monitor.aab
+          track: internal
+          status: completed
+
       - uses: actions/upload-artifact@v4
         if: failure()
         with:
