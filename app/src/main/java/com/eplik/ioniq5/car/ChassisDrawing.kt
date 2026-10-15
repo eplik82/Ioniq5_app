@@ -69,8 +69,8 @@ class ChassisDrawing {
         c.drawBitmap(photo, null, RectF(0f, 0f, PW, PH), fill)
         wheels.forEach { wheel(c, it) }
         // Mootorite kaardid sildade kohal (esimootor vasakul, tagamootor paremal)
-        front?.let { axle(c, it, RectF(70f, 262f, 340f, 456f)) }
-        rear?.let { axle(c, it, RectF(1020f, 262f, 1290f, 456f)) }
+        front?.let { axle(c, it, RectF(70f, 252f, 340f, 466f)) }
+        rear?.let { axle(c, it, RectF(1020f, 252f, 1290f, 466f)) }
         // Veojaotus aku keskel
         if (front != null && rear != null) split(c, front, rear, splitLabel)
         c.restore()
@@ -87,20 +87,20 @@ class ChassisDrawing {
             c.drawRoundRect(box, 18f, 18f, stroke)
         }
         val x = box.left + 18f
+        val maxW = box.width() - 36f
         text.textAlign = Paint.Align.LEFT
-        text.color = cardDim
-        text.textSize = 28f
-        c.drawText(a.label.uppercase(), x, box.top + 38f, text)
-        text.color = cardText
-        text.textSize = 40f
-        c.drawText("${fmt(a.rpm, 0)} rpm", x, box.top + 84f, text)
-        text.textSize = 32f
-        c.drawText("${fmt(a.torqueNm, 0)} Nm · ${fmt(a.powerKw, 1)} kW", x, box.top + 126f, text)
-        a.temps?.let {
-            text.color = cardDim
-            text.textSize = 28f
-            c.drawText(it, x, box.top + 168f, text)
+        fun line(s: String, size: Float, color: Int, baseline: Float) {
+            text.color = color
+            text.textSize = size
+            val w = text.measureText(s)
+            if (w > maxW) text.textSize = size * maxW / w
+            c.drawText(s, x, box.top + baseline, text)
         }
+        line(a.label.uppercase(), 28f, cardDim, 38f)
+        line("${fmt(a.rpm, 0)} rpm", 40f, cardText, 84f)
+        line("${fmt(a.torqueNm, 0)} Nm · ${fmt(a.powerKw, 1)} kW", 32f, cardText, 126f)
+        // Temperatuurid kahel real (" · " eraldab mootori ja inverteri)
+        a.temps?.split(" · ")?.take(2)?.forEachIndexed { i, t -> line(t, 30f, cardDim, 166f + i * 36f) }
     }
 
     private fun split(c: Canvas, front: ChassisAxle, rear: ChassisAxle, label: String?) {

@@ -125,7 +125,7 @@ fun ChargingScreen(readings: Readings, session: ChargeSession?, capacityKwh: Dou
                     detail = formatValue(readings[P.OBC_AC_FREQUENCY]?.value, 0) + " Hz",
                 )
             }
-            item {
+            item(span = { GridItemSpan(maxLineSpan) }) {
                 ValueTile(
                     stringResource(R.string.ac_phase_currents),
                     listOf(P.OBC_AC_CURRENT_1, P.OBC_AC_CURRENT_2, P.OBC_AC_CURRENT_3)
