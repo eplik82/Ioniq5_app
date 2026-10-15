@@ -18,6 +18,7 @@ import com.eplik.ioniq5.core.poll.acInputPowerKw
 import com.eplik.ioniq5.core.poll.batteryPowerKw
 import com.eplik.ioniq5.core.poll.batteryPreheating
 import com.eplik.ioniq5.core.poll.cellVoltages
+import com.eplik.ioniq5.core.poll.isCharging
 import com.eplik.ioniq5.core.poll.minutesToSoc
 import com.eplik.ioniq5.core.poll.obcActive
 import com.eplik.ioniq5.core.poll.obcOutputPowerKw
@@ -343,7 +344,8 @@ class CarDrawing(private val context: Context, private val dark: Boolean) {
     private fun charging(c: Canvas, b: RectF, settings: Settings) {
         val h = b.height()
         val power = r.batteryPowerKw()
-        val charging = fresh(P.BATTERY_CURRENT) && power != null && power < -0.5
+        val charging = fresh(P.BATTERY_CURRENT) && r.isCharging()
+        val regen = fresh(P.BATTERY_CURRENT) && power != null && power < -0.5 && !charging
         val soc = v(P.SOC_DISPLAY) ?: v(P.SOC_BMS)
         val leftW = b.width() * 0.45f
         // AC-laadimine = pardalaadija töötab; laadija näit kehtib 30 s
@@ -360,7 +362,7 @@ class CarDrawing(private val context: Context, private val dark: Boolean) {
                         false -> " · DC"
                     }
                 } else {
-                    str(R.string.not_charging)
+                    str(if (regen) R.string.regen_now else R.string.not_charging)
                 }
                 ).uppercase(),
             b.left,

@@ -14,7 +14,7 @@ data class ChargeSession(
 
 /**
  * Tuvastab laadimise näitude järgi: aku võimsus alla −[thresholdKw] kW vähemalt [minDurationMs]
- * vältel = laadimine (regeneratsioon sõidu ajal on lühiajaline ja jääb välja).
+ * vältel, kui auto seisab = laadimine (regeneratsioon sõidu ajal jääb välja, ka pikal laskumisel).
  */
 class ChargeSessionTracker(
     private val thresholdKw: Double = 1.0,
@@ -27,7 +27,7 @@ class ChargeSessionTracker(
     fun update(readings: Readings, nowMs: Long): ChargeSession? {
         val power = readings.batteryPowerKw()
         val charged = readings.value(Ioniq5Pids.CUMULATIVE_CHARGED_KWH)
-        val charging = power != null && power < -thresholdKw
+        val charging = readings.isCharging(thresholdKw)
         val current = session
 
         if (charging && charged != null) {

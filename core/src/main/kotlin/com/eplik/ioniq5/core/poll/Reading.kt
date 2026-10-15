@@ -44,6 +44,18 @@ fun Readings.batteryPreheating(): Boolean? {
     return heater >= warmest + PREHEAT_DELTA_C
 }
 
+/** Auto liigub (üle 1 km/h). Kui kiirust pole, loetakse seisvaks (laadimise ajal ESC tavaliselt ei vasta). */
+fun Readings.isMoving(): Boolean = (speedKmh() ?: 0.0) > 1.0
+
+/**
+ * Laadimine: aku võtab vastu üle [thresholdKw] kW ja auto seisab. Sõidu ajal on negatiivne võimsus
+ * regeneratsioon (taaste), mitte laadimine.
+ */
+fun Readings.isCharging(thresholdKw: Double = 0.5): Boolean {
+    val power = batteryPowerKw() ?: return false
+    return power < -thresholdKw && !isMoving()
+}
+
 /** Ioniq 5 AWD tagasilla ülekandearv ja 255/45 R20 rehvi ümbermõõt (m). */
 private const val REAR_GEAR_RATIO = 10.65
 private const val TIRE_CIRCUMFERENCE_M = 2.316

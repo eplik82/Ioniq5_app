@@ -25,6 +25,17 @@ class ChargeSessionTest {
     }
 
     @Test
+    fun longRegenWhileDrivingIsNotACharge() {
+        // Pikk laskumine: taaste üle 30 s, auto liigub (tagamootor ~3000 p/min ≈ 39 km/h)
+        val t = ChargeSessionTracker()
+        val moving = { r: Readings -> r + (P.MOTOR_RPM to Reading(3000.0, 0)) }
+        t.update(moving(readings(-50.0, 100.0)), 0)
+        assertNull(t.update(moving(readings(-50.0, 100.5)), 60_000))
+        assertFalse(moving(readings(-50.0, 100.5)).isCharging())
+        assertTrue(readings(-50.0, 100.5).isCharging())
+    }
+
+    @Test
     fun chargingSessionCountsEnergyAndEnds() {
         val t = ChargeSessionTracker()
         t.update(readings(-90.0, 100.0, soc = 40.0), 0)

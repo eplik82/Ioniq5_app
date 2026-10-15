@@ -178,4 +178,5 @@
     <string name="rear_motor_temps">Rear motor / inverter</string>
     <string name="charge_port_temps">Port DC1 / DC2 / AC</string>
     <string name="obc_temps">Charger temperature</string>
+    <string name="regen_now">Regenerating</string>
 </resources>

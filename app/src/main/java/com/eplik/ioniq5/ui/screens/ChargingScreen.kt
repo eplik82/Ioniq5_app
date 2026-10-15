@@ -23,6 +23,7 @@ import com.eplik.ioniq5.core.poll.ChargeSession
 import com.eplik.ioniq5.core.poll.Readings
 import com.eplik.ioniq5.core.poll.acInputPowerKw
 import com.eplik.ioniq5.core.poll.batteryPowerKw
+import com.eplik.ioniq5.core.poll.isCharging
 import com.eplik.ioniq5.core.poll.obcActive
 import com.eplik.ioniq5.core.poll.obcOutputPowerKw
 import com.eplik.ioniq5.core.poll.minutesToSoc
@@ -39,7 +40,9 @@ fun ChargingScreen(readings: Readings, session: ChargeSession?, capacityKwh: Dou
     val now by rememberNow()
     val power = readings.batteryPowerKw()
     val fresh = readings[P.BATTERY_CURRENT].isFresh(now)
-    val charging = fresh && power != null && power < -0.5
+    val charging = fresh && readings.isCharging()
+    // Sõidu ajal negatiivne võimsus = taaste (regen), mitte laadimine
+    val regen = fresh && power != null && power < -0.5 && !charging
     val soc = readings[P.SOC_DISPLAY]?.value ?: readings[P.SOC_BMS]?.value
     // Laadija andmeid küsitakse harvemini; AC/DC otsustatakse pardalaadija voolu järgi (töötab ainult AC-laadimisel)
     val obcFresh = readings[P.OBC_DC_CURRENT]?.let { now - it.timeMs < OBC_STALE_MS } == true
@@ -63,7 +66,13 @@ fun ChargingScreen(readings: Readings, session: ChargeSession?, capacityKwh: Dou
             ) {
                 Text(
                     (
-                        stringResource(if (charging) R.string.charging_now else R.string.not_charging) +
+                        stringResource(
+                            when {
+                                charging -> R.string.charging_now
+                                regen -> R.string.regen_now
+                                else -> R.string.not_charging
+                            },
+                        ) +
                             when {
                                 !charging || ac == null -> ""
                                 ac -> " · AC"
