@@ -420,11 +420,10 @@ foreground service'is.
   nagu telefonis, salongi- ja välistemperatuur, niiskus, seatud temperatuurid, aurusti, puhurid). Ülevaates on
   ka salongi- ja välistemperatuur. Navigatsioonimalli tööriistaribal tohib olla vaid üks tekstiga nupp, seega
   vahetab üks nupp lehti ringiratast. Paigutus on kontrollitud DHU-s Ioniq 5 ekraani suurusega 1920×720.
-  Kliima joonis: kui telefonis on fail `Android/data/com.eplik.ioniq5/files/cabin.png` (Ioniq 5 salong
-  pealtvaates, 994×496, esiots vasakul), joonistatakse soojendused selle foto peale; muidu kasutatakse
-  vektorjoonist. Samamoodi rataste leht: `chassis.png` (E-GMP platvorm altvaates, 1361×718, esiots vasakul) –
-  rehvidel värv rõhu järgi, rõhk, temperatuur ja kiirus ratta juures. Fotosid repos ega APK-s ei ole
-  (Hyundai pildid, repo on avalik), need pannakse telefoni adb-ga (`car/UserPhotos.kt`). Auto ekraani avamisel ühendutakse viimase adapteriga, kui telefonis
+  Kliima leht: soojendused joonistatakse salongi foto peale (`res/drawable-nodpi/cabin_photo.png`, 994×496,
+  esiots vasakul, logod ja tekstid eemaldatud). Rataste leht: platvormi foto (`chassis_photo.png`, 1361×718) –
+  rehvidel värv rõhu järgi, rõhk, temperatuur ja kiirus ratta juures. Kasutaja võib fotod asendada failidega
+  `Android/data/com.eplik.ioniq5/files/cabin.png` / `chassis.png` (`car/UserPhotos.kt`). Auto ekraani avamisel ühendutakse viimase adapteriga, kui telefonis
   ühendust pole.
 
 ## 6. Mittefunktsionaalsed nõuded

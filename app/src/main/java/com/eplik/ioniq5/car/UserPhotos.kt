@@ -1,12 +1,14 @@
 package com.eplik.ioniq5.car
 
+import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import com.eplik.ioniq5.R
 import java.io.File
 
 /**
- * Kasutaja enda fotod rakenduse failikaustas (`Android/data/com.eplik.ioniq5/files/`), pannakse sinna adb-ga.
- * Fotosid ei ole repos ega APK-s (Hyundai pildid, repo on avalik). Ilma fotota kasutatakse vektorjoonist.
+ * Salongi ja platvormi fotod. Vaikimisi rakendusega kaasas olevad pildid (logod ja tekstid eemaldatud);
+ * kasutaja võib need asendada oma failiga rakenduse failikaustas (`Android/data/com.eplik.ioniq5/files/`).
  */
 object UserPhotos {
     /** Salong pealtvaates, 994 × 496, esiots vasakul, juht all. */
@@ -15,21 +17,23 @@ object UserPhotos {
     /** E-GMP platvorm altvaates, 1361 × 718, esiots vasakul, juhi pool all. */
     const val CHASSIS = "chassis.png"
 
+    private val bundled = mapOf(CABIN to R.drawable.cabin_photo, CHASSIS to R.drawable.chassis_photo)
+
     private class Entry(val stamp: Long, val bitmap: Bitmap?)
 
     private val cache = mutableMapOf<String, Entry>()
 
-    /** Laadib foto; uuesti ainult siis, kui fail muutub. */
+    /** Kasutaja fail, kui see on olemas, muidu kaasasolev pilt. Laaditakse uuesti ainult faili muutumisel. */
     @Synchronized
-    fun load(dir: File?, name: String): Bitmap? {
-        val file = dir?.let { File(it, name) } ?: return null
-        if (!file.isFile) {
-            cache.remove(name)
-            return null
-        }
-        val stamp = file.lastModified() xor file.length()
+    fun load(context: Context, name: String): Bitmap? {
+        val file = context.getExternalFilesDir(null)?.let { File(it, name) }
+        val stamp = if (file?.isFile == true) file.lastModified() xor file.length() else 0L
         cache[name]?.takeIf { it.stamp == stamp }?.let { return it.bitmap }
-        val bitmap = BitmapFactory.decodeFile(file.path)
+        val bitmap = if (stamp != 0L) {
+            BitmapFactory.decodeFile(file!!.path)
+        } else {
+            bundled[name]?.let { BitmapFactory.decodeResource(context.resources, it) }
+        }
         cache[name] = Entry(stamp, bitmap)
         return bitmap
     }

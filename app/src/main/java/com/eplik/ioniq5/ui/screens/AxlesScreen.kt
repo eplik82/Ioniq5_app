@@ -92,7 +92,7 @@ fun AxlesScreen(
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         Text(stringResource(R.string.tires_axles_title), style = MaterialTheme.typography.displayMedium)
-        val photo = UserPhotos.load(LocalContext.current.getExternalFilesDir(null), UserPhotos.CHASSIS)
+        val photo = UserPhotos.load(LocalContext.current, UserPhotos.CHASSIS)
         if (photo != null) {
             // Kasutaja platvormi foto (esiots vasakul): näidud ratta juures, värv rõhu järgi
             fun wheel(pId: String, tId: String, speedId: String, front: Boolean, left: Boolean): ChassisWheel {

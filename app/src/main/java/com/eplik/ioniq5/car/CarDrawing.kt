@@ -231,7 +231,7 @@ class CarDrawing(private val context: Context, private val dark: Boolean) {
 
     private fun wheels(c: Canvas, b: RectF, settings: Settings) {
         val h = b.height()
-        val photo = UserPhotos.load(context.getExternalFilesDir(null), UserPhotos.CHASSIS)
+        val photo = UserPhotos.load(context, UserPhotos.CHASSIS)
         if (photo != null) {
             wheelsOnPhoto(c, b, settings, photo)
             return
@@ -415,7 +415,7 @@ class CarDrawing(private val context: Context, private val dark: Boolean) {
                 rearWindow = level(P.REAR_WINDOW_HEAT),
                 mirrors = level(P.MIRROR_HEAT),
             ),
-            UserPhotos.load(context.getExternalFilesDir(null), UserPhotos.CABIN),
+            UserPhotos.load(context, UserPhotos.CABIN),
         )
         tileGrid(
             c,
