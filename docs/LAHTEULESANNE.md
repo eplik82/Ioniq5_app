@@ -513,3 +513,22 @@ vilguks piiri lähedal. Üle 10 min vanad väärtused hoiatuse olekut ei muuda.
 2. Logid muudes olukordades: sõit, AC-laadimine, seismine päikese käes (süüde sees, laadimata).
 3. Kliima ja soojendused: süüde sees arendajalogi, kus soojendused ja kliima režiimid lülitatakse
    ükshaaval sisse ja välja, iga lülituse juures märge (jaotis 4.4). Kas `7B3` vastab süüte ajal?
+
+## 12. Hilisemaks (ootel)
+
+### 12.1 Roolisoojenduse lüliti (kasutaja soov 2026-10-16)
+
+Eraldi vaade nupuga, millega roolisoojendust sisse ja välja lülitada. **Ootel:** see on vastuolus
+reegliga „rakendus ainult loeb” (`CLAUDE.md`, jaotis 9) ja vajab enne kasutaja selget otsust reeglit
+muuta (erand ainult sellele lülitile, kõik muu jääb keelatuks).
+
+- Olek on teada: IBU `770` `22BC08` bait 8 bit 6 (jaotis 4.4).
+- Juhtkäsku avalikest allikatest (OBDb, Torque, Car Scanner) ei leitud. Tõenäoline tee on UDS
+  IO Control `2F BC08 03 …` (shortTermAdjustment) IBU-le `770`, eelnevalt laiendatud seanss `10 03`;
+  IBU võib nõuda turvapääsu `27`, mille võtit meil pole – siis lüliti ei ole võimalik.
+- Risk: IBU juhib ka tulesid, lukke ja klaasipuhastajaid; vale käsk võib lülitada muud väljundit
+  või tekitada veakoodi. Seetõttu ainult üks läbimõeldud kandidaat, mitte lai katsetamine.
+- Proov: auto paigal, süüde sees, kasutaja juuresolekul. Tulemus kinnitatakse oleku lugemisega
+  (`22BC08`). Kui IBU vastab „turvapääs nõutud” või „pole toetatud”, lõpetada.
+- Teostusel: nupp töötab ainult seistes, pärast vajutust loeb olekut tagasi; Android Autosse mitte.
+- Alternatiiv: Hyundai Bluelink (eelsoojenduse ajal rooli- ja istmesoojendus, mudelist sõltuvalt).
