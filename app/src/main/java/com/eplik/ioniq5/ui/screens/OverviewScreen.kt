@@ -115,13 +115,7 @@ fun OverviewScreen(
         item { ValueTile(stringResource(R.string.aux_battery), formatValue(readings[P.AUX_VOLTAGE]?.value, 1), "V", fresh(P.AUX_VOLTAGE)) }
         item { ValueTile(stringResource(R.string.odometer), formatValue(readings[P.ODOMETER]?.value, 0), "km", readings[P.ODOMETER].isFresh(now - 60_000)) }
         item {
-            ValueTile(
-                stringResource(R.string.solar_power),
-                formatValue(readings[P.SOLAR_POWER]?.value, 0),
-                "W",
-                fresh(P.SOLAR_POWER),
-                detail = stringResource(R.string.candidate),
-            )
+            ValueTile(stringResource(R.string.aux_soc), formatValue(readings[P.AUX_SOC]?.value, 0), "%", fresh(P.AUX_SOC))
         }
         item(span = { GridItemSpan(maxLineSpan) }) {
             Column(

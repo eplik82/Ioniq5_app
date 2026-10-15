@@ -139,8 +139,12 @@ class Ioniq5PidsTest {
     fun odometerAndIccu() {
         check(67561.0, P.ODOMETER)
         check(649.0, P.ICCU_HV_VOLTAGE)
-        check(197.2, P.SOLAR_PANEL_VOLTAGE)
-        check(40.5, P.SOLAR_POWER)
+        // 12 V muundur ja aku (OBDb); bait 25 ei ole päikese võimsus
+        check(17.0, P.LDC_TEMP)
+        check(14.933, P.LDC_VOLTAGE)
+        check(19.72, P.LDC_CURRENT)
+        check(81.0, P.AUX_SOC)
+        check(14.785, P.AUX_VOLTAGE_ICCU)
     }
 
     @Test

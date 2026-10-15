@@ -75,7 +75,6 @@ class CarDrawing(private val context: Context, private val dark: Boolean) {
             CarPage.BATTERY -> battery(canvas, box, batteryModules)
             CarPage.WHEELS -> wheels(canvas, box, settings)
             CarPage.CHARGING -> charging(canvas, box, settings)
-            CarPage.SOLAR -> solar(canvas, box, solarEnergyWh)
             CarPage.CLIMATE -> climate(canvas, box)
         }
         // Olekurida all: ühenduse olek või kõige raskem hoiatus
@@ -119,7 +118,7 @@ class CarDrawing(private val context: Context, private val dark: Boolean) {
                 fresh(P.BATTERY_TEMP_MAX),
             ),
             Tile(str(R.string.aux_battery), formatValue(v(P.AUX_VOLTAGE), 1), "V", fresh(P.AUX_VOLTAGE)),
-            Tile(str(R.string.solar_power), formatValue(v(P.SOLAR_POWER), 0), "W", fresh(P.SOLAR_POWER)),
+            Tile(str(R.string.aux_soc), formatValue(v(P.AUX_SOC), 0), "%", fresh(P.AUX_SOC)),
             Tile(str(R.string.odometer), formatValue(r[P.ODOMETER]?.value, 0), "km", r[P.ODOMETER] != null),
             Tile(str(R.string.cabin_temp), formatValue(v(P.CABIN_TEMP), 1), "°C", fresh(P.CABIN_TEMP)),
             Tile(str(R.string.outdoor_temp), formatValue(v(P.OUTDOOR_TEMP), 1), "°C", fresh(P.OUTDOOR_TEMP)),
@@ -409,25 +408,6 @@ class CarDrawing(private val context: Context, private val dark: Boolean) {
         )
     }
 
-    private fun solar(c: Canvas, b: RectF, energyWh: Double) {
-        val h = b.height()
-        val leftW = b.width() * 0.45f
-        val power = v(P.SOLAR_POWER)
-        label(c, str(R.string.solar_power).uppercase(), b.left, b.top + h * 0.08f, h * 0.045f)
-        big(c, formatValue(power, 0), " W", b.left, b.top + h * 0.38f, h * 0.28f, fresh(P.SOLAR_POWER))
-        // Katuse tippvõimsus on umbes 200 W
-        pixelGauge(c, RectF(b.left, b.top + h * 0.48f, b.left + leftW * 0.9f, b.bottom - h * 0.08f), power?.div(SOLAR_PEAK_W))
-        tileGrid(
-            c,
-            RectF(b.left + leftW, b.top, b.right, b.bottom - h * 0.06f),
-            listOf(
-                Tile(str(R.string.solar_session_energy), formatValue(energyWh, 1), "Wh", true),
-                Tile(str(R.string.iccu_hv_voltage), formatValue(v(P.ICCU_HV_VOLTAGE), 0), "V", fresh(P.ICCU_HV_VOLTAGE)),
-            ),
-            columns = 1,
-        )
-    }
-
     private fun climate(c: Canvas, b: RectF) {
         val h = b.height()
         // Salong pealtvaates (esiots vasakul), võimalikult suur; paremal näidud
@@ -580,6 +560,5 @@ class CarDrawing(private val context: Context, private val dark: Boolean) {
 
     private companion object {
         const val STALE_MS = 15_000L
-        const val SOLAR_PEAK_W = 200.0
     }
 }

@@ -243,7 +243,10 @@ Fail: `testdata/raw/iccu_night_no-charging_2026-10-10_2041.txt`.
 | M–N (15–16) ÷ 10 | 164–197 | 95,5 | 275,8 |
 | O–P (17–18) ÷ 10 | 647–655 V | 733,4 V | 729,7 V (= aku pinge ✓) |
 
-- **Päikese võimsus = W × 0,5 W** (kandidaat): päeval 37–40 W, mis klapib auto kogutoodangu kasvuga
+- **Ümber lükatud 2026-10-16:** bait 25 on 12 V aku pinge madalam bait (OBDb: baidid 24–25 / 1000 + 6 V =
+  14,70–14,79 V kõigis mõõtmistes); öösel AC-laadimisel andis „päikese võimsus” 126 W. `22E011` on 12 V
+  muunduri (LDC) ja 12 V aku plokk; päikesekatuse hetkevõimsus on **veel leidmata**.
+- ~~Päikese võimsus = W × 0,5 W (kandidaat):~~ päeval 37–40 W, mis klapib auto kogutoodangu kasvuga
   (10 Wh / 16 min ≈ 37,5 W); pimedas 3 W (müra). Kinnitada päikesepaistel, kus võimsus peaks olema 100–200 W.
 - M–N ei ole paneeli pinge (pimedas suurem kui päeval); tähendus teadmata.
 - Auto kogutoodangut (421,8 kWh) diagnostika kaudu ei leitud; rakendus integreerib võimsust ühenduse ajal.

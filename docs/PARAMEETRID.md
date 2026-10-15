@@ -345,6 +345,7 @@ Baitide loendus on sama mis meil (0x62 = bait 0).
 | 7E4 | 220106 | 7 | Aku jahutusvedelik (WCS) | signed | 11–12 °C | kasutusel |
 | 7E4 | 220106 | 15 | Kliimakompressor | × 20 p/min | 700–800 | kasutusel |
 | 7B3 | 220102 | 7 | Jahutusvedelik (kliima) | / 2 − 40 | 33–47 °C | kasutusel (oli „teadmata, langeb”) |
+| 7E5 | 22E011 | 12; 13–14; 15–16; 21–22; 23; 24–25 | 12 V muundur: temp, pinge, vool; 12 V aku: vool, laetus, pinge | −100; /1000; /100; /100 −327; %; /1000 +6 | 17 °C; 14,93 V; 19,7 A; 81 %; 14,79 V | kasutusel (bait 25 ei ole päikese võimsus) |
 | 7E3 | 22E001 | 24–25, 28–29, 30–31 | Mootori pöördemoment, mootori ja inverteri temp. | /10 Nm, /100 °C | — | skaneerida (3. etapp) |
 | 744 | 22E004 | 11, 12, 13 | DC1, DC2, AC pistiku temperatuur | − 50 | — | skaneerida (3. etapp) |
 | 7E2 | 22E004/E005 | | Gaasipedaal, esisilla lahutusmehhanism | | baidid ei klapi | ei kasutata |

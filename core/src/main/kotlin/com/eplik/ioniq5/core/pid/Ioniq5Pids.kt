@@ -66,8 +66,14 @@ object Ioniq5Pids {
     const val LONGITUDINAL_ACCEL = "longitudinal_accel"
     const val ODOMETER = "odometer"
     const val ICCU_HV_VOLTAGE = "iccu_hv_voltage"
-    const val SOLAR_PANEL_VOLTAGE = "solar_panel_voltage"
+    /** Päikesekatuse hetkevõimsus: diagnostikast veel leidmata (ükski signaal seda praegu ei anna). */
     const val SOLAR_POWER = "solar_power"
+    const val LDC_TEMP = "ldc_temp"
+    const val LDC_VOLTAGE = "ldc_voltage"
+    const val LDC_CURRENT = "ldc_current"
+    const val AUX_CURRENT = "aux_current"
+    const val AUX_SOC = "aux_soc"
+    const val AUX_VOLTAGE_ICCU = "aux_voltage_iccu"
     const val OBC_AC_VOLTAGE = "obc_ac_voltage"
     const val OBC_AC_CURRENT_1 = "obc_ac_current_1"
     const val OBC_AC_CURRENT_2 = "obc_ac_current_2"
@@ -200,18 +206,24 @@ object Ioniq5Pids {
         signals = listOf(s(ODOMETER, "Läbisõit", "Odometer", "km", ParameterGroup.VEHICLE, 9, 3)),
     )
 
+    /**
+     * ICCU 22E011 = 12 V muundur (LDC) ja 12 V aku (OBDb Hyundai-IONIQ-5, kinnitatud 4 mõõtmisega).
+     * Varem peeti baiti 25 päikese võimsuseks (× 0,5 W), kuid see on 12 V aku pinge (baidid 24–25)
+     * madalam bait: öösel AC-laadimisel andis see 126 W. Päikesekatuse võimsust selles vastuses ei ole.
+     */
     private val iccuSolar = PidDefinition(
         id = "iccu_e011",
         ecu = ICCU,
         request = "22E011",
         pollIntervalMs = 5_000,
         signals = listOf(
+            SignalDefinition(LDC_TEMP, "12 V muunduri temperatuur", "DC-DC converter temperature", "°C", ParameterGroup.AUX_BATTERY, 12, offset = -100.0),
+            s(LDC_VOLTAGE, "12 V muunduri väljund", "DC-DC converter output", "V", ParameterGroup.AUX_BATTERY, 13, 2, scale = 0.001),
+            s(LDC_CURRENT, "12 V muunduri vool", "DC-DC converter current", "A", ParameterGroup.AUX_BATTERY, 15, 2, scale = 0.01),
             s(ICCU_HV_VOLTAGE, "Kõrgepinge (ICCU)", "High voltage (ICCU)", "V", ParameterGroup.SOLAR, 17, 2, scale = 0.1),
-            // M–N: tähendus teadmata (pimedas 275,8 V, päeval 164–197 V), seega mitte paneeli pinge
-            s(SOLAR_PANEL_VOLTAGE, "ICCU M–N", "ICCU M–N", "V", ParameterGroup.SOLAR, 15, 2, scale = 0.1),
-            // Kandidaat: päikesekatuse võimsus = bait 25 × 0,5 W. Päeval pilves 37–40 W (klapib auto
-            // kogutoodangu kasvuga ~37,5 W), pimedas 3 W.
-            s(SOLAR_POWER, "Päikese võimsus", "Solar power", "W", ParameterGroup.SOLAR, 25, scale = 0.5),
+            SignalDefinition(AUX_CURRENT, "12 V aku vool", "12 V battery current", "A", ParameterGroup.AUX_BATTERY, 21, 2, scale = 0.01, offset = -327.0),
+            s(AUX_SOC, "12 V aku laetus", "12 V battery charge", "%", ParameterGroup.AUX_BATTERY, 23),
+            SignalDefinition(AUX_VOLTAGE_ICCU, "12 V aku pinge (ICCU)", "12 V battery voltage (ICCU)", "V", ParameterGroup.AUX_BATTERY, 24, 2, scale = 0.001, offset = 6.0),
         ),
     )
 

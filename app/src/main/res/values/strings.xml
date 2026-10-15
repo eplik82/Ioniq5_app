@@ -81,7 +81,7 @@
     <string name="solar_power">Solar power</string>
     <string name="solar_energy_total">Total generated</string>
     <string name="not_found_yet">not found yet</string>
-    <string name="solar_note">The solar roof data comes from the ICCU (7E5, 22E011). Power = byte 25 × 0.5 W: about 40 W on an overcast day, matching the growth of the car\'s total, and about 3 W in the dark. Energy is counted only while the app is connected; the car\'s own total is not readable over diagnostics.</string>
+    <string name="solar_note">Solar roof power has not been found in diagnostics yet. The value shown earlier (ICCU 22E011 byte 25) turned out to be part of the 12 V battery voltage, not solar power. The car\'s own total cannot be read via diagnostics.</string>
     <string name="speed_calc">Speed</string>
     <string name="to_left">left</string>
     <string name="to_right">right</string>
@@ -183,4 +183,8 @@
     <string name="rear_axle_long">Rear axle</string>
     <string name="motor_short">motor</string>
     <string name="inverter_short">inverter</string>
+    <string name="aux_soc">12 V battery charge</string>
+    <string name="ldc_output">12 V converter</string>
+    <string name="aux_current">12 V battery current</string>
+    <string name="aux_system">12 V system (ICCU)</string>
 </resources>

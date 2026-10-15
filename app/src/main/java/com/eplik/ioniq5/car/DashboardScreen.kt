@@ -23,7 +23,6 @@ enum class CarPage(val label: Int) {
     BATTERY(R.string.tab_battery),
     WHEELS(R.string.tab_axles),
     CHARGING(R.string.tab_charging),
-    SOLAR(R.string.tab_solar),
     CLIMATE(R.string.tab_climate),
 }
 

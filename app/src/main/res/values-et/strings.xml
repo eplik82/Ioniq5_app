@@ -81,7 +81,7 @@
     <string name="solar_power">Päikese võimsus</string>
     <string name="solar_energy_total">Toodetud kokku</string>
     <string name="not_found_yet">veel leidmata</string>
-    <string name="solar_note">Päikesekatuse andmed tulevad ICCU-st (7E5, 22E011). Võimsus = bait 25 × 0,5 W: pilvisel päeval ~40 W, mis klapib auto kogutoodangu kasvuga, ja pimedas ~3 W. Energiat loetakse ainult siis, kui rakendus on ühendatud; auto enda kogusummat diagnostika kaudu lugeda ei saa.</string>
+    <string name="solar_note">Päikesekatuse hetkevõimsust pole diagnostikast veel leitud. Varem näidatud väärtus (ICCU 22E011 bait 25) osutus 12 V aku pinge osaks, mitte päikese võimsuseks. Auto enda kogutoodangut diagnostika kaudu lugeda ei saa.</string>
     <string name="speed_calc">Kiirus</string>
     <string name="to_left">vasakule</string>
     <string name="to_right">paremale</string>
@@ -183,4 +183,8 @@
     <string name="rear_axle_long">Tagasild</string>
     <string name="motor_short">mootor</string>
     <string name="inverter_short">inverter</string>
+    <string name="aux_soc">12 V aku laetus</string>
+    <string name="ldc_output">12 V muundur</string>
+    <string name="aux_current">12 V aku vool</string>
+    <string name="aux_system">12 V süsteem (ICCU)</string>
 </resources>

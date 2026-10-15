@@ -35,15 +35,8 @@ fun SolarScreen(readings: Readings, sessionEnergyWh: Double, modifier: Modifier 
             Text(stringResource(R.string.solar_title), style = MaterialTheme.typography.displayMedium, modifier = Modifier.padding(top = 16.dp))
         }
         item {
-            ValueTile(
-                stringResource(R.string.solar_power),
-                formatValue(readings[P.SOLAR_POWER]?.value, 0),
-                "W",
-                readings[P.SOLAR_POWER].isFresh(now),
-                detail = stringResource(R.string.candidate),
-            )
+            ValueTile(stringResource(R.string.solar_power), "—", "W", false, detail = stringResource(R.string.not_found_yet))
         }
-        item { ValueTile(stringResource(R.string.solar_session_energy), formatValue(sessionEnergyWh, 1), "Wh", true) }
         item {
             ValueTile(
                 stringResource(R.string.iccu_hv_voltage),
@@ -53,6 +46,21 @@ fun SolarScreen(readings: Readings, sessionEnergyWh: Double, modifier: Modifier 
             )
         }
         item { ValueTile(stringResource(R.string.solar_energy_total), "—", "kWh", false, detail = stringResource(R.string.not_found_yet)) }
+        item(span = { GridItemSpan(maxLineSpan) }) {
+            Text(stringResource(R.string.aux_system), style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(top = 8.dp))
+        }
+        item { ValueTile(stringResource(R.string.aux_soc), formatValue(readings[P.AUX_SOC]?.value, 0), "%", readings[P.AUX_SOC].isFresh(now)) }
+        item { ValueTile(stringResource(R.string.aux_battery), formatValue(readings[P.AUX_VOLTAGE_ICCU]?.value, 2), "V", readings[P.AUX_VOLTAGE_ICCU].isFresh(now)) }
+        item { ValueTile(stringResource(R.string.aux_current), formatValue(readings[P.AUX_CURRENT]?.value, 1), "A", readings[P.AUX_CURRENT].isFresh(now)) }
+        item {
+            ValueTile(
+                stringResource(R.string.ldc_output),
+                "${formatValue(readings[P.LDC_VOLTAGE]?.value, 2)} V · ${formatValue(readings[P.LDC_CURRENT]?.value, 1)}",
+                "A",
+                readings[P.LDC_VOLTAGE].isFresh(now),
+                detail = formatValue(readings[P.LDC_TEMP]?.value, 0) + " °C",
+            )
+        }
         item(span = { GridItemSpan(maxLineSpan) }) {
             Text(
                 stringResource(R.string.solar_note),
