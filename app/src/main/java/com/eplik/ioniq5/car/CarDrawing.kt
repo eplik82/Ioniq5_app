@@ -313,6 +313,16 @@ class CarDrawing(private val context: Context, private val dark: Boolean) {
                 wheel(P.TIRE_PRESSURE_RR, P.TIRE_TEMP_RR, P.WHEEL_SPEED_RR, front = false, left = false),
             ),
             photo,
+            front = ChassisAxle(str(R.string.front_axle_long), v(P.MOTOR2_RPM), v(P.FRONT_MOTOR_TORQUE)),
+            rear = ChassisAxle(
+                str(R.string.rear_axle_long),
+                v(P.MOTOR_RPM),
+                v(P.REAR_MOTOR_TORQUE),
+                v(P.REAR_MOTOR_TEMP)?.let {
+                    "${str(R.string.motor_short)} ${formatValue(it, 0)} °C · ${str(R.string.inverter_short)} ${formatValue(v(P.REAR_INVERTER_TEMP), 0)} °C"
+                },
+            ),
+            splitLabel = str(R.string.torque_split),
         )
         wheelTiles(c, RectF(car.right + b.width() * 0.03f, b.top, b.right, b.bottom - h * 0.06f), v(P.STEERING_ANGLE))
     }

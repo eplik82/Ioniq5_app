@@ -4,6 +4,7 @@ import android.graphics.RectF
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.platform.LocalContext
+import com.eplik.ioniq5.car.ChassisAxle
 import com.eplik.ioniq5.car.ChassisDrawing
 import com.eplik.ioniq5.car.ChassisWheel
 import com.eplik.ioniq5.car.UserPhotos
@@ -93,6 +94,18 @@ fun AxlesScreen(
     ) {
         Text(stringResource(R.string.tires_axles_title), style = MaterialTheme.typography.displayMedium)
         val photo = UserPhotos.load(LocalContext.current, UserPhotos.CHASSIS)
+        val motorWord = stringResource(R.string.motor_short)
+        val inverterWord = stringResource(R.string.inverter_short)
+        val frontAxle = ChassisAxle(stringResource(R.string.front_axle_long), v(P.MOTOR2_RPM), frontTorque)
+        val rearAxle = ChassisAxle(
+            stringResource(R.string.rear_axle_long),
+            v(P.MOTOR_RPM),
+            rearTorque,
+            v(P.REAR_MOTOR_TEMP)?.let {
+                "$motorWord ${formatValue(it, 0)} °C · $inverterWord ${formatValue(v(P.REAR_INVERTER_TEMP), 0)} °C"
+            },
+        )
+        val splitLabel = stringResource(R.string.torque_split)
         if (photo != null) {
             // Kasutaja platvormi foto (esiots vasakul): näidud ratta juures, värv rõhu järgi
             fun wheel(pId: String, tId: String, speedId: String, front: Boolean, left: Boolean): ChassisWheel {
@@ -114,8 +127,23 @@ fun AxlesScreen(
             )
             Canvas(Modifier.fillMaxWidth().aspectRatio(ChassisDrawing.PW / ChassisDrawing.PH)) {
                 drawIntoCanvas { canvas ->
-                    ChassisDrawing().draw(canvas.nativeCanvas, RectF(0f, 0f, size.width, size.height), wheels, photo)
+                    ChassisDrawing().draw(
+                        canvas.nativeCanvas,
+                        RectF(0f, 0f, size.width, size.height),
+                        wheels,
+                        photo,
+                        front = frontAxle,
+                        rear = rearAxle,
+                        splitLabel = splitLabel,
+                    )
                 }
+            }
+            listOf(frontAxle, rearAxle).forEach { a ->
+                Text(
+                    "${a.label}: ${formatValue(a.rpm, 0)} rpm · ${formatValue(a.torqueNm, 0)} Nm · ${formatValue(a.powerKw, 1)} kW" +
+                        (a.temps?.let { " · $it" } ?: ""),
+                    style = MaterialTheme.typography.titleMedium,
+                )
             }
         } else Canvas(Modifier.fillMaxWidth().aspectRatio(0.75f)) {
             drawCar(
@@ -154,11 +182,14 @@ fun AxlesScreen(
                 (split?.let { "${formatValue(it * 100, 0)} / ${formatValue((1 - it) * 100, 0)} %" } ?: "—"),
             style = MaterialTheme.typography.titleMedium,
         )
-        Text(
-            stringResource(R.string.rear_motor_temps) + ": " +
-                "${formatValue(v(P.REAR_MOTOR_TEMP), 0)} / ${formatValue(v(P.REAR_INVERTER_TEMP), 0)} °C",
-            style = MaterialTheme.typography.titleMedium,
-        )
+        // Foto korral on temperatuurid juba tagasilla real
+        if (photo == null) {
+            Text(
+                stringResource(R.string.rear_motor_temps) + ": " +
+                    "${formatValue(v(P.REAR_MOTOR_TEMP), 0)} / ${formatValue(v(P.REAR_INVERTER_TEMP), 0)} °C",
+                style = MaterialTheme.typography.titleMedium,
+            )
+        }
         Text(
             stringResource(R.string.axles_data_note),
             style = MaterialTheme.typography.labelMedium,

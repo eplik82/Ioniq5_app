@@ -17,6 +17,18 @@ data class ChassisWheel(
     val left: Boolean,
 )
 
+/** Ühe silla mootor: pöörded, pöördemoment (Nm), võimsus (kW) ja temperatuurid; null = teadmata. */
+data class ChassisAxle(
+    val label: String,
+    val rpm: Double?,
+    val torqueNm: Double?,
+    val temps: String? = null,
+) {
+    /** Mehaaniline võimsus kW = Nm × rpm / 9549; negatiivne = taaste. */
+    val powerKw: Double? get() = if (rpm != null && torqueNm != null) torqueNm * rpm / 9549 else null
+    val active: Boolean get() = kotlin.math.abs(rpm ?: 0.0) > 50 || kotlin.math.abs(torqueNm ?: 0.0) > 5
+}
+
 /**
  * Rehvid kasutaja E-GMP platvormi foto peal ([UserPhotos.CHASSIS], 1361 × 718, esiots vasakul, juhi pool all).
  * Rehvi peal värv (türkiis korras, oranž madal rõhk), näidud ratta kõrval aku kohal ja all.
@@ -30,11 +42,25 @@ class ChassisDrawing {
     private val textPrimary = 0xFF15191D.toInt()
     private val textSecondary = 0xFF4A545C.toInt()
 
+    private val regen = 0xFF7CD957.toInt()
+    private val cardBg = 0xFF14181C.toInt()
+    private val cardText = 0xFFF2F4F5.toInt()
+    private val cardDim = 0xFF9AA4AD.toInt()
+
     private val fill = Paint(Paint.ANTI_ALIAS_FLAG)
+    private val stroke = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.STROKE }
     private val text = Paint(Paint.ANTI_ALIAS_FLAG).apply { typeface = Typeface.create("sans-serif-light", Typeface.NORMAL) }
 
     /** Joonistab foto [area] keskele (külgede suhe säilib). */
-    fun draw(c: Canvas, area: RectF, wheels: List<ChassisWheel>, photo: Bitmap) {
+    fun draw(
+        c: Canvas,
+        area: RectF,
+        wheels: List<ChassisWheel>,
+        photo: Bitmap,
+        front: ChassisAxle? = null,
+        rear: ChassisAxle? = null,
+        splitLabel: String? = null,
+    ) {
         val k = min(area.width() / PW, area.height() / PH)
         c.save()
         c.translate(area.centerX() - PW * k / 2, area.centerY() - PH * k / 2)
@@ -42,8 +68,59 @@ class ChassisDrawing {
         fill.isFilterBitmap = true
         c.drawBitmap(photo, null, RectF(0f, 0f, PW, PH), fill)
         wheels.forEach { wheel(c, it) }
+        // Mootorite kaardid sildade kohal (esimootor vasakul, tagamootor paremal)
+        front?.let { axle(c, it, RectF(70f, 262f, 340f, 456f)) }
+        rear?.let { axle(c, it, RectF(1020f, 262f, 1290f, 456f)) }
+        // Veojaotus aku keskel
+        if (front != null && rear != null) split(c, front, rear, splitLabel)
         c.restore()
     }
+
+    private fun axle(c: Canvas, a: ChassisAxle, box: RectF) {
+        fill.color = cardBg
+        fill.alpha = 215
+        c.drawRoundRect(box, 18f, 18f, fill)
+        fill.alpha = 255
+        if (a.active) {
+            stroke.color = if ((a.powerKw ?: 0.0) < -0.5) regen else accent
+            stroke.strokeWidth = 5f
+            c.drawRoundRect(box, 18f, 18f, stroke)
+        }
+        val x = box.left + 18f
+        text.textAlign = Paint.Align.LEFT
+        text.color = cardDim
+        text.textSize = 28f
+        c.drawText(a.label.uppercase(), x, box.top + 38f, text)
+        text.color = cardText
+        text.textSize = 40f
+        c.drawText("${fmt(a.rpm, 0)} rpm", x, box.top + 84f, text)
+        text.textSize = 32f
+        c.drawText("${fmt(a.torqueNm, 0)} Nm · ${fmt(a.powerKw, 1)} kW", x, box.top + 126f, text)
+        a.temps?.let {
+            text.color = cardDim
+            text.textSize = 28f
+            c.drawText(it, x, box.top + 168f, text)
+        }
+    }
+
+    private fun split(c: Canvas, front: ChassisAxle, rear: ChassisAxle, label: String?) {
+        val f = kotlin.math.abs(front.torqueNm ?: return)
+        val r = kotlin.math.abs(rear.torqueNm ?: return)
+        if (f + r < 5) return
+        val share = (f / (f + r)).toFloat()
+        val bar = RectF(470f, 345f, 890f, 373f)
+        fill.color = cardDim
+        c.drawRoundRect(bar, 14f, 14f, fill)
+        fill.color = accent
+        c.drawRoundRect(RectF(bar.left, bar.top, bar.left + bar.width() * share, bar.bottom), 14f, 14f, fill)
+        text.textAlign = Paint.Align.CENTER
+        text.color = cardText
+        text.textSize = 34f
+        c.drawText("${label ?: ""} ${fmt(share * 100.0, 0)} / ${fmt((1 - share) * 100.0, 0)} %".trim(), bar.centerX(), bar.top - 16f, text)
+        text.textAlign = Paint.Align.LEFT
+    }
+
+    private fun fmt(v: Double?, decimals: Int) = v?.let { "%.${decimals}f".format(it) } ?: "—"
 
     private fun wheel(c: Canvas, w: ChassisWheel) {
         // Juhi pool (vasak) on foto all, esiots vasakul

@@ -179,4 +179,8 @@
     <string name="charge_port_temps">Port DC1 / DC2 / AC</string>
     <string name="obc_temps">Charger temperature</string>
     <string name="regen_now">Regenerating</string>
+    <string name="front_axle_long">Front axle</string>
+    <string name="rear_axle_long">Rear axle</string>
+    <string name="motor_short">motor</string>
+    <string name="inverter_short">inverter</string>
 </resources>

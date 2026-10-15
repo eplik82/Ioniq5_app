@@ -179,4 +179,8 @@
     <string name="charge_port_temps">Pesa DC1 / DC2 / AC</string>
     <string name="obc_temps">Laadija temperatuur</string>
     <string name="regen_now">Taaste (regen)</string>
+    <string name="front_axle_long">Esisild</string>
+    <string name="rear_axle_long">Tagasild</string>
+    <string name="motor_short">mootor</string>
+    <string name="inverter_short">inverter</string>
 </resources>
