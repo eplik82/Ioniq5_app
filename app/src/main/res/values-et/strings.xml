@@ -75,7 +75,7 @@
     <string name="session_energy">Laetud</string>
     <string name="session_duration">Kestus</string>
     <string name="session_soc">Laetus</string>
-    <string name="charging_note">Ajad on arvutatud praeguse võimsuse ja järelejäänud mahutavuse järgi (72,6 kWh × SOH). Laadija, AC/DC ja laadimispesa andmed lisanduvad pärast avastusskaneeringut.</string>
+    <string name="charging_note">Ajad on arvutatud praeguse võimsuse ja järelejäänud mahutavuse järgi (72,6 kWh × SOH). AC-laadimise tunneb ära pardalaadija voolu järgi; kasutegur = laadija DC väljund / AC sisend.</string>
     <string name="solar_title">Päikesekatus</string>
     <string name="iccu_hv_voltage">Kõrgepinge (ICCU)</string>
     <string name="solar_power">Päikese võimsus</string>
@@ -177,4 +177,5 @@
     <string name="setting_power_saving_off">Väljas: kõiki andmeid loetakse pidevalt ka seisva auto puhul – adapter hoiab juhtplokid ärkvel ja tühjendab 12 V akut</string>
     <string name="rear_motor_temps">Tagamootor / inverter</string>
     <string name="charge_port_temps">Pesa DC1 / DC2 / AC</string>
+    <string name="obc_temps">Laadija temperatuur</string>
 </resources>

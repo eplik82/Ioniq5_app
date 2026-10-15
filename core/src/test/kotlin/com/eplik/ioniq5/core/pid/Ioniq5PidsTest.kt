@@ -170,7 +170,11 @@ class Ioniq5PidsTest {
         check(15.58, P.OBC_AC_CURRENT_3)
         check(734.4, P.OBC_DC_VOLTAGE)
         check(13.35, P.OBC_DC_CURRENT)
-        check(228.6, P.OBC_AC_VOLTAGE)
+        check(383.3, P.OBC_AC_VOLTAGE)
+        check(384.8, P.OBC_AC_VOLTAGE_2)
+        check(50.0, P.OBC_AC_FREQUENCY)
+        check(49.0, P.OBC_TEMP_1)
+        check(36.0, P.OBC_TEMP_2)
     }
 
     @Test

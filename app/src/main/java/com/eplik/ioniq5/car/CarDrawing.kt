@@ -19,6 +19,8 @@ import com.eplik.ioniq5.core.poll.batteryPowerKw
 import com.eplik.ioniq5.core.poll.batteryPreheating
 import com.eplik.ioniq5.core.poll.cellVoltages
 import com.eplik.ioniq5.core.poll.minutesToSoc
+import com.eplik.ioniq5.core.poll.obcActive
+import com.eplik.ioniq5.core.poll.obcOutputPowerKw
 import com.eplik.ioniq5.core.poll.speedKmh
 import com.eplik.ioniq5.settings.Settings
 import com.eplik.ioniq5.settings.capacityKwh
@@ -344,9 +346,23 @@ class CarDrawing(private val context: Context, private val dark: Boolean) {
         val charging = fresh(P.BATTERY_CURRENT) && power != null && power < -0.5
         val soc = v(P.SOC_DISPLAY) ?: v(P.SOC_BMS)
         val leftW = b.width() * 0.45f
+        // AC-laadimine = pardalaadija töötab; laadija näit kehtib 30 s
+        val ac = r.obcActive().takeIf { r[P.OBC_DC_CURRENT]?.let { now - it.timeMs < 30_000 } == true }
+        val acIn = r.acInputPowerKw().takeIf { ac == true }
+        val obcOut = r.obcOutputPowerKw().takeIf { ac == true }
         label(
             c,
-            (if (charging) str(R.string.charging_now) else str(R.string.not_charging)).uppercase(),
+            (
+                if (charging) {
+                    str(R.string.charging_now) + when (ac) {
+                        null -> ""
+                        true -> " · AC"
+                        false -> " · DC"
+                    }
+                } else {
+                    str(R.string.not_charging)
+                }
+                ).uppercase(),
             b.left,
             b.top + h * 0.08f,
             h * 0.045f,
@@ -362,13 +378,20 @@ class CarDrawing(private val context: Context, private val dark: Boolean) {
             listOf(
                 Tile(str(R.string.state_of_charge), formatValue(soc, 1), "%", fresh(P.SOC_BMS)),
                 Tile(str(R.string.time_to_80), eta(80.0), "h:min", charging),
-                Tile(str(R.string.ac_input_power), formatValue(r.acInputPowerKw(), 1), "kW", fresh(P.OBC_AC_VOLTAGE)),
+                Tile(str(R.string.ac_input_power), formatValue(acIn, 1), "kW", acIn != null),
                 Tile(
                     str(R.string.battery_temp),
                     "${formatValue(v(P.BATTERY_TEMP_MIN), 0)}…${formatValue(v(P.BATTERY_TEMP_MAX), 0)}",
                     "°C",
                     fresh(P.BATTERY_TEMP_MAX),
                 ),
+                Tile(
+                    str(R.string.obc_efficiency),
+                    formatValue(if (acIn != null && obcOut != null && acIn > 0) obcOut / acIn * 100 else null, 0),
+                    "%",
+                    obcOut != null,
+                ),
+                Tile(str(R.string.obc_temps), "${formatValue(v(P.OBC_TEMP_1), 0)} / ${formatValue(v(P.OBC_TEMP_2), 0)}", "°C", ac == true),
             ),
             columns = 2,
         )

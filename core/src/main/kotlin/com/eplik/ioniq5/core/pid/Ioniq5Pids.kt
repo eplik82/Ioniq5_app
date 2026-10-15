@@ -74,6 +74,10 @@ object Ioniq5Pids {
     const val OBC_AC_CURRENT_3 = "obc_ac_current_3"
     const val OBC_DC_VOLTAGE = "obc_dc_voltage"
     const val OBC_DC_CURRENT = "obc_dc_current"
+    const val OBC_AC_VOLTAGE_2 = "obc_ac_voltage_2"
+    const val OBC_AC_FREQUENCY = "obc_ac_frequency"
+    const val OBC_TEMP_1 = "obc_temp_1"
+    const val OBC_TEMP_2 = "obc_temp_2"
     const val CABIN_TEMP = "cabin_temp"
     const val OUTDOOR_TEMP = "outdoor_temp"
     const val EVAPORATOR_TEMP = "evaporator_temp"
@@ -257,7 +261,14 @@ object Ioniq5Pids {
             s(OBC_AC_CURRENT_3, "AC vool L3", "AC current L3", "A", ParameterGroup.CHARGING, 18, 2, scale = 0.01),
             s(OBC_DC_VOLTAGE, "OBC DC pinge", "OBC DC voltage", "V", ParameterGroup.CHARGING, 22, 2, scale = 0.1),
             s(OBC_DC_CURRENT, "OBC DC vool", "OBC DC current", "A", ParameterGroup.CHARGING, 24, 2, scale = 0.01),
-            s(OBC_AC_VOLTAGE, "AC pinge", "AC voltage", "V", ParameterGroup.CHARGING, 30, 2, scale = 0.01),
+            // OBDb + kaks AC-laadimise logi (10.10, 16.10): baidid 7–8 ja 9–10 / 10 = liinipinge (384 V,
+            // 3-faasiline 400 V võrk), bait 13 sagedus, baidid 30 ja 31 − 40 laadija temperatuurid.
+            // Varem loeti baite 30–31 ekslikult AC pingeks (228,6 V), mis andis kasuteguriks ~100 %.
+            s(OBC_AC_VOLTAGE, "AC pinge", "AC voltage", "V", ParameterGroup.CHARGING, 7, 2, scale = 0.1),
+            s(OBC_AC_VOLTAGE_2, "AC pinge 2", "AC voltage 2", "V", ParameterGroup.CHARGING, 9, 2, scale = 0.1),
+            s(OBC_AC_FREQUENCY, "AC sagedus", "AC frequency", "Hz", ParameterGroup.CHARGING, 13),
+            SignalDefinition(OBC_TEMP_1, "Laadija temperatuur 1", "Charger temperature 1", "°C", ParameterGroup.CHARGING, 30, offset = -40.0),
+            SignalDefinition(OBC_TEMP_2, "Laadija temperatuur 2", "Charger temperature 2", "°C", ParameterGroup.CHARGING, 31, offset = -40.0),
         ),
     )
 

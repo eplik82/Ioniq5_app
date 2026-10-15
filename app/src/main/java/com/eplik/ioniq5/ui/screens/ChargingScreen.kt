@@ -23,6 +23,7 @@ import com.eplik.ioniq5.core.poll.ChargeSession
 import com.eplik.ioniq5.core.poll.Readings
 import com.eplik.ioniq5.core.poll.acInputPowerKw
 import com.eplik.ioniq5.core.poll.batteryPowerKw
+import com.eplik.ioniq5.core.poll.obcActive
 import com.eplik.ioniq5.core.poll.obcOutputPowerKw
 import com.eplik.ioniq5.core.poll.minutesToSoc
 import com.eplik.ioniq5.ui.components.PixelGauge
@@ -40,9 +41,11 @@ fun ChargingScreen(readings: Readings, session: ChargeSession?, capacityKwh: Dou
     val fresh = readings[P.BATTERY_CURRENT].isFresh(now)
     val charging = fresh && power != null && power < -0.5
     val soc = readings[P.SOC_DISPLAY]?.value ?: readings[P.SOC_BMS]?.value
-    val obcFresh = readings[P.OBC_AC_VOLTAGE].isFresh(now)
-    val acIn = readings.acInputPowerKw()?.takeIf { obcFresh }
-    val obcOut = readings.obcOutputPowerKw()?.takeIf { obcFresh }
+    // Laadija andmeid küsitakse harvemini; AC/DC otsustatakse pardalaadija voolu järgi (töötab ainult AC-laadimisel)
+    val obcFresh = readings[P.OBC_DC_CURRENT]?.let { now - it.timeMs < OBC_STALE_MS } == true
+    val ac = readings.obcActive()?.takeIf { obcFresh }
+    val acIn = readings.acInputPowerKw()?.takeIf { ac == true }
+    val obcOut = readings.obcOutputPowerKw()?.takeIf { ac == true }
 
     fun minutes(m: Double?) = m?.let { "%d:%02d".format(it.toInt() / 60, it.toInt() % 60) } ?: "—"
 
@@ -61,7 +64,11 @@ fun ChargingScreen(readings: Readings, session: ChargeSession?, capacityKwh: Dou
                 Text(
                     (
                         stringResource(if (charging) R.string.charging_now else R.string.not_charging) +
-                            if (charging) (if (acIn != null) " · AC" else " · DC") else ""
+                            when {
+                                !charging || ac == null -> ""
+                                ac -> " · AC"
+                                else -> " · DC"
+                            }
                         ).uppercase(),
                     style = MaterialTheme.typography.labelMedium,
                     color = if (charging) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
@@ -100,7 +107,15 @@ fun ChargingScreen(readings: Readings, session: ChargeSession?, capacityKwh: Dou
                 Text(stringResource(R.string.ac_charger), style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(top = 8.dp))
             }
             item { ValueTile(stringResource(R.string.ac_input_power), formatValue(acIn, 2), "kW", true) }
-            item { ValueTile(stringResource(R.string.ac_voltage), formatValue(readings[P.OBC_AC_VOLTAGE]?.value, 1), "V", true) }
+            item {
+                ValueTile(
+                    stringResource(R.string.ac_voltage),
+                    "${formatValue(readings[P.OBC_AC_VOLTAGE]?.value, 0)} / ${formatValue(readings[P.OBC_AC_VOLTAGE_2]?.value, 0)}",
+                    "V",
+                    true,
+                    detail = formatValue(readings[P.OBC_AC_FREQUENCY]?.value, 0) + " Hz",
+                )
+            }
             item {
                 ValueTile(
                     stringResource(R.string.ac_phase_currents),
@@ -117,6 +132,14 @@ fun ChargingScreen(readings: Readings, session: ChargeSession?, capacityKwh: Dou
                     formatValue(if (obcOut != null && acIn > 0) obcOut / acIn * 100 else null, 0),
                     "%",
                     obcOut != null,
+                )
+            }
+            item {
+                ValueTile(
+                    stringResource(R.string.obc_temps),
+                    "${formatValue(readings[P.OBC_TEMP_1]?.value, 0)} / ${formatValue(readings[P.OBC_TEMP_2]?.value, 0)}",
+                    "°C",
+                    true,
                 )
             }
         }
@@ -157,3 +180,6 @@ fun ChargingScreen(readings: Readings, session: ChargeSession?, capacityKwh: Dou
         }
     }
 }
+
+/** Laadija näit kehtib kauem kui teised (pollitakse iga 5 s, pikk mitmeosaline vastus võib vahel kaduda). */
+private const val OBC_STALE_MS = 30_000L

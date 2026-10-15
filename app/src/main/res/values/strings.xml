@@ -75,7 +75,7 @@
     <string name="session_energy">Charged</string>
     <string name="session_duration">Duration</string>
     <string name="session_soc">Charge level</string>
-    <string name="charging_note">Times are estimated from current power and remaining capacity (72.6 kWh × SOH). Charger, AC/DC and charge port data will be added after discovery.</string>
+    <string name="charging_note">Times are estimated from current power and remaining capacity (72.6 kWh × SOH). AC charging is detected from the on-board charger current; efficiency = charger DC output / AC input.</string>
     <string name="solar_title">Solar roof</string>
     <string name="iccu_hv_voltage">High voltage (ICCU)</string>
     <string name="solar_power">Solar power</string>
@@ -177,4 +177,5 @@
     <string name="setting_power_saving_off">Off: all data is read continuously even when the car is off – the adapter keeps control units awake and drains the 12 V battery</string>
     <string name="rear_motor_temps">Rear motor / inverter</string>
     <string name="charge_port_temps">Port DC1 / DC2 / AC</string>
+    <string name="obc_temps">Charger temperature</string>
 </resources>

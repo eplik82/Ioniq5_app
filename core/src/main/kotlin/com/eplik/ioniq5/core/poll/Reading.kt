@@ -70,14 +70,22 @@ fun Readings.minutesToSoc(targetPercent: Double, nominalKwh: Double = 72.6): Dou
     return energyKwh / -power * 60
 }
 
-/** AC sisendvõimsus kW (pinge × faasivoolude summa); null, kui AC-laadimist pole. */
+/**
+ * Pardalaadija AC sisendvõimsus kW. Laadija annab liinipinge (3-faasilises 400 V võrgus ~384 V) ja
+ * faasivoolud; faasipinge = liinipinge / √3. Alla 300 V pinge loetakse juba faasipingeks (1-faasiline,
+ * kontrollimata). P = faasipinge × faasivoolude summa.
+ */
 fun Readings.acInputPowerKw(): Double? {
     val v = value(Ioniq5Pids.OBC_AC_VOLTAGE) ?: return null
     val currents = listOf(Ioniq5Pids.OBC_AC_CURRENT_1, Ioniq5Pids.OBC_AC_CURRENT_2, Ioniq5Pids.OBC_AC_CURRENT_3)
         .mapNotNull { value(it) }
     if (v < 50 || currents.sum() < 0.5) return null
-    return v * currents.sum() / 1000
+    val phaseVolts = if (v > 300) v / kotlin.math.sqrt(3.0) else v
+    return phaseVolts * currents.sum() / 1000
 }
+
+/** Pardalaadija töötab (DC väljundvool üle 1 A) ehk käib AC-laadimine. null = andmed puuduvad. */
+fun Readings.obcActive(): Boolean? = value(Ioniq5Pids.OBC_DC_CURRENT)?.let { it > 1.0 }
 
 /** Pardalaadija DC väljundvõimsus kW. */
 fun Readings.obcOutputPowerKw(): Double? {
